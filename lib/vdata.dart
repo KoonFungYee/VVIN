@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:empty_widget/empty_widget.dart';
@@ -20,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibrate/vibrate.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/more.dart';
@@ -154,6 +154,7 @@ class _VDataState extends State<VData> {
     minimumDate = "2017-12-01";
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

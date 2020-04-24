@@ -11,6 +11,7 @@ import 'package:ndialog/ndialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibrate/vibrate.dart';
 import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
 import 'package:vvin/more.dart';
@@ -46,6 +47,7 @@ class _SettingsState extends State<Settings> {
     unassign = widget.setting.unassign;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibrate/vibrate.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/leadsDB.dart';
 import 'package:vvin/login.dart';
@@ -80,6 +81,7 @@ class _ProfileState extends State<Profile> {
     emailLength = 1;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

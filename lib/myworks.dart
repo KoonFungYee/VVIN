@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibrate/vibrate.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
@@ -114,6 +115,7 @@ class _MyWorksState extends State<MyWorks> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

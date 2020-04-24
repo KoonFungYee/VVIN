@@ -14,11 +14,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:route_transitions/route_transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibrate/vibrate.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/leadsDB.dart';
@@ -85,6 +85,7 @@ class _MoreState extends State<More> {
     initialize();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

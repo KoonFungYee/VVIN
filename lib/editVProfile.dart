@@ -15,6 +15,7 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibrate/vibrate.dart';
 import 'package:vvin/VProfile.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/loader.dart';
@@ -397,6 +398,7 @@ class _EditVProfileState extends State<EditVProfile> {
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

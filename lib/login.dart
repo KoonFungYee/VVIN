@@ -222,22 +222,6 @@ class _LoginPageState extends State<Login> {
                               ),
                             ),
                           ),
-                          // MaterialButton(
-                          //   shape: RoundedRectangleBorder(
-                          //       borderRadius: BorderRadius.circular(20.0)),
-                          //   minWidth: double.infinity,
-                          //   height: ScreenUtil().setHeight(80),
-                          //   child: Text(
-                          //     'Sign in',
-                          //     style: TextStyle(
-                          //       fontSize: font15,
-                          //     ),
-                          //   ),
-                          //   color: Color.fromRGBO(34, 175, 240, 1),
-                          //   textColor: Colors.white,
-                          //   elevation: 9,
-                          //   onPressed: _onLogin,
-                          // ),
                         ],
                       )
               ],
@@ -538,7 +522,6 @@ class _Default extends State<Default> {
         "manufacture": manufacture,
         "model": model,
       }).then((res) async {
-        // print("Login status: " + (res.statusCode).toString());
         // print("Level: " + res.body);
         if (res.body != "failed") {
           var data = json.decode(res.body);
@@ -549,10 +532,12 @@ class _Default extends State<Default> {
           await prefs.setString('level', data[2]);
           await prefs.setString('user_type', data[4]);
           Navigator.pop(context);
-          Toast.show("Welcome " + data[3], context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => VAnalytics()));
+              context,
+              MaterialPageRoute(
+                  builder: (context) => VAnalytics(
+                        name: data[3],
+                      )));
         } else {
           Navigator.pop(context);
           Toast.show("Please contact VVIN IT desk", context,
