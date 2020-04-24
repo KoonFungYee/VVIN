@@ -3308,14 +3308,11 @@ class _EditVProfileState extends State<EditVProfile> {
         phoneNo: widget.vdata.phoneNo,
         status: widget.vdata.status,
       );
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VProfile(
-            vdata: vdata1,
-          ),
-        ),
-      );
+      Navigator.of(context).pop();
+      Navigator.of(context).push(PageTransition(
+        type: PageTransitionType.slideParallaxDown,
+        child: VProfile(vdata: vdata1),
+      ));
     } else {
       for (int i = 0; i < widget.handler.length; i++) {
         for (int j = 0; j < handlerList1.length; j++) {

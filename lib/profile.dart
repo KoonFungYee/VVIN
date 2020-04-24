@@ -998,7 +998,15 @@ class _ProfileState extends State<Profile> {
       vanalyticsDB.rawInsert('DELETE FROM analytics WHERE id > 0');
       Database vdataDB = await VDataDB.instance.database;
       vdataDB.rawInsert('DELETE FROM vdata WHERE id > 0');
-      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
+      Navigator.pushReplacement(
+        context,
+        AwesomePageRoute(
+          transitionDuration: Duration(milliseconds: 600),
+          exitPage: widget,
+          enterPage: Login(),
+          transition: ParallaxTransition(),
+        ),
+      );
     } else {
       Toast.show("Please connect to Internet first", context,
           duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
