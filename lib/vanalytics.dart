@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -121,15 +122,28 @@ class _VAnalyticsState extends State<VAnalytics>
   @override
   void initState() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    // try {
+    //   if (widget.name != null) {
+    //     showToast(
+    //       'Welcome' + widget.name,
+    //       context: context,
+    //       animation: StyledToastAnimation.scale,
+    //       reverseAnimation: StyledToastAnimation.slideToBottom,
+    //       position: StyledToastPosition.bottom,
+    //       duration: Duration(seconds: 4),
+    //     );
+    //   }
+    // } catch (e) {}
     try {
       if (widget.name != null) {
-        showToast(
-          'Welcome' + widget.name,
-          context: context,
-          animation: StyledToastAnimation.scale,
-          reverseAnimation: StyledToastAnimation.slideToBottom,
-          position: StyledToastPosition.bottom,
-          duration: Duration(seconds: 4),
+        print(widget.name);
+        BotToast.showText(
+          text: "Welcome " + widget.name,
+          wrapToastAnimation: (controller, cancel, Widget child) =>
+              CustomAnimationWidget(
+            controller: controller,
+            child: child,
+          ),
         );
       }
     } catch (e) {}
@@ -3256,4 +3270,52 @@ class ChannelData {
   final String x;
   final double y;
   final Color color;
+}
+
+class CustomAnimationWidget extends StatefulWidget {
+  final AnimationController controller;
+  final Widget child;
+
+  const CustomAnimationWidget({Key key, this.controller, this.child})
+      : super(key: key);
+
+  @override
+  _CustomAnimationWidgetState createState() => _CustomAnimationWidgetState();
+}
+
+class _CustomAnimationWidgetState extends State<CustomAnimationWidget> {
+  static final Tween<Offset> tweenOffset = Tween<Offset>(
+    begin: const Offset(0, 40),
+    end: const Offset(0, 0),
+  );
+
+  static final Tween<double> tweenScale = Tween<double>(begin: 0.7, end: 1.0);
+  Animation<double> animation;
+
+  @override
+  void initState() {
+    animation =
+        CurvedAnimation(parent: widget.controller, curve: Curves.decelerate);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      child: widget.child,
+      animation: animation,
+      builder: (BuildContext context, Widget child) {
+        return Transform.translate(
+          offset: tweenOffset.evaluate(animation),
+          child: Transform.scale(
+            scale: tweenScale.evaluate(animation),
+            child: Opacity(
+              child: child,
+              opacity: animation.value,
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

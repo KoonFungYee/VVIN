@@ -5,6 +5,7 @@ import 'package:uni_links/uni_links.dart';
 import 'package:vvin/myworks.dart';
 import 'package:vvin/vanalytics.dart';
 import 'login.dart';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() => runApp(SplashScreen());
@@ -12,10 +13,13 @@ void main() => runApp(SplashScreen());
 class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Roboto'),
-      home: Checking(),
+    return BotToastInit(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(fontFamily: 'Roboto'),
+        navigatorObservers: [BotToastNavigatorObserver()],
+        home: Checking(),
+      ),
     );
   }
 }
