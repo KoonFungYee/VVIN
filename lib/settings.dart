@@ -9,12 +9,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
-import 'package:vvin/more.dart';
 import 'package:vvin/notifications.dart';
 
 class Settings extends StatefulWidget {
@@ -47,13 +45,12 @@ class _SettingsState extends State<Settings> {
     unassign = widget.setting.unassign;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (BuildContext context) => NDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) => NDialog(
               dialogStyle: DialogStyle(titleDivider: true),
               title: Text("New Notification"),
               content: Text("You have 1 new notification"),
@@ -302,14 +299,9 @@ class _SettingsState extends State<Settings> {
                 unassign = status;
               });
             }
-            Toast.show("Status changed", context,
-                duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+            _toast("Status changed");
           } else {
-            Toast.show(
-                "Status can't changed, please check you Internet connection",
-                context,
-                duration: Toast.LENGTH_LONG,
-                gravity: Toast.BOTTOM);
+            _toast("Status can't changed, please check you Internet connection");
           }
         }).catchError((err) {
           print("Change unassign error: " + (err).toString());
@@ -330,16 +322,12 @@ class _SettingsState extends State<Settings> {
                 assign = status;
               });
             }
-            Toast.show("Status changed", context,
-                duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+            _toast("Status changed");
           } else {
-            Toast.show(
-                "Status can't changed, please check you Internet connection",
-                context,
-                duration: Toast.LENGTH_LONG,
-                gravity: Toast.BOTTOM);
+            _toast("Status can't changed, please check you Internet connection");
           }
         }).catchError((err) {
+          _toast(err.toString());
           print("Change assign error: " + (err).toString());
         });
       }
@@ -359,5 +347,16 @@ class _SettingsState extends State<Settings> {
   Future<bool> _onBackPressAppBar() async {
     Navigator.of(context).pop();
     return Future.value(false);
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }

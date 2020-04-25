@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'package:bot_toast/bot_toast.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
 import 'package:ndialog/ndialog.dart';
@@ -15,9 +15,7 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:route_transitions/route_transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/leadsDB.dart';
 import 'package:vvin/lineChart.dart';
@@ -125,20 +123,18 @@ class _VAnalyticsState extends State<VAnalytics>
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     try {
       if (widget.name != null) {
-        print(widget.name);
-        BotToast.showText(
-          text: "Welcome " + widget.name,
-          wrapToastAnimation: (controller, cancel, Widget child) =>
-              CustomAnimationWidget(
-            controller: controller,
-            child: child,
-          ),
+        showToast(
+          'Welcome' + widget.name,
+          context: context,
+          animation: StyledToastAnimation.scale,
+          reverseAnimation: StyledToastAnimation.slideToBottom,
+          position: StyledToastPosition.bottom,
+          duration: Duration(seconds: 4),
         );
       }
     } catch (e) {}
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -1173,7 +1169,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                                                         if (connectivityResult == ConnectivityResult.wifi || connectivityResult == ConnectivityResult.mobile) {
                                                                                           _redirectVProfile(i - 1);
                                                                                         } else {
-                                                                                          Toast.show("This feature need Internet connection", context, duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+                                                                                          _noInternet();
                                                                                         }
                                                                                       },
                                                                                       child: Container(
@@ -1613,11 +1609,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("New");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -1663,11 +1655,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("Contacting");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -1714,11 +1702,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("Contacted");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -1764,11 +1748,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("Qualified");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -1815,11 +1795,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("Converted");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -1865,11 +1841,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("Follow-up");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -1916,11 +1888,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("Unqualified");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -1966,11 +1934,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("Bad Information");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -2017,11 +1981,7 @@ class _VAnalyticsState extends State<VAnalytics>
                                                     ConnectivityResult.mobile) {
                                               _leadsStatus("No Response");
                                             } else {
-                                              Toast.show(
-                                                  "This feature need Internet connection",
-                                                  context,
-                                                  duration: Toast.LENGTH_LONG,
-                                                  gravity: Toast.BOTTOM);
+                                              _noInternet();
                                             }
                                           },
                                           child: Container(
@@ -2295,8 +2255,7 @@ class _VAnalyticsState extends State<VAnalytics>
           animationType: AnimationType.scale,
           builder: (context) => VProfile(vdata: vdata)));
     } else {
-      Toast.show("No Internet Connection!", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection!");
     }
   }
 
@@ -2338,8 +2297,7 @@ class _VAnalyticsState extends State<VAnalytics>
         ),
       );
     } else {
-      Toast.show("No Internet Connection!", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection!");
     }
   }
 
@@ -2377,19 +2335,13 @@ class _VAnalyticsState extends State<VAnalytics>
         ),
       );
     } else {
-      Toast.show("No Internet Connection!", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection!");
     }
   }
 
   Future<bool> _onBackPressAppBar() async {
     YYAlertDialogWithScaleIn();
     return Future.value(false);
-  }
-
-  void _noInternet() {
-    Toast.show("This feature need Internet connection", context,
-        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
   }
 
   void _assignedNow() {
@@ -2428,8 +2380,7 @@ class _VAnalyticsState extends State<VAnalytics>
         ),
       );
     } else {
-      Toast.show("This feature need Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _noInternet();
     }
   }
 
@@ -2591,6 +2542,10 @@ class _VAnalyticsState extends State<VAnalytics>
     );
   }
 
+  void _noInternet() {
+    _toast("This feature need Internet connection");
+  }
+
   void _initialize() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("noti") != null) {
@@ -2608,8 +2563,7 @@ class _VAnalyticsState extends State<VAnalytics>
         getPreference();
       } else {
         offline();
-        Toast.show("No Internet, the data shown is not up to date", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("No Internet, the data shown is not up to date");
       }
     } else {
       if (this.mounted) {
@@ -2827,8 +2781,7 @@ class _VAnalyticsState extends State<VAnalytics>
       }
       setTopViewData();
     }).catchError((err) {
-      Toast.show("GetTopViewData: " + err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get Top View Data error: " + (err).toString());
     });
   }
@@ -2980,8 +2933,7 @@ class _VAnalyticsState extends State<VAnalytics>
       }
       setLeadsData();
     }).catchError((err) {
-      Toast.show("GetLeadsData: " + err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get chart data error: " + (err).toString());
     });
   }
@@ -3090,8 +3042,7 @@ class _VAnalyticsState extends State<VAnalytics>
       }
       setAnalyticsData();
     }).catchError((err) {
-      Toast.show("GetAnalyticsData: " + err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get Vanalytics Data error: " + (err).toString());
     });
   }
@@ -3181,8 +3132,7 @@ class _VAnalyticsState extends State<VAnalytics>
       }
     } else {
       Navigator.pop(context);
-      Toast.show("Please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your Internet connection");
     }
   }
 
@@ -3212,8 +3162,7 @@ class _VAnalyticsState extends State<VAnalytics>
       getVanalyticsData();
       getChartData();
     } else {
-      Toast.show("No Internet connection, data can't load", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet connection, data can't load");
     }
   }
 
@@ -3249,7 +3198,8 @@ class _VAnalyticsState extends State<VAnalytics>
                   ),
                 ],
               )
-            : new AlertDialog(
+            : NDialog(
+                dialogStyle: DialogStyle(titleDivider: true),
                 title: Text(title),
                 content: Text(message),
                 actions: <Widget>[
@@ -3275,6 +3225,17 @@ class _VAnalyticsState extends State<VAnalytics>
       throw 'Could not launch $url';
     }
   }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
+  }
 }
 
 class LeadsData {
@@ -3295,52 +3256,4 @@ class ChannelData {
   final String x;
   final double y;
   final Color color;
-}
-
-class CustomAnimationWidget extends StatefulWidget {
-  final AnimationController controller;
-  final Widget child;
-
-  const CustomAnimationWidget({Key key, this.controller, this.child})
-      : super(key: key);
-
-  @override
-  _CustomAnimationWidgetState createState() => _CustomAnimationWidgetState();
-}
-
-class _CustomAnimationWidgetState extends State<CustomAnimationWidget> {
-  static final Tween<Offset> tweenOffset = Tween<Offset>(
-    begin: const Offset(0, 40),
-    end: const Offset(0, 0),
-  );
-
-  static final Tween<double> tweenScale = Tween<double>(begin: 0.7, end: 1.0);
-  Animation<double> animation;
-
-  @override
-  void initState() {
-    animation =
-        CurvedAnimation(parent: widget.controller, curve: Curves.decelerate);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      child: widget.child,
-      animation: animation,
-      builder: (BuildContext context, Widget child) {
-        return Transform.translate(
-          offset: tweenOffset.evaluate(animation),
-          child: Transform.scale(
-            scale: tweenScale.evaluate(animation),
-            child: Opacity(
-              child: child,
-              opacity: animation.value,
-            ),
-          ),
-        );
-      },
-    );
-  }
 }

@@ -13,12 +13,10 @@ import 'package:http/http.dart' as http;
 import 'package:ndialog/ndialog.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/VProfile.dart';
 import 'package:vvin/data.dart';
-import 'package:vvin/loader.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/notifications.dart';
@@ -398,7 +396,6 @@ class _EditVProfileState extends State<EditVProfile> {
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -3075,8 +3072,7 @@ class _EditVProfileState extends State<EditVProfile> {
           statesList.add(stateforEach);
         }
       } else {
-        Toast.show("Something wrong, please contact VVIN IT help desk", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Something wrong, please contact VVIN IT help desk");
       }
       if (this.mounted) {
         setState(() {
@@ -3087,8 +3083,7 @@ class _EditVProfileState extends State<EditVProfile> {
         Navigator.pop(context);
       }
     }).catchError((err) {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
       print("Setup Data error: " + (err).toString());
     });
   }
@@ -3128,8 +3123,7 @@ class _EditVProfileState extends State<EditVProfile> {
         Navigator.pop(context);
       }
     }).catchError((err) {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
       print("Setup Data error: " + (err).toString());
     });
   }
@@ -3281,18 +3275,14 @@ class _EditVProfileState extends State<EditVProfile> {
         if (res.body == "success") {
           _saveHandler();
         } else {
-          Toast.show(
-              "Something wrong, please contact VVIN IT help desk", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Something wrong, please contact VVIN IT help desk");
         }
       }).catchError((err) {
-        Toast.show(err.toString(), context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast(err.toString());
         print("Save error: " + (err).toString());
       });
     } else {
-      Toast.show("Please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your Internet connection");
     }
   }
 
@@ -3348,13 +3338,23 @@ class _EditVProfileState extends State<EditVProfile> {
                 ));
               }
             }).catchError((err) {
-              Toast.show("No Internet Connection", context,
-                  duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+              _toast("No Internet Connection");
               print("Save Handler error: " + (err).toString());
             });
           }
         }
       }
     }
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }

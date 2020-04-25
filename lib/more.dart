@@ -16,9 +16,8 @@ import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/leadsDB.dart';
@@ -85,13 +84,12 @@ class _MoreState extends State<More> {
     initialize();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (BuildContext context) => NDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) => NDialog(
               dialogStyle: DialogStyle(titleDivider: true),
               title: Text("New Notification"),
               content: Text("You have 1 new notification"),
@@ -651,12 +649,10 @@ class _MoreState extends State<More> {
           ),
         );
       } else {
-        Toast.show("Data is loading. Please try again.", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Data is loading. Please try again.");
       }
     } else {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
     }
   }
 
@@ -668,8 +664,7 @@ class _MoreState extends State<More> {
         url: "http://cyps.wgxscn.com/mlxy/index/index",
       );
     } else {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
     }
   }
 
@@ -693,8 +688,7 @@ class _MoreState extends State<More> {
           start = true;
         });
       }
-      Toast.show("No Internet, the data shown is not up to date", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet, the data shown is not up to date");
     }
   }
 
@@ -864,8 +858,7 @@ class _MoreState extends State<More> {
         ),
       );
     } else {
-      Toast.show("Please connect to Internet first", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please connect to Internet");
     }
   }
 
@@ -880,13 +873,10 @@ class _MoreState extends State<More> {
         // Navigator.push(
         //     context, MaterialPageRoute(builder: (context) => Login()));
       } else {
-        Toast.show(
-            "Something wrong, please contact VVIN sales support", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Something wrong, please contact VVIN sales support");
       }
     }).catchError((err) {
-      Toast.show("Something wrong, please contact VVIN help desk", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Something wrong, please contact VVIN help desk");
       print("Logout error: " + (err).toString());
     });
   }
@@ -916,5 +906,16 @@ class _MoreState extends State<More> {
   Future<bool> _onBackPressAppBar() async {
     YYAlertDialogWithScaleIn();
     return Future.value(false);
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }

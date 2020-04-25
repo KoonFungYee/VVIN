@@ -15,9 +15,8 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
@@ -115,7 +114,6 @@ class _MyWorksState extends State<MyWorks> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -281,8 +279,7 @@ class _MyWorksState extends State<MyWorks> {
       myWorks1.clear();
       getLink();
     } else {
-      Toast.show("No Internet connection, data can't load", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet connection, data can't load");
     }
     _refreshController.refreshCompleted();
   }
@@ -759,13 +756,7 @@ class _MyWorksState extends State<MyWorks> {
                                                             myWorks[index]
                                                                 .link);
                                                       } else {
-                                                        Toast.show(
-                                                            "Offline mode can not WhatsApp Forward",
-                                                            context,
-                                                            duration: Toast
-                                                                .LENGTH_LONG,
-                                                            gravity:
-                                                                Toast.BOTTOM);
+                                                        _toast("Offline mode can not WhatsApp Forward");
                                                       }
                                                     },
                                                     child: Container(
@@ -948,8 +939,7 @@ class _MyWorksState extends State<MyWorks> {
     if (connection == true) {
       if (myWorks[index].offLine == false) {
         if (myWorks[index].qr == "") {
-          Toast.show("No QR generated for this link", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("No QR generated for this link");
         } else {
           FlutterWebBrowser.openWebPage(
             url: myWorks[index].qr,
@@ -964,9 +954,7 @@ class _MyWorksState extends State<MyWorks> {
         if (File(path).existsSync() == true) {
           await OpenFile.open(path);
         } else {
-          Toast.show(
-              "This offline QR still in downloading or not available", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("This offline QR still in downloading or not available");
         }
       }
     } else {
@@ -978,8 +966,7 @@ class _MyWorksState extends State<MyWorks> {
       if (File(path).existsSync() == true) {
         await OpenFile.open(path);
       } else {
-        Toast.show("This offline QR is not available.", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("This offline QR is not available.");
       }
     }
   }
@@ -1006,8 +993,7 @@ class _MyWorksState extends State<MyWorks> {
         ),
       );
     } else {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
     }
   }
 
@@ -1230,8 +1216,7 @@ class _MyWorksState extends State<MyWorks> {
             });
           });
     } else {
-      Toast.show("This feature need Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("This feature need Internet connection");
     }
   }
 
@@ -1261,18 +1246,15 @@ class _MyWorksState extends State<MyWorks> {
         "handler": handlers
       }).then((res) async {
         if (res.body == "success") {
-          Toast.show("Handler updated", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Handler updated");
         } else {
-          Toast.show("Something's wrong", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Something's wrong");
         }
       }).catchError((err) {
         print("Assign error: " + (err).toString());
       });
     } else {
-      Toast.show("No Internet, data can't update", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet, data can't update");
     }
   }
 
@@ -1677,8 +1659,7 @@ class _MyWorksState extends State<MyWorks> {
             });
           });
     } else {
-      Toast.show("Please wait for laoding", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please wait for laoding");
     }
   }
 
@@ -2198,8 +2179,7 @@ class _MyWorksState extends State<MyWorks> {
           if (File(path).existsSync() == true) {
             await OpenFile.open(path);
           } else {
-            Toast.show("This offline link still in downloading", context,
-                duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+            _toast("This offline link still in downloading");
           }
         }
       } else {
@@ -2211,8 +2191,7 @@ class _MyWorksState extends State<MyWorks> {
         if (File(path).existsSync() == true) {
           await OpenFile.open(path);
         } else {
-          Toast.show("This offline link still in downloading", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("This offline link still in downloading");
         }
       }
     } else {
@@ -2224,11 +2203,7 @@ class _MyWorksState extends State<MyWorks> {
       if (File(path).existsSync() == true) {
         await OpenFile.open(path);
       } else {
-        Toast.show(
-            "This offline link not in your device, please enter the page again in online mode to complete the offline link download.",
-            context,
-            duration: Toast.LENGTH_LONG,
-            gravity: Toast.BOTTOM);
+        _toast("This offline link not in your device, please enter the page again in online mode to complete the offline link download.");
       }
     }
   }
@@ -2286,8 +2261,7 @@ class _MyWorksState extends State<MyWorks> {
       notification();
     } else {
       initialize();
-      Toast.show("No Internet, the data shown is not up to date", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet, the data shown is not up to date");
     }
   }
 
@@ -2332,12 +2306,10 @@ class _MyWorksState extends State<MyWorks> {
           handlerAllList1.add(handler);
         }
       } else {
-        Toast.show("Something wrong, please contact VVIN IT help desk", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Something wrong, please contact VVIN IT help desk");
       }
     }).catchError((err) {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
       print("Setup Data error: " + (err).toString());
     });
   }
@@ -2380,8 +2352,7 @@ class _MyWorksState extends State<MyWorks> {
       if (res.body == "nodata") {
         nodata = true;
         status = true;
-        Toast.show("No Data", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("No Data");
       } else {
         var jsonData = json.decode(res.body);
         if (total == 0) {
@@ -2548,8 +2519,7 @@ class _MyWorksState extends State<MyWorks> {
 
   Future<void> _search(String value) async {
     if (status == false) {
-      Toast.show("Please wait for loading", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.CENTER);
+      _toast("Please wait for loading");
     } else {
       if (this.mounted) {
         setState(() {
@@ -2899,5 +2869,16 @@ class _MyWorksState extends State<MyWorks> {
     String _path = await _localDevicePath;
     var _newPath = await Directory("$_path/$path").create();
     return File("${_newPath.path}/$name.jpg");
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }

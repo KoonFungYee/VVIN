@@ -14,9 +14,8 @@ import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/loader.dart';
 import 'package:vvin/editVProfile.dart';
@@ -126,7 +125,6 @@ class _VProfileState extends State<VProfile>
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -312,9 +310,7 @@ class _VProfileState extends State<VProfile>
                           connectivityResult == ConnectivityResult.mobile) {
                         FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
                       } else {
-                        Toast.show(
-                            "This feature need Internet connection", context,
-                            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+                        _toast("This feature need Internet connection");
                       }
                     },
                     child: Container(
@@ -344,10 +340,7 @@ class _VProfileState extends State<VProfile>
                               connectivityResult == ConnectivityResult.mobile) {
                             FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
                           } else {
-                            Toast.show("This feature need Internet connection",
-                                context,
-                                duration: Toast.LENGTH_LONG,
-                                gravity: Toast.BOTTOM);
+                            _toast("This feature need Internet connection");
                           }
                         },
                       ),
@@ -683,6 +676,17 @@ class _VProfileState extends State<VProfile>
     );
   }
 
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
+  }
+
   void _editVProfile() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
@@ -715,8 +719,7 @@ class _VProfileState extends State<VProfile>
         ),
       ));
     } else {
-      Toast.show("Please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your Internet connection");
     }
   }
 
@@ -737,8 +740,7 @@ class _VProfileState extends State<VProfile>
   void _onSubmit() async {
     if (isSend == false) {
       if (_addRemark.text == "") {
-        Toast.show("Please key in something", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Please key in something");
       } else {
         var connectivityResult = await (Connectivity().checkConnectivity());
         if (connectivityResult == ConnectivityResult.wifi ||
@@ -776,19 +778,16 @@ class _VProfileState extends State<VProfile>
             } else {
               Navigator.pop(context);
               _addRemark.text = "";
-              Toast.show("Please contact VVIN help desk", context,
-                  duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+              _toast("Please contact VVIN help desk");
             }
           }).catchError((err) {
             Navigator.pop(context);
             _addRemark.text = "";
-            Toast.show("No Internet Connection, data can't save", context,
-                duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+            _toast("No Internet Connection, data can't save");
             print("On submit error: " + (err).toString());
           });
         } else {
-          Toast.show("Please check your Internet connection", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Please check your Internet connection");
         }
       }
     }
@@ -812,9 +811,7 @@ class _VProfileState extends State<VProfile>
       getRemarks();
       getVTag();
     } else {
-      // Navigator.pop(context);
-      Toast.show("No Internet connection! Can't show", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet connection! Can't show");
     }
   }
 
@@ -839,8 +836,7 @@ class _VProfileState extends State<VProfile>
         });
       }
     }).catchError((err) {
-      Toast.show(err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get VTag error: " + (err).toString());
     });
   }
@@ -908,9 +904,7 @@ class _VProfileState extends State<VProfile>
         });
       }
     }).catchError((err) {
-      // Navigator.pop(context);
-      Toast.show(err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get VProfile data error: " + (err).toString());
     });
   }
@@ -936,8 +930,7 @@ class _VProfileState extends State<VProfile>
         });
       }
     }).catchError((err) {
-      Toast.show(err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get handler error: " + (err).toString());
     });
   }
@@ -974,8 +967,7 @@ class _VProfileState extends State<VProfile>
         });
       }
     }).catchError((err) {
-      Toast.show(err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get view error: " + (err).toString());
     });
   }
@@ -1014,8 +1006,7 @@ class _VProfileState extends State<VProfile>
         });
       }
     }).catchError((err) {
-      Toast.show(err, context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get remark error: " + (err).toString());
     });
   }
@@ -1040,17 +1031,14 @@ class _VProfileState extends State<VProfile>
             status = newVal;
           });
         }
-        Toast.show("Status changed", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Status changed");
       } else {
         if (this.mounted) {
           setState(() {
             status = status;
           });
         }
-        Toast.show(
-            "Status can't change, please contact VVIN help desk", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Status can't change, please contact VVIN help desk");
       }
     }).catchError((err) {
       if (this.mounted) {
@@ -1058,9 +1046,7 @@ class _VProfileState extends State<VProfile>
           status = status;
         });
       }
-      Toast.show(
-          "Status can't change, please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Status can't change, please check your Internet connection");
       print("Set status error: " + (err).toString());
     });
   }

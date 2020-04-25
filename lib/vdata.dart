@@ -17,9 +17,8 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:route_transitions/route_transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/more.dart';
@@ -154,7 +153,6 @@ class _VDataState extends State<VData> {
     minimumDate = "2017-12-01";
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -921,13 +919,8 @@ class _VDataState extends State<VData> {
                                                         (connection == true)
                                                             ? setStatus(
                                                                 index, newVal)
-                                                            : Toast.show(
-                                                                "Status can't changed! Please enter the page again in online mode",
-                                                                context,
-                                                                duration: Toast
-                                                                    .LENGTH_LONG,
-                                                                gravity: Toast
-                                                                    .BOTTOM);
+                                                            : 
+                                                              _toast("Status can't changed! Please enter the page again in online mode");
                                                       },
                                                       value: (connection ==
                                                               true)
@@ -1096,8 +1089,7 @@ class _VDataState extends State<VData> {
       });
       _refreshController.refreshCompleted();
     } else {
-      Toast.show("No Internet connection, data can't load", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet connection, data can't load");
       _refreshController.refreshCompleted();
     }
   }
@@ -1190,8 +1182,7 @@ class _VDataState extends State<VData> {
           animationType: AnimationType.scale,
           builder: (context) => VProfile(vdata: vdata)));
     } else {
-      Toast.show("No Internet Connection!", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection!");
     }
   }
 
@@ -1205,8 +1196,7 @@ class _VDataState extends State<VData> {
         FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
       }
     } else {
-      Toast.show("This feature need Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("This feature need Internet connection");
     }
   }
 
@@ -2229,8 +2219,7 @@ class _VDataState extends State<VData> {
         },
       );
     } else {
-      Toast.show("Please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your Internet connection");
     }
   }
 
@@ -2680,8 +2669,7 @@ class _VDataState extends State<VData> {
       getPreference();
     } else {
       offline();
-      Toast.show("No Internet, the data shown is not up to date", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet, the data shown is not up to date");
     }
   }
 
@@ -2955,8 +2943,7 @@ class _VDataState extends State<VData> {
         print("VAnalytics Loading Time: " + result.toString());
       }
     }).catchError((err) {
-      Toast.show(err.toString(), context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get Executive error: " + (err).toString());
     });
   }
@@ -3008,8 +2995,7 @@ class _VDataState extends State<VData> {
         "status": newVal,
       }).then((res) {
         if (res.body == "success") {
-          Toast.show("Status changed", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Status changed");
           if (this.mounted) {
             setState(() {
               vDataDetails[index].status = newVal;
@@ -3017,25 +3003,19 @@ class _VDataState extends State<VData> {
             });
           }
         } else {
-          Toast.show(
-              "Status can't change, please contact VVIN help desk", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Status can't change, please contact VVIN help desk");
         }
       }).catchError((err) {
-        Toast.show("Status can't change, please check your Internet connection",
-            context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Status can't change, please check your Internet connection");
         print("Set status error: " + (err).toString());
       });
     } else {
-      Toast.show("This feature need Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("This feature need Internet connection");
     }
   }
 
   void _noInternet() {
-    Toast.show("You are in offline mode, filter feature is not allow", context,
-        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+    _toast("You are in offline mode, filter feature is not allow");
   }
 
   void _done() async {
@@ -3124,8 +3104,7 @@ class _VDataState extends State<VData> {
         print("Filter error: " + (err).toString());
       });
     } else {
-      Toast.show("Please check your internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your internet connection");
     }
   }
 
@@ -3218,13 +3197,11 @@ class _VDataState extends State<VData> {
             }
           }
         }).catchError((err) {
-          Toast.show("Something wrong, please contact VVIN IT deesk", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.TOP);
+          _toast("Something wrong, please contact VVIN IT deesk");
           print("Search error: " + (err).toString());
         });
       } else {
-        Toast.show("Please check your Internet Connection", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Please check your Internet Connection");
       }
     } else {
       offlineVData = await vdataDB.rawQuery(
@@ -3243,6 +3220,17 @@ class _VDataState extends State<VData> {
         });
       }
     }
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 
   // String _dateFormat(String fullDate) {

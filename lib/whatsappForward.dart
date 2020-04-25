@@ -12,7 +12,7 @@ import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_indicators/progress_indicators.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/data.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -341,11 +341,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                               if (phoneList.length != 0) {
                                                 _showBottomSheet("phone");
                                               } else {
-                                                Toast.show(
-                                                    "No phone number detected",
-                                                    context,
-                                                    duration: Toast.LENGTH_LONG,
-                                                    gravity: Toast.BOTTOM);
+                                                _toast("No phone number detected");
                                               }
                                             },
                                             child: Container(
@@ -806,6 +802,17 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     );
   }
 
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
+  }
+
   void _checking() {
     bool send = true;
     if (this.mounted) {
@@ -962,8 +969,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         });
       }
     } else {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
     }
   }
 
@@ -1092,8 +1098,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         },
       );
     } else {
-      Toast.show("VTag list is empty", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("VTag list is empty");
     }
   }
 

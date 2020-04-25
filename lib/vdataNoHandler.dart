@@ -17,12 +17,10 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:route_transitions/route_transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
-import 'package:vvin/loader.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vvin/more.dart';
 import 'package:vvin/myworks.dart';
@@ -156,13 +154,12 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     count = 0;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (BuildContext context) => NDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) => NDialog(
               dialogStyle: DialogStyle(titleDivider: true),
               title: Text("New Notification"),
               content: Text("You have 1 new notification"),
@@ -594,11 +591,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                                             VProfile(
                                                                 vdata: vdata)));
                                               } else {
-                                                Toast.show(
-                                                    "No Internet Connection!",
-                                                    context,
-                                                    duration: Toast.LENGTH_LONG,
-                                                    gravity: Toast.BOTTOM);
+                                                _toast("No Internet Connection!");
                                               }
                                             },
                                             child: Container(
@@ -959,13 +952,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                                         (connection == true)
                                                             ? setStatus(
                                                                 index, newVal)
-                                                            : Toast.show(
-                                                                "Please connect to Internet first",
-                                                                context,
-                                                                duration: Toast
-                                                                    .LENGTH_LONG,
-                                                                gravity: Toast
-                                                                    .BOTTOM);
+                                                            : 
+                                                              _toast("Please connect to Internet first");
                                                       },
                                                       value: (connection ==
                                                               true)
@@ -2000,8 +1988,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         },
       );
     } else {
-      Toast.show("Please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your Internet connection");
     }
   }
 
@@ -2441,8 +2428,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
       }
     } else {
-      Toast.show("This feature need Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("This feature need Internet connection");
     }
   }
 
@@ -2452,8 +2438,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         connectivityResult == ConnectivityResult.mobile) {
       getPreference();
     } else {
-      Toast.show("Please connect to Internet!", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please connect to Internet!");
     }
   }
 
@@ -2706,8 +2691,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         });
       }
     }).catchError((err) {
-      Toast.show(err.toString(), context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get Executive error: " + (err).toString());
     });
   }
@@ -2723,17 +2707,12 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "user_type": userType,
     }).then((res) {
       if (res.body == "success") {
-        Toast.show("Status changed", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Status changed");
       } else {
-        Toast.show(
-            "Status can't change, please contact VVIN help desk", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Status can't change, please contact VVIN help desk");
       }
     }).catchError((err) {
-      Toast.show(
-          "Status can't change, please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Status can't change, please check your Internet connection");
       print("Set status error: " + (err).toString());
     });
     if (this.mounted) {
@@ -2744,8 +2723,25 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   }
 
   void _noInternet() {
-    Toast.show("You are in offline mode, filter feature is not allow", context,
-        duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+    showToast(
+      "You are in offline mode, filter feature is not allow",
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 
   void _done() async {
@@ -2837,8 +2833,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         print("Filter error: " + (err).toString());
       });
     } else {
-      Toast.show("Please check your internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your internet connection");
     }
   }
 
@@ -2916,8 +2911,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           print("Search error: " + (err).toString());
         });
       } else {
-        Toast.show("Please check your Internet Connection", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Please check your internet connection");
       }
     } else {
       offlineVData = await vdataDB.rawQuery(
@@ -3059,8 +3053,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       });
       _refreshController.refreshCompleted();
     } else {
-      Toast.show("No Internet connection, data can't load", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet connection, data can't load");
       _refreshController.refreshCompleted();
     }
   }

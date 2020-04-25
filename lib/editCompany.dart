@@ -12,9 +12,7 @@ import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:toast/toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibrate/vibrate.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/more.dart';
 import 'package:vvin/notifications.dart';
@@ -23,6 +21,7 @@ import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 
 final ScrollController controller = ScrollController();
 final TextEditingController _nameController = TextEditingController();
@@ -86,13 +85,13 @@ class _EditCompanyState extends State<EditCompany> {
     ));
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibrate.vibrate();
+
         bool noti = false;
         if (noti == false) {
           showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (BuildContext context) => NDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (BuildContext context) => NDialog(
               dialogStyle: DialogStyle(titleDivider: true),
               title: Text("New Notification"),
               content: Text("You have 1 new notification"),
@@ -569,8 +568,7 @@ class _EditCompanyState extends State<EditCompany> {
             );
           });
     } else {
-      Toast.show("No Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection");
     }
   }
 
@@ -593,19 +591,16 @@ class _EditCompanyState extends State<EditCompany> {
               image = res.body.toString();
             });
           }
-          Toast.show("Image changed", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Image changed");
           _downloadImage(image, "company", "profile");
         } else {
-          Toast.show("Image can't save, please contact VVIN help desk", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Image can't save, please contact VVIN help desk");
         }
       }).catchError((err) {
         print("Upload image error: " + err.toString());
       });
     } else {
-      Toast.show("No Internet Connection, image can't change", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection, image can't change");
     }
   }
 
@@ -645,29 +640,22 @@ class _EditCompanyState extends State<EditCompany> {
                 ),
               );
               setData();
-              Toast.show("Update successfully", context,
-                  duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+              _toast("Update successfully");
             } else {
-              Toast.show(
-                  "Update failed, please contact VVIN help desk", context,
-                  duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+              _toast("Update failed, please contact VVIN help desk");
             }
           }).catchError((err) {
-            Toast.show(err.toString(), context,
-                duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+            _toast(err.toString());
             print("Save Edit Company error: " + (err).toString());
           });
         } else {
-          Toast.show("No Internet Connection, data can't save", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("No Internet Connection, data can't save");
         }
       } else {
-        Toast.show("Please fill in all column", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Please fill in all column");
       }
     } else {
-      Toast.show("Your email address format is incorrectly", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Your email address format is incorrectly");
     }
   }
 
@@ -713,5 +701,16 @@ class _EditCompanyState extends State<EditCompany> {
 
     var _newPath = await Directory("$_path/$path").create();
     return File("${_newPath.path}/$name.jpg");
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }

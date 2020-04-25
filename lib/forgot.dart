@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'login.dart';
 import 'package:http/http.dart' as http;
 
@@ -179,8 +179,7 @@ class _Forgot extends State<Forgot> {
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
       if (_emcontroller.text == "") {
-        Toast.show("Please enter your email", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Please enter your email");
       } else {
         http.post(urlForget, body: {
           "email": _emcontroller.text.toLowerCase(),
@@ -188,35 +187,41 @@ class _Forgot extends State<Forgot> {
           if (res.statusCode == 200) {
             var jsonData = json.decode(res.body);
             if (jsonData['status'].toString() == "1") {
-              Toast.show(jsonData['message'].toString(), context,
-                  duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+              _toast(jsonData['message'].toString());
               Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) => Login(),
                   ));
             } else {
-              Toast.show(jsonData['message'].toString(), context,
-                  duration: Toast.LENGTH_LONG, gravity: Toast.CENTER);
+              _toast(jsonData['message'].toString());
             }
           } else {
-            Toast.show("Please contact VVIN IT desk", context,
-                duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+            _toast("Please contact VVIN IT desk");
           }
         }).catchError((err) {
-          Toast.show(err.toString(), context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast(err.toString());
           print("On Forgot error: " + (err).toString());
         });
       }
     } else {
-      Toast.show("Please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your Internet connection");
     }
   }
 
   Future<bool> _onBackPressAppBar() async {
     Navigator.of(context).pop();
     return Future.value(false);
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }

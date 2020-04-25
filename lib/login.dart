@@ -8,10 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:http/http.dart' as http;
 import 'package:vvin/forgot.dart';
-import 'package:vvin/loader.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -266,23 +265,19 @@ class _LoginPageState extends State<Login> {
           } else {
             Navigator.pop(context);
             FocusScope.of(context).requestFocus(new FocusNode());
-            Toast.show("Login Failed", context,
-                duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+            _toast("Login Failed");
           }
         }).catchError((err) {
           Navigator.pop(context);
           FocusScope.of(context).requestFocus(new FocusNode());
-          Toast.show(err.toString(), context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast(err.toString());
           print("On Login error: " + (err).toString());
         });
       } else {
-        Toast.show("No Internet Connection!", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("No Internet Connection!");
       }
     } else {
-      Toast.show("Please fill in email address and password", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please fill in email address and password");
     }
   }
 
@@ -309,25 +304,33 @@ class _LoginPageState extends State<Login> {
           await prefs.setString('level', data[2]);
           await prefs.setString('user_type', data[4]);
           Navigator.pop(context);
-          Toast.show("Welcome " + data[3], context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => VAnalytics()));
+              context,
+              MaterialPageRoute(
+                  builder: (context) => VAnalytics(name: data[3])));
         } else {
           Navigator.pop(context);
-          Toast.show("Please contact VVIN IT desk", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Please contact VVIN IT desk");
         }
       }).catchError((err) {
         Navigator.pop(context);
-        Toast.show("Please contact VVIN IT desk", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("Please contact VVIN IT desk");
         print("On proceed error: " + err.toString());
       });
     } else {
-      Toast.show("No Internet Connection!", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection!");
     }
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 
   void _onForgot() {
@@ -535,23 +538,18 @@ class _Default extends State<Default> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => VAnalytics(
-                        name: data[3],
-                      )));
+                  builder: (context) => VAnalytics(name: data[3])));
         } else {
           Navigator.pop(context);
-          Toast.show("Please contact VVIN IT desk", context,
-              duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+          _toast("Please contact VVIN IT desk");
         }
       }).catchError((err) {
         Navigator.pop(context);
-        Toast.show(err.toString(), context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast(err.toString());
         print("On proceed error: " + err.toString());
       });
     } else {
-      Toast.show("No Internet Connection!", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet Connection!");
     }
   }
 
@@ -603,5 +601,16 @@ class _Default extends State<Default> {
         barrierDismissible: false,
         context: context,
         pageBuilder: (context, animation1, animation2) {});
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }

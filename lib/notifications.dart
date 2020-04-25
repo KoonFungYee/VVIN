@@ -14,12 +14,11 @@ import 'package:http/http.dart' as http;
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:toast/toast.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/NotiDetail.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
-import 'package:vvin/loader.dart';
 import 'package:vvin/more.dart';
 import 'package:vvin/myworks.dart';
 import 'package:vvin/notiDB.dart';
@@ -463,8 +462,7 @@ class _NotificationsState extends State<Notifications> {
     }).then((res) {
       notifications.clear();
       if (res.body == "nodata") {
-        Toast.show("No Data", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("No Data");
       } else {
         var jsonData = json.decode(res.body);
         total = jsonData[0]['total'];
@@ -540,8 +538,7 @@ class _NotificationsState extends State<Notifications> {
         setNoti();
       }
     }).catchError((err) {
-      Toast.show("No Internet connection, data can't load", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet connection, data can't load");
       print("Get Notifications error: " + (err).toString());
     });
     _refreshController.refreshCompleted();
@@ -629,15 +626,12 @@ class _NotificationsState extends State<Notifications> {
           });
         }
       }).catchError((err) {
-        Toast.show(err, context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast(err.toString());
         print("Get More Notification error: " + (err).toString());
       });
       _refreshController.loadComplete();
     } else {
-      Toast.show(
-          "Data can't load, please check your Internet connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Data can't load, please check your Internet connection");
       _refreshController.loadComplete();
     }
   }
@@ -769,8 +763,7 @@ class _NotificationsState extends State<Notifications> {
         prefs.setString('noti', totalNotification);
       }
     } else {
-      Toast.show("Please check your Internet Connection", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("Please check your Internet Connection");
     }
   }
 
@@ -815,8 +808,7 @@ class _NotificationsState extends State<Notifications> {
       getNotifications();
     } else {
       initialize();
-      Toast.show("No Internet, the data shown is not up to date", context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast("No Internet, the data shown is not up to date");
     }
   }
 
@@ -841,8 +833,7 @@ class _NotificationsState extends State<Notifications> {
             connection = true;
           });
         }
-        Toast.show("No Data", context,
-            duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+        _toast("No Data");
       } else {
         var jsonData = json.decode(res.body);
         total = jsonData[0]['total'];
@@ -946,8 +937,7 @@ class _NotificationsState extends State<Notifications> {
       int result = endTime - startTime;
       print("Notification loading Time: " + result.toString());
     }).catchError((err) {
-      Toast.show(err.toString(), context,
-          duration: Toast.LENGTH_LONG, gravity: Toast.BOTTOM);
+      _toast(err.toString());
       print("Get Notifications error: " + (err).toString());
     });
   }
@@ -999,5 +989,16 @@ class _NotificationsState extends State<Notifications> {
               notifications[index].status +
               '")');
     }
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
   }
 }
