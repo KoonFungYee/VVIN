@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:empty_widget/empty_widget.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
@@ -14,7 +14,6 @@ import 'package:http/http.dart' as http;
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/NotiDetail.dart';
 import 'package:vvin/animator.dart';
@@ -244,7 +243,6 @@ class _NotificationsState extends State<Notifications> {
             )
           ],
         ),
-        // backgroundColor: Color.fromARGB(50, 220, 220, 220),
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(
             ScreenUtil().setHeight(85),
@@ -992,13 +990,13 @@ class _NotificationsState extends State<Notifications> {
   }
 
   void _toast(String message) {
-    showToast(
-      message,
-      context: context,
-      animation: StyledToastAnimation.slideFromBottomFade,
-      reverseAnimation: StyledToastAnimation.slideToBottom,
-      position: StyledToastPosition.bottom,
-      duration: Duration(milliseconds: 3500),
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
+      ),
     );
   }
 }

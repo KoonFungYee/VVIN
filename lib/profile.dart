@@ -768,26 +768,6 @@ class _ProfileState extends State<Profile> {
                           ),
                         ),
                       ),
-                      // Container(
-                      //   width: btnWidth,
-                      //   height: ScreenUtil().setHeight(80),
-                      //   color: Colors.white,
-                      //   child: OutlineButton(
-                      //     color: Colors.white,
-                      //     child: Text(
-                      //       'Logout',
-                      //       style: TextStyle(
-                      //         fontSize: font14,
-                      //       ),
-                      //     ),
-                      //     onPressed: _logout,
-                      //     borderSide: BorderSide(
-                      //       style: BorderStyle.solid,
-                      //       color: Colors.blue,
-                      //     ),
-                      //     textColor: Colors.blue,
-                      //   ),
-                      // ),
                     ],
                   ),
                 ),
@@ -829,7 +809,6 @@ class _ProfileState extends State<Profile> {
       "level": level,
       "user_type": userType
     }).then((res) async {
-      // print("Get company details status: " + (res.statusCode).toString());
       // print("Company details:" + res.body.toString());
       try {
         final dir = Directory(location + "/company/profile.jpg");
@@ -1018,8 +997,6 @@ class _ProfileState extends State<Profile> {
       "user_type": userType,
     }).then((res) async {
       if (res.body == "success") {
-        // Navigator.push(
-        //     context, MaterialPageRoute(builder: (context) => Login()));
       } else {
         _toast("Something wrong, please contact VVIN support");
       }
@@ -1039,9 +1016,7 @@ class _ProfileState extends State<Profile> {
     if (_response.statusCode == 200) {
       final _file = await _localImage(path: path, name: name);
       await _file.writeAsBytes(_response.bodyBytes);
-      // Logger().i("File write complete. File Path ${_saveFile.path}");
     } else {
-      // Logger().e(_response.statusCode);
     }
   }
 

@@ -4,7 +4,6 @@ import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,7 +16,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/data.dart';
-import 'package:vvin/loader.dart';
 import 'package:vvin/editVProfile.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
@@ -849,7 +847,6 @@ class _VProfileState extends State<VProfile>
       "user_type": userType,
       "phone_number": phoneNo,
     }).then((res) {
-      // print("VProfile status:" + (res.statusCode).toString());
       // print("VProfile body: " + res.body);
       if (res.body == "nodata") {
         VProfileData vprofile = VProfileData(
@@ -943,7 +940,6 @@ class _VProfileState extends State<VProfile>
       "user_type": userType,
       "phone_number": phoneNo,
     }).then((res) {
-      // print("VProfileViews status:" + (res.statusCode).toString());
       // print("VProfileViews body: " + res.body);
       if (res.body == "nodata") {
         View views = View(
@@ -980,7 +976,6 @@ class _VProfileState extends State<VProfile>
       "user_type": userType,
       "phone_number": phoneNo,
     }).then((res) {
-      // print("VProfileRemarks status:" + (res.statusCode).toString());
       // print("VProfileRemarks body: " + res.body);
       if (res.body == "nodata") {
         Remarks remark = Remarks(
@@ -2173,81 +2168,6 @@ class _DetailsState extends State<Details> {
             ),
     );
   }
-
-  // Future readText() async {
-  //   if (file.existsSync() == true) {
-  //     otherList.add("-");
-  //     FirebaseVisionImage ourImage = FirebaseVisionImage.fromFile(file);
-  //     TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
-  //     VisionText readText = await recognizeText.processImage(ourImage);
-
-  //     String patttern = r'[0-9]';
-  //     RegExp regExp = new RegExp(patttern);
-  //     for (TextBlock block in readText.blocks) {
-  //       for (TextLine line in block.lines) {
-  //         String temPhone = "";
-  //         for (int i = 0; i < line.text.length; i++) {
-  //           if (regExp.hasMatch(line.text[i])) {
-  //             temPhone = temPhone + line.text[i];
-  //           }
-  //         }
-  //         if (temPhone.length >= 10) {
-  //           if (temPhone.substring(0, 1).toString() != "6") {
-  //             phoneList.add("6" + temPhone);
-  //           } else {
-  //             phoneList.add(temPhone);
-  //           }
-  //         } else {
-  //           otherList.add(line.text);
-  //         }
-  //       }
-  //     }
-  //   } else {
-  //     print("File not exits");
-  //     print(file);
-  //   }
-  // }
-
-  // void _showNameCard() {
-  //   showDialog(
-  //     context: context,
-  //     barrierDismissible: true,
-  //     builder: (_) => Dialog(
-  //       elevation: 0.0,
-  //       backgroundColor: Colors.transparent,
-  //       child: Stack(
-  //         children: <Widget>[
-  //           Container(
-  //             color: Colors.white,
-  //             margin: EdgeInsets.fromLTRB(
-  //                 0, ScreenUtil().setHeight(20), ScreenUtil().setHeight(20), 0),
-  //             height: MediaQuery.of(context).size.height * 0.5,
-  //             width: MediaQuery.of(context).size.width * 0.8,
-  //             child: PhotoView(
-  //               imageProvider: NetworkImage(widget.vProfileDetails[0].img),
-  //             ),
-  //           ),
-  //           Positioned(
-  //             right: 0.0,
-  //             child: GestureDetector(
-  //               onTap: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //               child: Align(
-  //                 alignment: Alignment.topRight,
-  //                 child: CircleAvatar(
-  //                   radius: 14.0,
-  //                   backgroundColor: Colors.white,
-  //                   child: Icon(Icons.close, color: Colors.red),
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
   String _dateFormat(String fullDate) {
     String result, date, month, year;

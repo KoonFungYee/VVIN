@@ -121,7 +121,6 @@ class _SettingsState extends State<Settings> {
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
-        // backgroundColor: Color.fromRGBO(235, 235, 255, 1),
         backgroundColor: Colors.white,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(

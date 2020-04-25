@@ -48,7 +48,7 @@ class _LoginPageState extends State<Login> {
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-      statusBarColor: Colors.white, // Color for Android
+      statusBarColor: Colors.white, 
     ));
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     token = "";

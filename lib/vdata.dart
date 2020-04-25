@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:empty_widget/empty_widget.dart';
@@ -17,7 +18,6 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:route_transitions/route_transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
@@ -267,7 +267,6 @@ class _VDataState extends State<VData> {
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
-        // backgroundColor: Color.fromARGB(50, 220, 220, 220),
         backgroundColor: Color.fromRGBO(235, 235, 255, 1),
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Colors.white,
@@ -1000,7 +999,6 @@ class _VDataState extends State<VData> {
         "count": "0",
         "offline": "no"
       }).then((res) {
-        // print("VData status:" + (res.statusCode).toString());
         // print("VData body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
@@ -1112,7 +1110,6 @@ class _VDataState extends State<VData> {
       "count": vDataDetails.length.toString(),
       "offline": "no"
     }).then((res) {
-      // print("VData status:" + (res.statusCode).toString());
       // print("Get More VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
@@ -2761,7 +2758,6 @@ class _VDataState extends State<VData> {
       "count": "0",
       "offline": "no"
     }).then((res) {
-      // print("VData status:" + (res.statusCode).toString());
       // print("VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
@@ -2833,7 +2829,6 @@ class _VDataState extends State<VData> {
       "count": "0",
       "offline": "yes"
     }).then((res) {
-      // print("Save VData status:" + (res.statusCode).toString());
       // print("Save VData body: " + res.body.toString());
       if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
@@ -3057,7 +3052,6 @@ class _VDataState extends State<VData> {
         "count": "0",
         "offline": "no"
       }).then((res) {
-        // print("Filter status:" + (res.statusCode).toString());
         // print("Filter body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
@@ -3119,23 +3113,6 @@ class _VDataState extends State<VData> {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.wifi ||
           connectivityResult == ConnectivityResult.mobile) {
-        // print(_startDate.toString() +
-        //     ", " +
-        //     _endDate.toString() +
-        //     ", " +
-        //     type.toString() +
-        //     ", " +
-        //     channel.toString() +
-        //     ", " +
-        //     apps.toString() +
-        //     ", " +
-        //     link_id.toString() +
-        //     ", " +
-        //     _byStatus.toString().substring(0, 10) +
-        //     ", " +
-        //     _byExecutive.toString() +
-        //     ", " +
-        //     search.toString());
         http.post(urlVData, body: {
           "companyID": companyID,
           "level": level,
@@ -3153,7 +3130,6 @@ class _VDataState extends State<VData> {
           "count": "0",
           "offline": "no"
         }).then((res) {
-          // print("Filter status:" + (res.statusCode).toString());
           // print("Search body: " + res.body.toString());
           if (res.body == "nodata") {
             if (this.mounted) {
@@ -3223,13 +3199,13 @@ class _VDataState extends State<VData> {
   }
 
   void _toast(String message) {
-    showToast(
-      message,
-      context: context,
-      animation: StyledToastAnimation.slideFromBottomFade,
-      reverseAnimation: StyledToastAnimation.slideToBottom,
-      position: StyledToastPosition.bottom,
-      duration: Duration(milliseconds: 3500),
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
+      ),
     );
   }
 

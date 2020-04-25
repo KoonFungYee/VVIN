@@ -924,23 +924,6 @@ class _EditVProfileState extends State<EditVProfile> {
                                 ),
                               ),
                             ),
-                            // (gotData == true)
-                            //     ? InkWell(
-                            //         onTap: () {
-                            //           //  _showBottomSheet("phone");
-                            //         },
-                            //         child: Container(
-                            //           height: ScreenUtil().setHeight(60),
-                            //           width: ScreenUtil().setHeight(60),
-                            //           child: Center(
-                            //             child: Icon(
-                            //               Icons.arrow_drop_down,
-                            //               color: Colors.black,
-                            //             ),
-                            //           ),
-                            //         ),
-                            //       )
-                            //     : Container()
                           ],
                         ),
                       ),

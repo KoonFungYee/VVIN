@@ -204,16 +204,6 @@ class _EditCompanyState extends State<EditCompany> {
                       onTap: _camera,
                       child: Stack(
                         children: <Widget>[
-                          // Container(
-                          //   width: ScreenUtil().setWidth(240),
-                          //   height: ScreenUtil().setHeight(240),
-                          //   decoration: BoxDecoration(
-                          //     color: Color.fromRGBO(211, 211, 211, 1),
-                          //     shape: BoxShape.rectangle,
-                          //     borderRadius:
-                          //         BorderRadius.all(Radius.circular(10.0)),
-                          //   ),
-                          // ),
                           Positioned(
                             top: ScreenUtil().setHeight(20),
                             left: ScreenUtil().setWidth(20),
@@ -631,7 +621,6 @@ class _EditCompanyState extends State<EditCompany> {
             "website": website,
             "address": address,
           }).then((res) async {
-            // print("Update company profile: " + (res.statusCode).toString());
             // print("Return from internet:" + res.body);
             if (res.body == "success") {
               Navigator.of(context).pushReplacement(
@@ -690,9 +679,6 @@ class _EditCompanyState extends State<EditCompany> {
     if (_response.statusCode == 200) {
       final _file = await _localImage(path: path, name: name);
       await _file.writeAsBytes(_response.bodyBytes);
-      // Logger().i("File write complete. File Path ${_saveFile.path}");
-    } else {
-      // Logger().e(_response.statusCode);
     }
   }
 

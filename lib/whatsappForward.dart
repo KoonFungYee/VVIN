@@ -958,7 +958,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                   "! Reply 'hi' to enable the URL link. " +
                   widget.whatsappForward.url +
                   res.body);
-          // launch(res.body);
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => VData(),

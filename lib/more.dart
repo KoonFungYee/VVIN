@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
@@ -16,7 +17,6 @@ import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/data.dart';
@@ -720,7 +720,6 @@ class _MoreState extends State<More> {
       "level": level,
       "user_type": userType
     }).then((res) async {
-      // print("Get company details status: " + (res.statusCode).toString());
       // print("Company details:" + res.body);
       try {
         final dir = Directory(location + "/company/profile.jpg");
@@ -870,8 +869,6 @@ class _MoreState extends State<More> {
       "user_type": userType,
     }).then((res) async {
       if (res.body == "success") {
-        // Navigator.push(
-        //     context, MaterialPageRoute(builder: (context) => Login()));
       } else {
         _toast("Something wrong, please contact VVIN sales support");
       }
@@ -891,9 +888,6 @@ class _MoreState extends State<More> {
     if (_response.statusCode == 200) {
       final _file = await _localImage(path: path, name: name);
       await _file.writeAsBytes(_response.bodyBytes);
-      // Logger().i("File write complete. File Path ${_saveFile.path}");
-    } else {
-      // Logger().e(_response.statusCode);
     }
   }
 
@@ -909,13 +903,13 @@ class _MoreState extends State<More> {
   }
 
   void _toast(String message) {
-    showToast(
-      message,
-      context: context,
-      animation: StyledToastAnimation.slideFromBottomFade,
-      reverseAnimation: StyledToastAnimation.slideToBottom,
-      position: StyledToastPosition.bottom,
-      duration: Duration(milliseconds: 3500),
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
+      ),
     );
   }
 }

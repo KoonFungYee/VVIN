@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:empty_widget/empty_widget.dart';
@@ -967,9 +967,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                               ],
                                             ),
                                           ),
-                                          // SizedBox(
-                                          //   height: ScreenUtil().setHeight(10),
-                                          // ),
                                         ],
                                       ),
                                     ),
@@ -2517,7 +2514,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "end_date": widget.vDataFilter.endDate,
       "count": "0",
     }).then((res) {
-      // print("VData status:" + (res.statusCode).toString());
       // print("VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
@@ -2578,7 +2574,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "end_date": _endDate.toString().substring(0, 10),
       "count": vDataDetails.length.toString(),
     }).then((res) {
-      // print("VData status:" + (res.statusCode).toString());
       // print("VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
@@ -2734,13 +2729,13 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   }
 
   void _toast(String message) {
-    showToast(
-      message,
-      context: context,
-      animation: StyledToastAnimation.slideFromBottomFade,
-      reverseAnimation: StyledToastAnimation.slideToBottom,
-      position: StyledToastPosition.bottom,
-      duration: Duration(milliseconds: 3500),
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
+      ),
     );
   }
 
@@ -2786,7 +2781,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         "search": search,
         "count": "0",
       }).then((res) {
-        // print("Filter status:" + (res.statusCode).toString());
         // print("Filter body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
@@ -2970,7 +2964,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         "end_date": widget.vDataFilter.endDate,
         "count": "0",
       }).then((res) {
-        // print("VData status:" + (res.statusCode).toString());
         // print("VData body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {

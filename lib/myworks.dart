@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
+import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:empty_widget/empty_widget.dart';
@@ -15,7 +16,6 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
@@ -2322,7 +2322,6 @@ class _MyWorksState extends State<MyWorks> {
       "user_type": userType,
       "phone_number": "all",
     }).then((res) {
-      // print("VTag status:" + (res.statusCode).toString());
       // print("VTag body: " + res.body);
       if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
@@ -2347,7 +2346,6 @@ class _MyWorksState extends State<MyWorks> {
       "user_type": userType,
       "count": myWorks.length.toString(),
     }).then((res) {
-      // print("MyWorks status:" + (res.statusCode).toString());
       // print("MyWorks body: " + res.body);
       if (res.body == "nodata") {
         nodata = true;
@@ -2791,7 +2789,6 @@ class _MyWorksState extends State<MyWorks> {
           final _file = await _localImage(
               path: myWorks[i].category + myWorks[i].id, name: "VVIN");
           final _saveFile = await _file.writeAsBytes(_response.bodyBytes);
-          // Logger().i("File write complete. File Path ${_saveFile.path}");
           if (this.mounted) {
             setState(() {
               filePath = _saveFile.path;
@@ -2799,9 +2796,7 @@ class _MyWorksState extends State<MyWorks> {
             });
           }
           await prefs.setString('totalQR', totalQR.toString());
-          // print("Image " + i.toString());
         } else {
-          // Logger().e(_response.statusCode);
           print("Image error at: " + i.toString());
         }
       }
@@ -2821,7 +2816,6 @@ class _MyWorksState extends State<MyWorks> {
       if (_response.statusCode == 200) {
         final _file = await _localImage1(path: path, name: name);
         final _saveFile = await _file.writeAsBytes(_response.bodyBytes);
-        // Logger().i("File write complete. File Path ${_saveFile.path}");
         if (this.mounted) {
           setState(() {
             filePath = _saveFile.path;
@@ -2835,9 +2829,7 @@ class _MyWorksState extends State<MyWorks> {
           }
           await prefs.setString('totalQR', totalQR.toString());
         }
-        // print("Image " + index.toString());
       } else {
-        // Logger().e(_response.statusCode);
         print("Image error at: " + index.toString());
       }
     }
@@ -2872,13 +2864,13 @@ class _MyWorksState extends State<MyWorks> {
   }
 
   void _toast(String message) {
-    showToast(
-      message,
-      context: context,
-      animation: StyledToastAnimation.slideFromBottomFade,
-      reverseAnimation: StyledToastAnimation.slideToBottom,
-      position: StyledToastPosition.bottom,
-      duration: Duration(milliseconds: 3500),
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
+      ),
     );
   }
 }
