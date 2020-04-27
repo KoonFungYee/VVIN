@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:progress_indicators/progress_indicators.dart';
@@ -17,6 +18,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibration/vibration.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
@@ -114,6 +116,7 @@ class _MyWorksState extends State<MyWorks> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -227,32 +230,32 @@ class _MyWorksState extends State<MyWorks> {
     if (index != 2) {
       switch (index) {
         case 0:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VAnalytics(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VAnalytics(),
+          ));
           break;
         case 1:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VData(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VData(),
+          ));
           break;
         case 3:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => Notifications(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
           break;
         case 4:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => More(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: More(),
+          ));
           break;
       }
     }
@@ -2350,7 +2353,7 @@ class _MyWorksState extends State<MyWorks> {
       if (res.body == "nodata") {
         nodata = true;
         status = true;
-        _toast("No Data");
+        // _toast("No Data");
       } else {
         var jsonData = json.decode(res.body);
         if (total == 0) {

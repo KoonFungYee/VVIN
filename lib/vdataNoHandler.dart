@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
 import 'package:ndialog/ndialog.dart';
@@ -32,6 +33,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:vibration/vibration.dart';
 
 class VDataNoHandler extends StatefulWidget {
   final VDataFilter vDataFilter;
@@ -154,6 +156,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     count = 0;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -228,32 +231,32 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     if (index != 1) {
       switch (index) {
         case 0:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VAnalytics(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VAnalytics(),
+          ));
           break;
         case 2:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => MyWorks(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: MyWorks(),
+          ));
           break;
         case 3:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => Notifications(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
           break;
         case 4:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => More(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: More(),
+          ));
           break;
       }
     }

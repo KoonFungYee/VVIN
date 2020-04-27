@@ -20,6 +20,7 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/notifications.dart';
+import 'package:vibration/vibration.dart';
 
 final ScrollController controller = ScrollController();
 final TextEditingController _nameController = TextEditingController();
@@ -396,6 +397,7 @@ class _EditVProfileState extends State<EditVProfile> {
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

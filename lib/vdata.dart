@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -19,6 +20,7 @@ import 'package:route_transitions/route_transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibration/vibration.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/more.dart';
@@ -153,6 +155,7 @@ class _VDataState extends State<VData> {
     minimumDate = "2017-12-01";
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -221,32 +224,32 @@ class _VDataState extends State<VData> {
     if (index != 1) {
       switch (index) {
         case 0:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VAnalytics(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VAnalytics(),
+          ));
           break;
         case 2:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => MyWorks(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: MyWorks(),
+          ));
           break;
         case 3:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => Notifications(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
           break;
         case 4:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => More(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: More(),
+          ));
           break;
       }
     }
@@ -2647,7 +2650,6 @@ class _VDataState extends State<VData> {
   }
 
   void checkConnection() async {
-    startTime = (DateTime.now()).millisecondsSinceEpoch;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("noti") != null) {
       if (this.mounted) {
@@ -2671,6 +2673,7 @@ class _VDataState extends State<VData> {
   }
 
   void getPreference() {
+    startTime = (DateTime.now()).millisecondsSinceEpoch;
     getData();
     getLinks();
     getExecutive();
@@ -2804,7 +2807,7 @@ class _VDataState extends State<VData> {
         getOfflineData();
         endTime = DateTime.now().millisecondsSinceEpoch;
         int result = endTime - startTime;
-        print("VAnalytics Loading Time: " + result.toString());
+        print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       print("Get data error: " + (err).toString());
@@ -2896,7 +2899,7 @@ class _VDataState extends State<VData> {
         getOfflineData();
         endTime = DateTime.now().millisecondsSinceEpoch;
         int result = endTime - startTime;
-        print("VAnalytics Loading Time: " + result.toString());
+        print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       print("Get link error: " + (err).toString());
@@ -2935,7 +2938,7 @@ class _VDataState extends State<VData> {
         getOfflineData();
         endTime = DateTime.now().millisecondsSinceEpoch;
         int result = endTime - startTime;
-        print("VAnalytics Loading Time: " + result.toString());
+        print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       _toast(err.toString());

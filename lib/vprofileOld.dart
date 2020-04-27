@@ -440,93 +440,98 @@ class _VProfileState extends State<VProfile>
                       ],
                     ),
                   ),
-                  body: TabBarView(controller: controller, children: <Widget>[
-                    (vProfileData == true &&
-                            handlerData == true &&
-                            vTagData == true)
-                        ? Details(
-                            vProfileDetails: vProfileDetails,
-                            handler: handler,
-                            vdata: widget.vdata,
-                            vtag: vTag,
-                          )
-                        : Container(
-                            color: Colors.white,
-                            height: MediaQuery.of(context).size.height * 0.5,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  JumpingText('Loading...'),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.02),
-                                  SpinKitRing(
-                                    lineWidth: 3,
-                                    color: Colors.blue,
-                                    size: 30.0,
-                                    duration: Duration(milliseconds: 600),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          (viewsData == true)
-                            ? Views(
-                                vProfileViews: vProfileViews,
-                              )
-                            : Container(
-                                color: Colors.white,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.5,
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      JumpingText('Loading...'),
-                                      SizedBox(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
-                                              0.02),
-                                      SpinKitRing(
-                                        lineWidth: 3,
-                                        color: Colors.blue,
-                                        size: 30.0,
-                                        duration: Duration(milliseconds: 600),
-                                      ),
-                                    ],
-                                  ),
+                  body: TabBarView(
+                    controller: controller,
+                    children: 
+                    
+                    (vProfileData == false ||
+                            handlerData == false ||
+                            viewsData == false ||
+                            remarksData == false ||
+                            vTagData == false)
+                        ? <Widget>[
+                            Container(
+                              color: Colors.white,
+                              height: MediaQuery.of(context).size.height * 0.5,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    JumpingText('Loading...'),
+                                    SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.02),
+                                    SpinKitRing(
+                                      lineWidth: 3,
+                                      color: Colors.blue,
+                                      size: 30.0,
+                                      duration: Duration(milliseconds: 600),
+                                    ),
+                                  ],
                                 ),
                               ),
-                    (remarksData == true)
-                        ? Remark(
-                            vProfileRemarks: vProfileRemarks,
-                          )
-                        : Container(
-                            color: Colors.white,
-                            height: MediaQuery.of(context).size.height * 0.5,
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  JumpingText('Loading...'),
-                                  SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.02),
-                                  SpinKitRing(
-                                    lineWidth: 3,
-                                    color: Colors.blue,
-                                    size: 30.0,
-                                    duration: Duration(milliseconds: 600),
-                                  ),
-                                ],
+                            ),
+                            Container(
+                              color: Colors.white,
+                              height: MediaQuery.of(context).size.height * 0.5,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    JumpingText('Loading...'),
+                                    SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.02),
+                                    SpinKitRing(
+                                      lineWidth: 3,
+                                      color: Colors.blue,
+                                      size: 30.0,
+                                      duration: Duration(milliseconds: 600),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                  ]),
+                            Container(
+                              color: Colors.white,
+                              height: MediaQuery.of(context).size.height * 0.5,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    JumpingText('Loading...'),
+                                    SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.02),
+                                    SpinKitRing(
+                                      lineWidth: 3,
+                                      color: Colors.blue,
+                                      size: 30.0,
+                                      duration: Duration(milliseconds: 600),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ]
+                        : <Widget>[
+                            Details(
+                              vProfileDetails: vProfileDetails,
+                              handler: handler,
+                              vdata: widget.vdata,
+                              vtag: vTag,
+                            ),
+                            Views(
+                              vProfileViews: vProfileViews,
+                            ),
+                            Remark(
+                              vProfileRemarks: vProfileRemarks,
+                            ),
+                          ],
+                  ),
                 ),
               ),
             ],

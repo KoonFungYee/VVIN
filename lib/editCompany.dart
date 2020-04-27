@@ -19,6 +19,7 @@ import 'package:vvin/notifications.dart';
 import 'package:vvin/profile.dart';
 import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
+import 'package:vibration/vibration.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -85,7 +86,7 @@ class _EditCompanyState extends State<EditCompany> {
     ));
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(

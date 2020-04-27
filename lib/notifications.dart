@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:http/http.dart' as http;
 import 'package:progress_indicators/progress_indicators.dart';
@@ -101,33 +102,32 @@ class _NotificationsState extends State<Notifications> {
     if (index != 3) {
       switch (index) {
         case 0:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VAnalytics(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VAnalytics(),
+          ));
           break;
         case 1:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VData(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VData(),
+          ));
           break;
         case 2:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => MyWorks(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: MyWorks(),
+          ));
           break;
-
         case 4:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => More(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: More(),
+          ));
           break;
       }
     }
@@ -791,7 +791,6 @@ class _NotificationsState extends State<Notifications> {
   }
 
   void checkConnection() async {
-    startTime = (DateTime.now()).millisecondsSinceEpoch;
     prefs = await SharedPreferences.getInstance();
     if (prefs.getString("noti") != null) {
       if (this.mounted) {
@@ -816,6 +815,7 @@ class _NotificationsState extends State<Notifications> {
     level = prefs.getString('level');
     userType = prefs.getString('user_type');
     notification();
+    startTime = (DateTime.now()).millisecondsSinceEpoch;
     http.post(urlNotification, body: {
       "userID": userID,
       "companyID": companyID,
@@ -831,8 +831,10 @@ class _NotificationsState extends State<Notifications> {
             connection = true;
           });
         }
-        _toast("No Data");
       } else {
+        endTime = DateTime.now().millisecondsSinceEpoch;
+        int result = endTime - startTime;
+        print("Notification loading Time: " + result.toString());
         var jsonData = json.decode(res.body);
         total = jsonData[0]['total'];
         String subtitle, subtitle1;
@@ -931,15 +933,11 @@ class _NotificationsState extends State<Notifications> {
         }
         setNoti();
       }
-      endTime = DateTime.now().millisecondsSinceEpoch;
-      int result = endTime - startTime;
-      print("Notification loading Time: " + result.toString());
     }).catchError((err) {
       _toast(err.toString());
       print("Get Notifications error: " + (err).toString());
     });
   }
-
   void notification() {
     http.post(urlNoti, body: {
       "userID": userID,

@@ -5,6 +5,7 @@ import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +19,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibration/vibration.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/leadsDB.dart';
@@ -84,6 +86,7 @@ class _MoreState extends State<More> {
     initialize();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -152,33 +155,32 @@ class _MoreState extends State<More> {
     if (index != 4) {
       switch (index) {
         case 0:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VAnalytics(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VAnalytics(),
+          ));
           break;
         case 1:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VData(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VData(),
+          ));
           break;
         case 2:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => MyWorks(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: MyWorks(),
+          ));
           break;
-
         case 3:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => Notifications(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
           break;
       }
     }
@@ -376,7 +378,7 @@ class _MoreState extends State<More> {
                                       ),
                                       child: Image.file(
                                         File((location == null)
-                                            ? "/data/user/0/com.jtapps.vvin/app_flutter/company/profile.jpg"
+                                            ? "/data/user/0/com.my.jtapps.vvin/app_flutter/company/profile.jpg"
                                             : location +
                                                 "/company/profile.jpg"),
                                       ),
@@ -630,7 +632,6 @@ class _MoreState extends State<More> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
-      print(connection);
       if (connection == true) {
         Setting setting = Setting(
             companyID: companyID,
@@ -742,6 +743,7 @@ class _MoreState extends State<More> {
           connection = true;
         });
       }
+      setData();
       final _devicePath = await getApplicationDocumentsDirectory();
       location = _devicePath.path.toString();
       try {
@@ -778,13 +780,15 @@ class _MoreState extends State<More> {
         location = _devicePath.path.toString();
       });
     }
-    Database db = await CompanyDB.instance.database;
-    List<Map> result = await db.query(CompanyDB.table);
-    if (this.mounted) {
-      setState(() {
-        nameLocal = result[0]['name'];
-      });
-    }
+    try {
+      Database db = await CompanyDB.instance.database;
+      List<Map> result = await db.query(CompanyDB.table);
+      if (this.mounted) {
+        setState(() {
+          nameLocal = result[0]['name'];
+        });
+      }
+    } catch (e) {}
   }
 
   Future<void> _logout() async {

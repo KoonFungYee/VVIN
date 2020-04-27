@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibration/vibration.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/leadsDB.dart';
 import 'package:vvin/login.dart';
@@ -79,6 +80,7 @@ class _ProfileState extends State<Profile> {
     emailLength = 1;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -802,7 +804,6 @@ class _ProfileState extends State<Profile> {
     userID = prefs.getString('userID');
     level = prefs.getString('level');
     userType = prefs.getString('user_type');
-    print(companyID + ", " + userID + ", " + level + ", " + userType);
     http.post(companyURL, body: {
       "companyID": companyID,
       "userID": userID,

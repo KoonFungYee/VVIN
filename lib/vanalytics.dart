@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
 import 'package:ndialog/ndialog.dart';
@@ -16,6 +17,7 @@ import 'package:route_transitions/route_transitions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vibration/vibration.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/leadsDB.dart';
 import 'package:vvin/lineChart.dart';
@@ -121,18 +123,6 @@ class _VAnalyticsState extends State<VAnalytics>
   @override
   void initState() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // try {
-    //   if (widget.name != null) {
-    //     showToast(
-    //       'Welcome' + widget.name,
-    //       context: context,
-    //       animation: StyledToastAnimation.scale,
-    //       reverseAnimation: StyledToastAnimation.slideToBottom,
-    //       position: StyledToastPosition.bottom,
-    //       duration: Duration(seconds: 4),
-    //     );
-    //   }
-    // } catch (e) {}
     try {
       if (widget.name != null) {
         print(widget.name);
@@ -148,6 +138,7 @@ class _VAnalyticsState extends State<VAnalytics>
     } catch (e) {}
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
+        Vibration.vibrate();
         bool noti = false;
         if (noti == false) {
           showDialog(
@@ -231,32 +222,32 @@ class _VAnalyticsState extends State<VAnalytics>
     if (index != 0) {
       switch (index) {
         case 1:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => VData(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: VData(),
+          ));
           break;
         case 2:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => MyWorks(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: MyWorks(),
+          ));
           break;
         case 3:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => Notifications(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
           break;
         case 4:
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => More(),
-            ),
-          );
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: More(),
+          ));
           break;
       }
     }
@@ -2302,13 +2293,13 @@ class _VAnalyticsState extends State<VAnalytics>
           status: "All Status",
           app: app,
           channel: "all");
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => VDataNoHandler(
-            vDataFilter: vDataFilter,
-          ),
+      Navigator.of(context).pushReplacement(PageTransition(
+        duration: Duration(milliseconds: 1),
+        type: PageTransitionType.transferUp,
+        child: VDataNoHandler(
+          vDataFilter: vDataFilter,
         ),
-      );
+      ));
     } else {
       _toast("No Internet Connection!");
     }
@@ -2340,13 +2331,13 @@ class _VAnalyticsState extends State<VAnalytics>
           status: "All Status",
           app: "All",
           channel: channel);
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => VDataNoHandler(
-            vDataFilter: vDataFilter,
-          ),
+      Navigator.of(context).pushReplacement(PageTransition(
+        duration: Duration(milliseconds: 1),
+        type: PageTransitionType.transferUp,
+        child: VDataNoHandler(
+          vDataFilter: vDataFilter,
         ),
-      );
+      ));
     } else {
       _toast("No Internet Connection!");
     }
@@ -2365,13 +2356,13 @@ class _VAnalyticsState extends State<VAnalytics>
         status: "All Status",
         app: "All",
         channel: "all");
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => VDataNoHandler(
-          vDataFilter: vDataFilter,
-        ),
+    Navigator.of(context).pushReplacement(PageTransition(
+      duration: Duration(milliseconds: 1),
+      type: PageTransitionType.transferUp,
+      child: VDataNoHandler(
+        vDataFilter: vDataFilter,
       ),
-    );
+    ));
   }
 
   void _totalLeads() async {
@@ -2385,13 +2376,13 @@ class _VAnalyticsState extends State<VAnalytics>
           status: "All Status",
           app: "All",
           channel: "all");
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => VDataNoHandler(
-            vDataFilter: vDataFilter,
-          ),
+      Navigator.of(context).pushReplacement(PageTransition(
+        duration: Duration(milliseconds: 1),
+        type: PageTransitionType.transferUp,
+        child: VDataNoHandler(
+          vDataFilter: vDataFilter,
         ),
-      );
+      ));
     } else {
       _noInternet();
     }
@@ -2405,13 +2396,13 @@ class _VAnalyticsState extends State<VAnalytics>
         status: status,
         app: "All",
         channel: "all");
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => VDataNoHandler(
-          vDataFilter: vDataFilter,
-        ),
+    Navigator.of(context).pushReplacement(PageTransition(
+      duration: Duration(milliseconds: 1),
+      type: PageTransitionType.transferUp,
+      child: VDataNoHandler(
+        vDataFilter: vDataFilter,
       ),
-    );
+    ));
   }
 
   void _filterDate() {
