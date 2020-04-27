@@ -8,9 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:ndialog/ndialog.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
@@ -845,14 +847,24 @@ class _EditVProfileState extends State<EditVProfile> {
                                   fontSize: font14,
                                 ),
                                 controller: _companyController,
+                                onSubmitted: (String inputText) {
+                                  checkAddress();
+                                },
                                 keyboardType: TextInputType.text,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   focusedBorder: InputBorder.none,
+                                  suffix: IconButton(
+                                      onPressed: () {
+                                        checkAddress();
+                                      },
+                                      icon: Icon(
+                                          MaterialCommunityIcons.map_search,
+                                          color: Colors.blue)),
                                   contentPadding: EdgeInsets.only(
                                       left: ScreenUtil().setHeight(10),
-                                      bottom: ScreenUtil().setHeight(20),
-                                      top: ScreenUtil().setHeight(-15),
+                                      bottom: ScreenUtil().setHeight(15),
+                                      top: ScreenUtil().setHeight(-25),
                                       right: ScreenUtil().setHeight(20)),
                                 ),
                               ),
@@ -1966,6 +1978,49 @@ class _EditVProfileState extends State<EditVProfile> {
         );
       },
     );
+  }
+
+  void checkAddress() async {
+    try {
+      final query = _companyController.text;
+      var addresses = await Geocoder.local.findAddressesFromQuery(query);
+      var first = addresses.first;
+      List latlongList = first.coordinates.toString().split(",");
+      String latatitude = latlongList[0].toString().substring(1);
+      String longtitude =
+          latlongList[1].toString().substring(0, latlongList[1].length - 1);
+
+      final coordinates =
+          Coordinates(double.parse(latatitude), double.parse(longtitude));
+      addresses =
+          await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      first = addresses.first;
+      print(first.addressLine);
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) => NDialog(
+          dialogStyle: DialogStyle(titleDivider: true),
+          title: Text(
+            "Do you want use this in area field?",
+            style: TextStyle(color: Colors.blue, fontSize: 16),
+          ),
+          content: Text(first.addressLine, style: TextStyle(fontSize: 14)),
+          actions: <Widget>[
+            FlatButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  _areaController.text = first.addressLine;
+                  Navigator.pop(context);
+                }),
+            FlatButton(
+                child: Text("No"), onPressed: () => Navigator.pop(context)),
+          ],
+        ),
+      );
+    } catch (err) {
+      _toast("No result");
+    }
   }
 
   void _showBottomSheet(String type) {
