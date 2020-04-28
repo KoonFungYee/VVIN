@@ -847,24 +847,24 @@ class _EditVProfileState extends State<EditVProfile> {
                                   fontSize: font14,
                                 ),
                                 controller: _companyController,
-                                onSubmitted: (String inputText) {
-                                  checkAddress();
-                                },
+                                // onSubmitted: (String inputText) {
+                                //   checkAddress();
+                                // },
                                 keyboardType: TextInputType.text,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   focusedBorder: InputBorder.none,
-                                  suffix: IconButton(
-                                      onPressed: () {
-                                        checkAddress();
-                                      },
-                                      icon: Icon(
-                                          MaterialCommunityIcons.map_search,
-                                          color: Colors.blue)),
+                                  // suffix: IconButton(
+                                  //     onPressed: () {
+                                  //       checkAddress();
+                                  //     },
+                                  //     icon: Icon(
+                                  //         MaterialCommunityIcons.map_search,
+                                  //         color: Colors.blue)),
                                   contentPadding: EdgeInsets.only(
                                       left: ScreenUtil().setHeight(10),
-                                      bottom: ScreenUtil().setHeight(15),
-                                      top: ScreenUtil().setHeight(-25),
+                                      bottom: ScreenUtil().setHeight(20),
+                                      top: ScreenUtil().setHeight(-15),
                                       right: ScreenUtil().setHeight(20)),
                                 ),
                               ),

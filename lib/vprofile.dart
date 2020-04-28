@@ -4,11 +4,13 @@ import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_awesome_buttons/flutter_awesome_buttons.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:progress_indicators/progress_indicators.dart';
@@ -313,37 +315,20 @@ class _VProfileState extends State<VProfile>
                         _toast("This feature need Internet connection");
                       }
                     },
-                    child: Container(
-                      width: ScreenUtil().setWidth(260),
-                      height: ScreenUtil().setHeight(60),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      child: FlatButton.icon(
-                        icon: Image.asset(
-                          "assets/images/whatsapp.png",
-                          height: ScreenUtil().setHeight(35),
-                          width: ScreenUtil().setWidth(35),
-                        ),
-                        color: Color.fromRGBO(37, 211, 102, 1),
-                        label: Text(
-                          "WhatsApp",
-                          style: TextStyle(
-                            fontSize: font12,
-                          ),
-                        ),
-                        textColor: Colors.white,
-                        onPressed: () async {
-                          var connectivityResult =
-                              await (Connectivity().checkConnectivity());
-                          if (connectivityResult == ConnectivityResult.wifi ||
-                              connectivityResult == ConnectivityResult.mobile) {
-                            FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
-                          } else {
-                            _toast("This feature need Internet connection");
-                          }
-                        },
-                      ),
+                    child: ButttonWithIcon(
+                      icon: FontAwesomeIcons.whatsapp,
+                      title: "WhatsApp",
+                      buttonColor: Color.fromRGBO(37, 211, 102, 1),
+                      onPressed: () async {
+                        var connectivityResult =
+                            await (Connectivity().checkConnectivity());
+                        if (connectivityResult == ConnectivityResult.wifi ||
+                            connectivityResult == ConnectivityResult.mobile) {
+                          FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
+                        } else {
+                          _toast("This feature need Internet connection");
+                        }
+                      },
                     ),
                   ),
                 ],
@@ -472,34 +457,32 @@ class _VProfileState extends State<VProfile>
                               ),
                             ),
                           ),
-                          (viewsData == true)
-                            ? Views(
-                                vProfileViews: vProfileViews,
-                              )
-                            : Container(
-                                color: Colors.white,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.5,
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      JumpingText('Loading...'),
-                                      SizedBox(
-                                          height: MediaQuery.of(context)
-                                                  .size
-                                                  .height *
+                    (viewsData == true)
+                        ? Views(
+                            vProfileViews: vProfileViews,
+                          )
+                        : Container(
+                            color: Colors.white,
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  JumpingText('Loading...'),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
                                               0.02),
-                                      SpinKitRing(
-                                        lineWidth: 3,
-                                        color: Colors.blue,
-                                        size: 30.0,
-                                        duration: Duration(milliseconds: 600),
-                                      ),
-                                    ],
+                                  SpinKitRing(
+                                    lineWidth: 3,
+                                    color: Colors.blue,
+                                    size: 30.0,
+                                    duration: Duration(milliseconds: 600),
                                   ),
-                                ),
+                                ],
                               ),
+                            ),
+                          ),
                     (remarksData == true)
                         ? Remark(
                             vProfileRemarks: vProfileRemarks,

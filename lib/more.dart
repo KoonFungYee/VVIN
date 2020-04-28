@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
@@ -359,7 +360,7 @@ class _MoreState extends State<More> {
                                             Radius.circular(10.0)),
                                         image: DecorationImage(
                                           fit: BoxFit.fitWidth,
-                                          image: NetworkImage(image),
+                                          image: CachedNetworkImageProvider(image),
                                         ),
                                       ),
                                     ),

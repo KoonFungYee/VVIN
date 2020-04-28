@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -71,7 +72,6 @@ class _ProfileState extends State<Profile> {
   void initState() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     check();
-    imageCache.clear();
     start = false;
     connection = false;
     offLineAddressLength = 1;
@@ -269,7 +269,7 @@ class _ProfileState extends State<Profile> {
                                                 Radius.circular(10.0)),
                                             image: DecorationImage(
                                               fit: BoxFit.fitWidth,
-                                              image: NetworkImage(image),
+                                              image: CachedNetworkImageProvider(image),
                                             ),
                                           ),
                                         ),

@@ -32,6 +32,7 @@ dependencies:
   cached_network_image: ^2.0.0
   flutter_native_image: ^0.0.5+2
   flutter_web_browser: ^0.11.0
+  flutter_awesome_buttons: ^0.1.0
   font_awesome_flutter: ^8.5.0
   image_picker: ^0.6.3+1
   flutter_open_whatsapp: ^0.1.2

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:bouncing_widget/bouncing_widget.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -219,7 +220,7 @@ class _EditCompanyState extends State<EditCompany> {
                                     BorderRadius.all(Radius.circular(10.0)),
                                 image: DecorationImage(
                                   fit: BoxFit.fitWidth,
-                                  image: NetworkImage(image),
+                                  image: CachedNetworkImageProvider(image),
                                 ),
                               ),
                             ),
@@ -578,7 +579,7 @@ class _EditCompanyState extends State<EditCompany> {
         if (res.body.toString() != "nodata") {
           if (this.mounted) {
             setState(() {
-              imageCache.clear();
+              // imageCache.clear();
               image = res.body.toString();
             });
           }
