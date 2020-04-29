@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
@@ -2558,6 +2559,7 @@ class _VAnalyticsState extends State<VAnalytics>
           totalNotification = prefs.getString("noti");
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }
     if (prefs.getString("level") != "1") {
       var connectivityResult = await (Connectivity().checkConnectivity());
@@ -2723,6 +2725,7 @@ class _VAnalyticsState extends State<VAnalytics>
           totalNotification = res.body;
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
       prefs.setString('noti', res.body);
     }).catchError((err) {
       print("Notification error: " + err.toString());

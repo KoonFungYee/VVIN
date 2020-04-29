@@ -5,6 +5,7 @@ import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
@@ -678,6 +679,7 @@ class _MoreState extends State<More> {
           totalNotification = prefs.getString("noti");
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
@@ -706,6 +708,7 @@ class _MoreState extends State<More> {
           totalNotification = res.body;
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }).catchError((err) {
       print("Notification error: " + err.toString());
     });

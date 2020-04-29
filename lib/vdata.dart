@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
@@ -2657,6 +2658,7 @@ class _VDataState extends State<VData> {
           totalNotification = prefs.getString("noti");
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }
     companyID = prefs.getString('companyID');
     userID = prefs.getString('userID');
@@ -2692,6 +2694,7 @@ class _VDataState extends State<VData> {
           totalNotification = res.body;
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }).catchError((err) {
       print("Notification error: " + err.toString());
     });

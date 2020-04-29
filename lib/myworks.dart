@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -2246,6 +2247,7 @@ class _MyWorksState extends State<MyWorks> {
           totalNotification = prefs.getString("noti");
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }
     totalQR = int.parse(prefs.getString('totalQR') ?? "0");
     totalLink = int.parse(prefs.getString('totalLink') ?? "0");
@@ -2280,6 +2282,7 @@ class _MyWorksState extends State<MyWorks> {
           totalNotification = res.body;
         });
       }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
       prefs.setString('noti', res.body);
     }).catchError((err) {
       print("Notification error: " + err.toString());

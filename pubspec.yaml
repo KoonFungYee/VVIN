@@ -19,9 +19,9 @@ environment:
 dependencies:
   pull_to_refresh: ^1.5.8
   vibration: ^1.2.4
+  flutter_app_badger: ^1.1.2
   ndialog: ^2.0.2+1
   geocoder: ^0.2.1
-  flutter_icons: ^1.1.0
   flutter_custom_dialog: ^1.0.19
   route_transitions: ^1.0.2
   flutter_page_transition: ^0.1.6
