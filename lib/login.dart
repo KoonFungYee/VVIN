@@ -6,6 +6,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttericon/typicons_icons.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -30,7 +32,7 @@ String token,
     version,
     manufacture,
     model;
-bool login;
+bool login, visible;
 List data;
 
 class Login extends StatefulWidget {
@@ -39,6 +41,7 @@ class Login extends StatefulWidget {
 }
 
 class _LoginPageState extends State<Login> {
+  SharedPreferences prefs;
   double _scaleFactor = 1.0;
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
@@ -48,7 +51,7 @@ class _LoginPageState extends State<Login> {
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-      statusBarColor: Colors.white, 
+      statusBarColor: Colors.white,
     ));
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     token = "";
@@ -60,12 +63,18 @@ class _LoginPageState extends State<Login> {
       token = fbtoken;
       // print(fbtoken);
     });
+    login = false;
+    visible = false;
+    setup();
+    checkPlatform();
+  }
+
+  void setup() async {
+    prefs = await SharedPreferences.getInstance();
+    _emcontroller.text = prefs.getString('email');
     _email = "";
     _password = "";
-    _emcontroller.text = '';
     _passcontroller.text = '';
-    login = false;
-    checkPlatform();
   }
 
   @override
@@ -146,8 +155,18 @@ class _LoginPageState extends State<Login> {
                               controller: _emcontroller,
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
+                                suffix: IconButton(
+                                  onPressed: () {
+                                    _emcontroller.text = "";
+                                  },
+                                  icon: Icon(
+                                    Icons.cancel,
+                                    color: Colors.blue,
+                                    size: ScreenUtil().setHeight(35),
+                                  ),
+                                ),
                                 contentPadding:
-                                    EdgeInsets.all(ScreenUtil().setHeight(10)),
+                                    EdgeInsets.fromLTRB(ScreenUtil().setHeight(10), 0, 0, ScreenUtil().setHeight(30)),
                                 border: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.grey)),
                               ),
@@ -189,12 +208,38 @@ class _LoginPageState extends State<Login> {
                               keyboardType: TextInputType.text,
                               controller: _passcontroller,
                               decoration: InputDecoration(
+                                suffixIcon: (visible == false)
+                                    ? IconButton(
+                                        onPressed: () {
+                                          if (this.mounted) {
+                                            setState(() {
+                                              visible = true;
+                                            });
+                                          }
+                                        },
+                                        icon: Icon(FontAwesomeIcons.eyeSlash,
+                                            color: Colors.blue,
+                                            size: ScreenUtil().setHeight(35)),
+                                      )
+                                    : IconButton(
+                                        onPressed: () {
+                                          if (this.mounted) {
+                                            setState(() {
+                                              visible = false;
+                                            });
+                                          }
+                                        },
+                                        icon: Icon(FontAwesomeIcons.eye,
+                                            color: Colors.blue,
+                                            size: ScreenUtil().setHeight(35)),
+                                      ),
                                 contentPadding:
-                                    EdgeInsets.all(ScreenUtil().setHeight(10)),
+                                    // EdgeInsets.all(ScreenUtil().setHeight(10)),
+                                    EdgeInsets.fromLTRB(ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), 0, ScreenUtil().setHeight(10)),
                                 border: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.grey)),
                               ),
-                              obscureText: true,
+                              obscureText: (visible == false) ? true : false,
                             ),
                           ),
                           SizedBox(
@@ -298,7 +343,7 @@ class _LoginPageState extends State<Login> {
         if (res.body != "failed") {
           var data = json.decode(res.body);
           // print("On proceed body: " + (data).toString());
-          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('email', _email);
           await prefs.setString('companyID', data[0]);
           await prefs.setString('userID', data[1]);
           await prefs.setString('level', data[2]);
@@ -530,6 +575,7 @@ class _Default extends State<Default> {
           var data = json.decode(res.body);
           // print("On proceed body: " + (data).toString());
           SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('email', _email);
           await prefs.setString('companyID', data[0]);
           await prefs.setString('userID', data[1]);
           await prefs.setString('level', data[2]);
