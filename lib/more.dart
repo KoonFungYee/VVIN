@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
+import 'package:badges/badges.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
@@ -245,38 +246,29 @@ class _MoreState extends State<More> {
               ),
             ),
             BottomNavigationBarItem(
-              icon: Stack(
-                children: <Widget>[
-                  Icon(
-                    Icons.notifications,
-                    size: ScreenUtil().setHeight(40),
-                  ),
-                  Positioned(
-                      right: 0,
-                      child: (totalNotification != "0")
-                          ? Container(
-                              padding: EdgeInsets.all(1),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              constraints: BoxConstraints(
-                                minWidth: 12,
-                                minHeight: 12,
-                              ),
-                              child: Text(
-                                '$totalNotification',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: ScreenUtil()
-                                      .setSp(20, allowFontScalingSelf: false),
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            )
-                          : Container())
-                ],
-              ),
+              icon: (totalNotification != "0")
+                  ? Badge(
+                      position: BadgePosition.topRight(top: -8, right: -5),
+                      animationDuration: Duration(milliseconds: 300),
+                      animationType: BadgeAnimationType.slide,
+                      badgeContent: Text(
+                        '$totalNotification',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ScreenUtil()
+                              .setSp(20, allowFontScalingSelf: false),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      child: Icon(
+                        Icons.notifications,
+                        size: ScreenUtil().setHeight(40),
+                      ),
+                    )
+                  : Icon(
+                      Icons.notifications,
+                      size: ScreenUtil().setHeight(40),
+                    ),
               title: Text(
                 "Notifications",
                 style: TextStyle(
@@ -361,7 +353,8 @@ class _MoreState extends State<More> {
                                             Radius.circular(10.0)),
                                         image: DecorationImage(
                                           fit: BoxFit.fitWidth,
-                                          image: CachedNetworkImageProvider(image),
+                                          image:
+                                              CachedNetworkImageProvider(image),
                                         ),
                                       ),
                                     ),

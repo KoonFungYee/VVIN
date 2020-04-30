@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:badges/badges.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
@@ -316,38 +317,29 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
               ),
             ),
             BottomNavigationBarItem(
-              icon: Stack(
-                children: <Widget>[
-                  Icon(
-                    Icons.notifications,
-                    size: ScreenUtil().setHeight(40),
-                  ),
-                  Positioned(
-                      right: 0,
-                      child: (totalNotification != "0")
-                          ? Container(
-                              padding: EdgeInsets.all(1),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              constraints: BoxConstraints(
-                                minWidth: 12,
-                                minHeight: 12,
-                              ),
-                              child: Text(
-                                '$totalNotification',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: ScreenUtil()
-                                      .setSp(20, allowFontScalingSelf: false),
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            )
-                          : Container())
-                ],
-              ),
+              icon: (totalNotification != "0")
+                  ? Badge(
+                      position: BadgePosition.topRight(top: -8, right: -5),
+                      animationDuration: Duration(milliseconds: 300),
+                      animationType: BadgeAnimationType.slide,
+                      badgeContent: Text(
+                        '$totalNotification',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ScreenUtil()
+                              .setSp(20, allowFontScalingSelf: false),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      child: Icon(
+                        Icons.notifications,
+                        size: ScreenUtil().setHeight(40),
+                      ),
+                    )
+                  : Icon(
+                      Icons.notifications,
+                      size: ScreenUtil().setHeight(40),
+                    ),
               title: Text(
                 "Notifications",
                 style: TextStyle(
@@ -595,7 +587,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                                             VProfile(
                                                                 vdata: vdata)));
                                               } else {
-                                                _toast("No Internet Connection!");
+                                                _toast(
+                                                    "No Internet Connection!");
                                               }
                                             },
                                             child: Container(
@@ -956,8 +949,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                                         (connection == true)
                                                             ? setStatus(
                                                                 index, newVal)
-                                                            : 
-                                                              _toast("Please connect to Internet first");
+                                                            : _toast(
+                                                                "Please connect to Internet first");
                                                       },
                                                       value: (connection ==
                                                               true)

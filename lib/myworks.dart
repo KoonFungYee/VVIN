@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
+import 'package:badges/badges.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
@@ -339,38 +340,29 @@ class _MyWorksState extends State<MyWorks> {
               ),
             ),
             BottomNavigationBarItem(
-              icon: Stack(
-                children: <Widget>[
-                  Icon(
-                    Icons.notifications,
-                    size: ScreenUtil().setHeight(40),
-                  ),
-                  Positioned(
-                      right: 0,
-                      child: (totalNotification != "0")
-                          ? Container(
-                              padding: EdgeInsets.all(1),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              constraints: BoxConstraints(
-                                minWidth: 12,
-                                minHeight: 12,
-                              ),
-                              child: Text(
-                                '$totalNotification',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: ScreenUtil()
-                                      .setSp(20, allowFontScalingSelf: false),
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            )
-                          : Container())
-                ],
-              ),
+              icon: (totalNotification != "0")
+                  ? Badge(
+                      position: BadgePosition.topRight(top: -8, right: -5),
+                      animationDuration: Duration(milliseconds: 300),
+                      animationType: BadgeAnimationType.slide,
+                      badgeContent: Text(
+                        '$totalNotification',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ScreenUtil()
+                              .setSp(20, allowFontScalingSelf: false),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      child: Icon(
+                        Icons.notifications,
+                        size: ScreenUtil().setHeight(40),
+                      ),
+                    )
+                  : Icon(
+                      Icons.notifications,
+                      size: ScreenUtil().setHeight(40),
+                    ),
               title: Text(
                 "Notifications",
                 style: TextStyle(
@@ -760,7 +752,8 @@ class _MyWorksState extends State<MyWorks> {
                                                             myWorks[index]
                                                                 .link);
                                                       } else {
-                                                        _toast("Offline mode can not WhatsApp Forward");
+                                                        _toast(
+                                                            "Offline mode can not WhatsApp Forward");
                                                       }
                                                     },
                                                     child: Container(
@@ -2207,7 +2200,8 @@ class _MyWorksState extends State<MyWorks> {
       if (File(path).existsSync() == true) {
         await OpenFile.open(path);
       } else {
-        _toast("This offline link not in your device, please enter the page again in online mode to complete the offline link download.");
+        _toast(
+            "This offline link not in your device, please enter the page again in online mode to complete the offline link download.");
       }
     }
   }
