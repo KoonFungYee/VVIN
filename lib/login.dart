@@ -17,6 +17,7 @@ import 'package:device_info/device_info.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/vanalytics.dart';
+import 'package:zeking_device_info/zeking_device_info.dart';
 
 final TextEditingController _emcontroller = TextEditingController();
 final TextEditingController _passcontroller = TextEditingController();
@@ -24,14 +25,7 @@ final ScrollController controller = ScrollController();
 final String urlLogin = "https://vvinoa.vvin.com/api/login.php";
 final String urlToken = "https://vvinoa.vvin.com/api/saveToken.php";
 FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-String token,
-    _email,
-    _password,
-    _mySelection,
-    system,
-    version,
-    manufacture,
-    model;
+String token, _email, _password, _mySelection;
 bool login, visible;
 List data;
 
@@ -41,6 +35,7 @@ class Login extends StatefulWidget {
 }
 
 class _LoginPageState extends State<Login> {
+  String system, version, manufacture, model;
   SharedPreferences prefs;
   double _scaleFactor = 1.0;
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
@@ -89,6 +84,16 @@ class _LoginPageState extends State<Login> {
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
         backgroundColor: Colors.white,
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(
+            ScreenUtil().setHeight(1),
+          ),
+          child: AppBar(
+            brightness: Brightness.light,
+            backgroundColor: Colors.white,
+            elevation: 1,
+          ),
+        ),
         body: SingleChildScrollView(
           controller: controller,
           child: Container(
@@ -165,8 +170,11 @@ class _LoginPageState extends State<Login> {
                                     size: ScreenUtil().setHeight(35),
                                   ),
                                 ),
-                                contentPadding:
-                                    EdgeInsets.fromLTRB(ScreenUtil().setHeight(10), 0, 0, ScreenUtil().setHeight(30)),
+                                contentPadding: EdgeInsets.fromLTRB(
+                                    ScreenUtil().setHeight(10),
+                                    0,
+                                    0,
+                                    ScreenUtil().setHeight(30)),
                                 border: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.grey)),
                               ),
@@ -235,7 +243,11 @@ class _LoginPageState extends State<Login> {
                                       ),
                                 contentPadding:
                                     // EdgeInsets.all(ScreenUtil().setHeight(10)),
-                                    EdgeInsets.fromLTRB(ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), 0, ScreenUtil().setHeight(10)),
+                                    EdgeInsets.fromLTRB(
+                                        ScreenUtil().setHeight(10),
+                                        ScreenUtil().setHeight(10),
+                                        0,
+                                        ScreenUtil().setHeight(10)),
                                 border: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.grey)),
                               ),
@@ -444,10 +456,12 @@ class _LoginPageState extends State<Login> {
   Future<void> checkPlatform() async {
     if (Platform.isAndroid) {
       var androidInfo = await DeviceInfoPlugin().androidInfo;
-      system = "android " + androidInfo.version.release.toString();
+      Zekingdeviceinfo.getDevicesInfo('VVIN').then((info) {
+        system = info.systemName + " " + info.systemVersion;
+        manufacture = info.devicesName;
+        model = info.model;
+      });
       version = "version " + androidInfo.version.sdkInt.toString();
-      manufacture = androidInfo.manufacturer.toString();
-      model = androidInfo.model.toString();
     }
 
     if (Platform.isIOS) {
@@ -469,6 +483,33 @@ class _Default extends State<Default> {
   double _scaleFactor = 1.0;
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
+  String system, version, manufacture, model;
+
+  @override
+  void initState() {
+    checkPlatform();
+    super.initState();
+  }
+
+  Future<void> checkPlatform() async {
+    if (Platform.isAndroid) {
+      var androidInfo = await DeviceInfoPlugin().androidInfo;
+      Zekingdeviceinfo.getDevicesInfo('VVIN').then((info) {
+        system = info.systemName + " " + info.systemVersion;
+        manufacture = info.devicesName;
+        model = info.model;
+      });
+      version = "version " + androidInfo.version.sdkInt.toString();
+    }
+
+    if (Platform.isIOS) {
+      var iosInfo = await DeviceInfoPlugin().iosInfo;
+      system = iosInfo.systemName.toString();
+      version = iosInfo.systemVersion.toString();
+      manufacture = iosInfo.name.toString();
+      model = iosInfo.model.toString();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

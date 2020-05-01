@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:fake_whatsapp/fake_whatsapp.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
@@ -14,6 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vvin/data.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:http/http.dart' as http;
@@ -32,6 +34,7 @@ class WhatsAppForward extends StatefulWidget {
 enum UniLinksType { string, uri }
 
 class _WhatsAppForwardState extends State<WhatsAppForward> {
+  Whatsapp _whatsapp = Whatsapp();
   double _scaleFactor = 1.0;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
@@ -60,12 +63,17 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     tempText = "";
     base64Image = "";
     number = "";
-    if (Platform.isAndroid) {
+    initialise();
+    super.initState();
+  }
+
+  Future<void> initialise() async {
+    bool whatsapp = await _whatsapp.isWhatsappInstalled();
+    if (whatsapp == true) {
       platform = "android";
     } else {
       platform = "ios";
     }
-    super.initState();
   }
 
   void check() async {
@@ -341,7 +349,8 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                               if (phoneList.length != 0) {
                                                 _showBottomSheet("phone");
                                               } else {
-                                                _toast("No phone number detected");
+                                                _toast(
+                                                    "No phone number detected");
                                               }
                                             },
                                             child: Container(
@@ -949,15 +958,19 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
           "number": widget.whatsappForward.userID + "_" + number,
           "system": platform,
           "details": full,
-        }).then((res) {
+        }).then((res) async {
           Navigator.pop(context);
-          FlutterOpenWhatsapp.sendSingleMessage(
-              _phonecontroller.text,
-              "Hello " +
-                  _namecontroller.text +
-                  "! Reply 'hi' to enable the URL link. " +
-                  widget.whatsappForward.url +
-                  res.body);
+          if (platform == 'android') {
+            FlutterOpenWhatsapp.sendSingleMessage(
+                _phonecontroller.text,
+                "Hello " +
+                    _namecontroller.text +
+                    "! Reply 'hi' to enable the URL link. " +
+                    widget.whatsappForward.url +
+                    res.body);
+          } else {
+            launch(res.body);
+          }
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => VData(),

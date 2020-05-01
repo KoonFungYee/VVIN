@@ -127,7 +127,6 @@ class _VAnalyticsState extends State<VAnalytics>
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     try {
       if (widget.name != null) {
-        print(widget.name);
         BotToast.showText(
           text: "Welcome " + widget.name,
           wrapToastAnimation: (controller, cancel, Widget child) =>
@@ -2775,9 +2774,9 @@ class _VAnalyticsState extends State<VAnalytics>
           vanalytic == true &&
           chartData == true) {
         animatedController.forward();
-        endTime = DateTime.now().millisecondsSinceEpoch;
-        int result = endTime - startTime;
-        print("VAnalytics Loading Time: " + result.toString());
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VAnalytics Loading Time: " + result.toString());
       }
       setTopViewData();
     }).catchError((err) {
@@ -2927,9 +2926,9 @@ class _VAnalyticsState extends State<VAnalytics>
           vanalytic == true &&
           chartData == true) {
         animatedController.forward();
-        endTime = DateTime.now().millisecondsSinceEpoch;
-        int result = endTime - startTime;
-        print("VAnalytics Loading Time: " + result.toString());
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VAnalytics Loading Time: " + result.toString());
       }
       setLeadsData();
     }).catchError((err) {
@@ -3036,9 +3035,9 @@ class _VAnalyticsState extends State<VAnalytics>
           vanalytic == true &&
           chartData == true) {
         animatedController.forward();
-        endTime = DateTime.now().millisecondsSinceEpoch;
-        int result = endTime - startTime;
-        print("VAnalytics Loading Time: " + result.toString());
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VAnalytics Loading Time: " + result.toString());
       }
       setAnalyticsData();
     }).catchError((err) {
@@ -3083,9 +3082,9 @@ class _VAnalyticsState extends State<VAnalytics>
         vanalytic == true &&
         chartData == true) {
       animatedController.forward();
-      endTime = DateTime.now().millisecondsSinceEpoch;
-      int result = endTime - startTime;
-      print("VAnalytics Loading Time: " + result.toString());
+      // endTime = DateTime.now().millisecondsSinceEpoch;
+      // int result = endTime - startTime;
+      // print("VAnalytics Loading Time: " + result.toString());
     }
   }
 
