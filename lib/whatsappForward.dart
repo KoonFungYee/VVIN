@@ -109,13 +109,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
 
   Future<void> _init() async {
     WidgetsFlutterBinding.ensureInitialized();
-
     notificationAppLaunchDetails =
         await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
-
     var initializationSettingsAndroid = AndroidInitializationSettings('vvin');
-    // Note: permissions aren't requested here just to demonstrate that can be done later using the `requestPermissions()` method
-    // of the `IOSFlutterLocalNotificationsPlugin` class
     var initializationSettingsIOS = IOSInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,

@@ -106,45 +106,6 @@ class _EditCompanyState extends State<EditCompany> {
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         _showNotification();
-        // Vibration.vibrate();
-        // bool noti = false;
-        // if (noti == false) {
-        //   showDialog(
-        //     barrierDismissible: false,
-        //     context: context,
-        //     builder: (BuildContext context) => NDialog(
-        //       dialogStyle: DialogStyle(titleDivider: true),
-        //       title: Text("New Notification"),
-        //       content: Text("You have 1 new notification"),
-        //       actions: <Widget>[
-        //         FlatButton(
-        //             child: Text("View"),
-        //             onPressed: () {
-        //               Navigator.of(context).pop();
-        //               Navigator.of(context).pop();
-        //               Navigator.of(context).pushReplacement(
-        //                 MaterialPageRoute(
-        //                   builder: (context) => Notifications(),
-        //                 ),
-        //               );
-        //               prefs.setString('onMessage', now);
-        //             }),
-        //         FlatButton(
-        //             child: Text("Later"),
-        //             onPressed: () {
-        //               Navigator.of(context).pop();
-        //               Navigator.of(context).pop();
-        //               if (this.mounted) {
-        //                 setState(() {
-        //                   noti = false;
-        //                 });
-        //               }
-        //             }),
-        //       ],
-        //     ),
-        //   );
-        //   noti = true;
-        // }
       },
       onResume: (Map<String, dynamic> message) async {
         List time = message.toString().split('google.sent_time: ');
@@ -164,13 +125,9 @@ class _EditCompanyState extends State<EditCompany> {
 
   Future<void> _init() async {
     WidgetsFlutterBinding.ensureInitialized();
-
     notificationAppLaunchDetails =
         await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
-
     var initializationSettingsAndroid = AndroidInitializationSettings('vvin');
-    // Note: permissions aren't requested here just to demonstrate that can be done later using the `requestPermissions()` method
-    // of the `IOSFlutterLocalNotificationsPlugin` class
     var initializationSettingsIOS = IOSInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -222,14 +179,6 @@ class _EditCompanyState extends State<EditCompany> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],

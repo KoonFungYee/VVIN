@@ -133,45 +133,6 @@ class _MyWorksState extends State<MyWorks> {
       onMessage: (Map<String, dynamic> message) async {
         prefs = await SharedPreferences.getInstance();
         _showNotification();
-        // Vibration.vibrate();
-        // bool noti = false;
-        // if (noti == false) {
-        //   showDialog(
-        //     barrierDismissible: false,
-        //     context: context,
-        //     builder: (BuildContext context) => NDialog(
-        //       dialogStyle: DialogStyle(titleDivider: true),
-        //       title: Text("New Notification"),
-        //       content: Text("You have 1 new notification"),
-        //       actions: <Widget>[
-        //         FlatButton(
-        //             child: Text("View"),
-        //             onPressed: () {
-        //               Navigator.of(context).pop();
-        //               Navigator.of(context).pop();
-        //               Navigator.of(context).pushReplacement(
-        //                 MaterialPageRoute(
-        //                   builder: (context) => Notifications(),
-        //                 ),
-        //               );
-        //               prefs.setString('onMessage', now);
-        //             }),
-        //         FlatButton(
-        //             child: Text("Later"),
-        //             onPressed: () {
-        //               Navigator.of(context).pop();
-        //               Navigator.of(context).pop();
-        //               if (this.mounted) {
-        //                 setState(() {
-        //                   noti = false;
-        //                 });
-        //               }
-        //             }),
-        //       ],
-        //     ),
-        //   );
-        //   noti = true;
-        // }
       },
       onResume: (Map<String, dynamic> message) async {
         List time = message.toString().split('google.sent_time: ');
@@ -229,7 +190,6 @@ class _MyWorksState extends State<MyWorks> {
         //   url: "https://" + link.substring(12),
         // );
       }, onError: (err) {});
-
       String initialLink;
       if (prefs.getString('url') == '1') {
         try {
@@ -245,13 +205,9 @@ class _MyWorksState extends State<MyWorks> {
 
   Future<void> _init() async {
     WidgetsFlutterBinding.ensureInitialized();
-
     notificationAppLaunchDetails =
         await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
-
     var initializationSettingsAndroid = AndroidInitializationSettings('vvin');
-    // Note: permissions aren't requested here just to demonstrate that can be done later using the `requestPermissions()` method
-    // of the `IOSFlutterLocalNotificationsPlugin` class
     var initializationSettingsIOS = IOSInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
