@@ -5,15 +5,20 @@ import 'dart:math';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:fake_whatsapp/fake_whatsapp.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
+import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:rxdart/subjects.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vvin/data.dart';
@@ -21,6 +26,7 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:vvin/notifications.dart';
 import 'package:vvin/vdata.dart';
 
 class WhatsAppForward extends StatefulWidget {
@@ -34,6 +40,15 @@ class WhatsAppForward extends StatefulWidget {
 enum UniLinksType { string, uri }
 
 class _WhatsAppForwardState extends State<WhatsAppForward> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  final BehaviorSubject<ReceivedNotification>
+      didReceiveLocalNotificationSubject =
+      BehaviorSubject<ReceivedNotification>();
+  final BehaviorSubject<String> selectNotificationSubject =
+      BehaviorSubject<String>();
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   Whatsapp _whatsapp = Whatsapp();
   double _scaleFactor = 1.0;
   StreamSubscription _sub;
@@ -58,12 +73,18 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   @override
   void initState() {
     check();
+    _init();
     isSend = false;
     isImageLoaded = false;
     tempText = "";
     base64Image = "";
     number = "";
     initialise();
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        _showNotification();
+      },
+    );
     super.initState();
   }
 
@@ -86,9 +107,117 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     }
   }
 
+  Future<void> _init() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    notificationAppLaunchDetails =
+        await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+
+    var initializationSettingsAndroid = AndroidInitializationSettings('vvin');
+    // Note: permissions aren't requested here just to demonstrate that can be done later using the `requestPermissions()` method
+    // of the `IOSFlutterLocalNotificationsPlugin` class
+    var initializationSettingsIOS = IOSInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+        onDidReceiveLocalNotification:
+            (int id, String title, String body, String payload) async {
+          didReceiveLocalNotificationSubject.add(ReceivedNotification(
+              id: id, title: title, body: body, payload: payload));
+        });
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String payload) async {
+      if (payload != null) {
+        debugPrint('notification payload: ' + payload);
+      }
+      selectNotificationSubject.add(payload);
+    });
+    _requestIOSPermissions();
+    _configureDidReceiveLocalNotificationSubject();
+    _configureSelectNotificationSubject();
+  }
+
+  void _requestIOSPermissions() {
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+  }
+
+  void _configureDidReceiveLocalNotificationSubject() {
+    didReceiveLocalNotificationSubject.stream
+        .listen((ReceivedNotification receivedNotification) async {
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title: receivedNotification.title != null
+              ? Text(receivedNotification.title)
+              : null,
+          content: receivedNotification.body != null
+              ? Text(receivedNotification.body)
+              : null,
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              child: Text('Ok'),
+              onPressed: () async {
+                // Navigator.of(context, rootNavigator: true).pop();
+                // await Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) =>
+                //         SecondScreen(receivedNotification.payload),
+                //   ),
+                // );
+              },
+            )
+          ],
+        ),
+      );
+    });
+  }
+
+  void _configureSelectNotificationSubject() {
+    selectNotificationSubject.stream.listen((String payload) async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (prefs.getString('onMessage') != payload) {
+        Navigator.of(context).pushReplacement(PageTransition(
+          duration: Duration(milliseconds: 1),
+          type: PageTransitionType.transferUp,
+          child: Notifications(),
+        ));
+      }
+      prefs.setString('onMessage', payload);
+    });
+  }
+
+  Future<void> _showNotification() async {
+    String now = DateTime.now().millisecondsSinceEpoch.toString();
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id', 'your channel name', 'your channel description',
+        importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+        0,
+        "You've received a new lead from ...",
+        'Click here to view now',
+        platformChannelSpecifics,
+        payload: now);
+  }
+
   @override
   void dispose() {
     if (_sub != null) _sub.cancel();
+    didReceiveLocalNotificationSubject.close();
+    selectNotificationSubject.close();
     super.dispose();
   }
 

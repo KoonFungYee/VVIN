@@ -166,7 +166,7 @@ class _LoginPageState extends State<Login> {
                                   icon: Icon(
                                     Icons.cancel,
                                     color: Colors.blue,
-                                    size: ScreenUtil().setHeight(35),
+                                    size: ScreenUtil().setHeight(30),
                                   ),
                                 ),
                                 contentPadding: EdgeInsets.fromLTRB(
@@ -226,7 +226,7 @@ class _LoginPageState extends State<Login> {
                                         },
                                         icon: Icon(FontAwesomeIcons.eyeSlash,
                                             color: Colors.blue,
-                                            size: ScreenUtil().setHeight(35)),
+                                            size: ScreenUtil().setHeight(30)),
                                       )
                                     : IconButton(
                                         onPressed: () {

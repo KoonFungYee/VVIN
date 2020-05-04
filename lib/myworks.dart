@@ -12,11 +12,13 @@ import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
@@ -49,6 +51,14 @@ class MyWorks extends StatefulWidget {
 enum UniLinksType { string, uri }
 
 class _MyWorksState extends State<MyWorks> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  final BehaviorSubject<ReceivedNotification>
+      didReceiveLocalNotificationSubject =
+      BehaviorSubject<ReceivedNotification>();
+  final BehaviorSubject<String> selectNotificationSubject =
+      BehaviorSubject<String>();
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
   bool more = true;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
@@ -94,6 +104,7 @@ class _MyWorksState extends State<MyWorks> {
       typeInternet,
       location,
       base64Image,
+      now,
       totalNotification;
   String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
   String urlMyWorks = "https://vvinoa.vvin.com/api/myWorks.php";
@@ -116,46 +127,51 @@ class _MyWorksState extends State<MyWorks> {
   void initState() {
     imageCache.clear();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    check();
+    _init();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        Vibration.vibrate();
-        bool noti = false;
-        if (noti == false) {
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (BuildContext context) => NDialog(
-              dialogStyle: DialogStyle(titleDivider: true),
-              title: Text("New Notification"),
-              content: Text("You have 1 new notification"),
-              actions: <Widget>[
-                FlatButton(
-                    child: Text("View"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => Notifications(),
-                        ),
-                      );
-                    }),
-                FlatButton(
-                    child: Text("Later"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                      if (this.mounted) {
-                        setState(() {
-                          noti = false;
-                        });
-                      }
-                    }),
-              ],
-            ),
-          );
-          noti = true;
-        }
+        prefs = await SharedPreferences.getInstance();
+        _showNotification();
+        // Vibration.vibrate();
+        // bool noti = false;
+        // if (noti == false) {
+        //   showDialog(
+        //     barrierDismissible: false,
+        //     context: context,
+        //     builder: (BuildContext context) => NDialog(
+        //       dialogStyle: DialogStyle(titleDivider: true),
+        //       title: Text("New Notification"),
+        //       content: Text("You have 1 new notification"),
+        //       actions: <Widget>[
+        //         FlatButton(
+        //             child: Text("View"),
+        //             onPressed: () {
+        //               Navigator.of(context).pop();
+        //               Navigator.of(context).pop();
+        //               Navigator.of(context).pushReplacement(
+        //                 MaterialPageRoute(
+        //                   builder: (context) => Notifications(),
+        //                 ),
+        //               );
+        //               prefs.setString('onMessage', now);
+        //             }),
+        //         FlatButton(
+        //             child: Text("Later"),
+        //             onPressed: () {
+        //               Navigator.of(context).pop();
+        //               Navigator.of(context).pop();
+        //               if (this.mounted) {
+        //                 setState(() {
+        //                   noti = false;
+        //                 });
+        //               }
+        //             }),
+        //       ],
+        //     ),
+        //   );
+        //   noti = true;
+        // }
       },
       onResume: (Map<String, dynamic> message) async {
         List time = message.toString().split('google.sent_time: ');
@@ -202,7 +218,6 @@ class _MyWorksState extends State<MyWorks> {
     imageIndex = 0;
     linkIndex = 0;
     checkConnection();
-    check();
     super.initState();
   }
 
@@ -226,6 +241,112 @@ class _MyWorksState extends State<MyWorks> {
         } catch (e) {}
       }
     }
+  }
+
+  Future<void> _init() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    notificationAppLaunchDetails =
+        await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+
+    var initializationSettingsAndroid = AndroidInitializationSettings('vvin');
+    // Note: permissions aren't requested here just to demonstrate that can be done later using the `requestPermissions()` method
+    // of the `IOSFlutterLocalNotificationsPlugin` class
+    var initializationSettingsIOS = IOSInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+        onDidReceiveLocalNotification:
+            (int id, String title, String body, String payload) async {
+          didReceiveLocalNotificationSubject.add(ReceivedNotification(
+              id: id, title: title, body: body, payload: payload));
+        });
+    var initializationSettings = InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String payload) async {
+      if (payload != null) {
+        debugPrint('notification payload: ' + payload);
+      }
+      selectNotificationSubject.add(payload);
+    });
+    _requestIOSPermissions();
+    _configureDidReceiveLocalNotificationSubject();
+    _configureSelectNotificationSubject();
+  }
+
+  void _requestIOSPermissions() {
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+  }
+
+  void _configureDidReceiveLocalNotificationSubject() {
+    didReceiveLocalNotificationSubject.stream
+        .listen((ReceivedNotification receivedNotification) async {
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title: receivedNotification.title != null
+              ? Text(receivedNotification.title)
+              : null,
+          content: receivedNotification.body != null
+              ? Text(receivedNotification.body)
+              : null,
+          actions: [
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              child: Text('Ok'),
+              onPressed: () async {
+                // Navigator.of(context, rootNavigator: true).pop();
+                // await Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) =>
+                //         SecondScreen(receivedNotification.payload),
+                //   ),
+                // );
+              },
+            )
+          ],
+        ),
+      );
+    });
+  }
+
+  void _configureSelectNotificationSubject() {
+    selectNotificationSubject.stream.listen((String payload) async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (prefs.getString('onMessage') != payload) {
+        Navigator.of(context).pushReplacement(PageTransition(
+          duration: Duration(milliseconds: 1),
+          type: PageTransitionType.transferUp,
+          child: Notifications(),
+        ));
+      }
+      prefs.setString('onMessage', payload);
+    });
+  }
+
+  Future<void> _showNotification() async {
+    now = DateTime.now().millisecondsSinceEpoch.toString();
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id', 'your channel name', 'your channel description',
+        importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+        0,
+        "You've received a new lead from ...",
+        'Click here to view now',
+        platformChannelSpecifics,
+        payload: now);
   }
 
   void onTapped(int index) {
@@ -266,6 +387,8 @@ class _MyWorksState extends State<MyWorks> {
   @override
   dispose() {
     if (_sub != null) _sub.cancel();
+    didReceiveLocalNotificationSubject.close();
+    selectNotificationSubject.close();
     super.dispose();
   }
 
