@@ -12,6 +12,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:menu_button/menu_button.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:progress_indicators/progress_indicators.dart';
@@ -331,6 +332,35 @@ class _VProfileState extends State<VProfile>
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
+    final Widget button = SizedBox(
+      width: ScreenUtil().setWidth(320),
+      height: ScreenUtil().setHeight(60),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                status,
+                style: TextStyle(fontSize: font14),
+              ),
+            ),
+            SizedBox(
+              width: ScreenUtil().setWidth(30),
+              height: ScreenUtil().setWidth(50),
+              child: FittedBox(
+                fit: BoxFit.fill,
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
@@ -420,40 +450,39 @@ class _VProfileState extends State<VProfile>
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Container(
-                    width: ScreenUtil().setWidth(320),
-                    height: ScreenUtil().setHeight(60),
-                    padding: EdgeInsets.all(
-                      ScreenUtil().setHeight(10),
-                    ),
-                    decoration: BoxDecoration(
+                  MenuButton(
+                    child: button,
+                    items: data,
+                    scrollPhysics: AlwaysScrollableScrollPhysics(),
+                    topDivider: true,
+                    itemBuilder: (value) => Container(
+                        height: ScreenUtil().setHeight(60),
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 0.0, horizontal: 16),
+                        child: Text(value)),
+                    toggledChild: Container(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(1.0),
-                      border: Border.all(
-                          color: Colors.grey.shade400,
-                          style: BorderStyle.solid),
+                      child: button,
                     ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton(
-                        isExpanded: true,
-                        isDense: true,
-                        items: data.map((item) {
-                          return DropdownMenuItem(
-                            child: Text(
-                              item.toString(),
-                              style: TextStyle(
-                                fontSize: font14,
-                              ),
-                            ),
-                            value: item.toString(),
-                          );
-                        }).toList(),
-                        onChanged: (newVal) {
-                          setStatus(newVal);
-                        },
-                        value: status,
-                      ),
+                    divider: Container(
+                      height: 1,
+                      color: Colors.grey[300],
                     ),
+                    onItemSelected: (value) {
+                      setState(() {
+                        status = value;
+                        setStatus(value);
+                      });
+                    },
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(3.0)),
+                        color: Colors.white),
+                    onMenuButtonToggle: (isToggle) {
+                      print(isToggle);
+                    },
                   ),
                 ],
               ),

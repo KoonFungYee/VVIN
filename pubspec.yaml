@@ -20,6 +20,7 @@ dependencies:
   pull_to_refresh: ^1.5.8
   flutter_local_notifications: ^1.4.2
   rxdart: ^0.24.0
+  menu_button: ^0.2.1
   vibration: ^1.2.4
   zeking_device_info: ^0.0.1
   fake_whatsapp: ^0.0.1

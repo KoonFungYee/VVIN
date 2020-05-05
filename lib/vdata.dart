@@ -16,6 +16,7 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:menu_button/menu_button.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -957,56 +958,15 @@ class _VDataState extends State<VData> {
                                                     ),
                                                   ],
                                                 ),
-                                                Container(
-                                                  width: ScreenUtil()
-                                                      .setWidth(290),
-                                                  height: ScreenUtil()
-                                                      .setHeight(60),
-                                                  padding: EdgeInsets.all(
-                                                    ScreenUtil().setHeight(10),
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            1.0),
-                                                    border: Border.all(
-                                                        color: Colors.grey,
-                                                        style:
-                                                            BorderStyle.solid),
-                                                  ),
-                                                  child:
-                                                      DropdownButtonHideUnderline(
-                                                    child: DropdownButton(
-                                                      isExpanded: true,
-                                                      isDense: true,
-                                                      items: data.map((item) {
-                                                        return DropdownMenuItem(
-                                                          child: Text(
-                                                            item.toString(),
-                                                            style: TextStyle(
-                                                              fontSize: font12,
-                                                            ),
-                                                          ),
-                                                          value:
-                                                              item.toString(),
-                                                        );
-                                                      }).toList(),
-                                                      onChanged: (newVal) {
-                                                        (connection == true)
-                                                            ? setStatus(
-                                                                index, newVal)
-                                                            : _toast(
-                                                                "Status can't changed! Please enter the page again in online mode");
-                                                      },
-                                                      value: (connection ==
-                                                              true)
-                                                          ? vDataDetails[index]
-                                                              .status
-                                                          : offlineVData[index]
-                                                              ['status'],
-                                                    ),
-                                                  ),
-                                                ),
+                                                (connection == true)
+                                                    ? menuButton(
+                                                        vDataDetails[index]
+                                                            .status,
+                                                        index)
+                                                    : menuButton(
+                                                        offlineVData[index]
+                                                            ['status'],
+                                                        index),
                                               ],
                                             ),
                                           ),
@@ -1043,6 +1003,71 @@ class _VDataState extends State<VData> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget menuButton(String status, int index) {
+    final Widget button = SizedBox(
+      width: ScreenUtil().setWidth(310),
+      height: ScreenUtil().setHeight(60),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                status,
+                style: TextStyle(fontSize: font14),
+              ),
+            ),
+            SizedBox(
+              width: ScreenUtil().setWidth(30),
+              height: ScreenUtil().setWidth(50),
+              child: FittedBox(
+                fit: BoxFit.fill,
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    return MenuButton(
+      child: button,
+      items: data,
+      scrollPhysics: AlwaysScrollableScrollPhysics(),
+      topDivider: true,
+      itemBuilder: (value) => Container(
+          height: ScreenUtil().setHeight(60),
+          alignment: Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+          child: Text(value)),
+      toggledChild: Container(
+        color: Colors.white,
+        child: button,
+      ),
+      divider: Container(
+        height: 1,
+        color: Colors.grey[300],
+      ),
+      onItemSelected: (value1) {
+        setState(() {
+          status = value1;
+        });
+        (connection == true)
+            ? setStatus(index, status)
+            : _toast(
+                "Status can't changed! Please enter the page again in online mode");
+      },
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: const BorderRadius.all(Radius.circular(3.0)),
+          color: Colors.white),
+      onMenuButtonToggle: (isToggle) {},
     );
   }
 

@@ -17,6 +17,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/vanalytics.dart';
 import 'package:zeking_device_info/zeking_device_info.dart';
+import 'package:menu_button/menu_button.dart';
 
 final TextEditingController _emcontroller = TextEditingController();
 final TextEditingController _passcontroller = TextEditingController();
@@ -487,6 +488,7 @@ class _Default extends State<Default> {
   @override
   void initState() {
     checkPlatform();
+    _mySelection = data[0];
     super.initState();
   }
 
@@ -512,6 +514,35 @@ class _Default extends State<Default> {
 
   @override
   Widget build(BuildContext context) {
+    final Widget button = SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      height: ScreenUtil().setHeight(60),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                _mySelection,
+                style: TextStyle(fontSize: font14),
+              ),
+            ),
+            SizedBox(
+              width: ScreenUtil().setWidth(50),
+              height: ScreenUtil().setWidth(50),
+              child: FittedBox(
+                fit: BoxFit.fill,
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
     return Column(
       children: <Widget>[
         SizedBox(
@@ -528,39 +559,38 @@ class _Default extends State<Default> {
         SizedBox(
           height: ScreenUtil().setHeight(20),
         ),
-        Container(
-          width: double.infinity,
-          height: ScreenUtil().setHeight(80),
-          padding: EdgeInsets.all(
-            ScreenUtil().setHeight(10),
+        MenuButton(
+          child: button,
+          items: data,
+          scrollPhysics: AlwaysScrollableScrollPhysics(),
+          topDivider: true,
+          itemBuilder: (value) => Container(
+              height: ScreenUtil().setHeight(60),
+              width: MediaQuery.of(context).size.width * 0.8,
+              alignment: Alignment.centerLeft,
+              padding:
+                  const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+              child: Text(value)),
+          toggledChild: Container(
+            color: Colors.white,
+            child: button,
           ),
+          divider: Container(
+            height: 1,
+            color: Colors.grey[300],
+          ),
+          onItemSelected: (value) {
+            setState(() {
+              _mySelection = value;
+            });
+          },
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10.0),
-            border: Border.all(color: Colors.grey, style: BorderStyle.solid),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton(
-              isExpanded: true,
-              isDense: true,
-              items: data.map((item) {
-                return DropdownMenuItem(
-                  child: Text(
-                    item.toString(),
-                    style: TextStyle(
-                      fontSize: font14,
-                    ),
-                  ),
-                  value: item.toString(),
-                );
-              }).toList(),
-              onChanged: (newVal) {
-                setState(() {
-                  _mySelection = newVal;
-                });
-              },
-              value: _mySelection,
-            ),
-          ),
+              border: Border.all(color: Colors.grey),
+              borderRadius: const BorderRadius.all(Radius.circular(3.0)),
+              color: Colors.white),
+          onMenuButtonToggle: (isToggle) {
+            // print(isToggle);
+          },
         ),
         SizedBox(
           height: ScreenUtil().setHeight(60),
