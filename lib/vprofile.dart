@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:menu_button/menu_button.dart';
-import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rxdart/subjects.dart';
@@ -31,7 +30,6 @@ import 'dart:async';
 // import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/notifications.dart';
-import 'package:vibration/vibration.dart';
 import 'package:scalable_image/scalable_image.dart';
 
 class VProfile extends StatefulWidget {

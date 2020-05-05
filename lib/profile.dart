@@ -12,13 +12,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
-import 'package:ndialog/ndialog.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibration/vibration.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/leadsDB.dart';
 import 'package:vvin/login.dart';
@@ -350,7 +348,7 @@ class _ProfileState extends State<Profile> {
                                             borderRadius: BorderRadius.all(
                                                 Radius.circular(10.0)),
                                             image: DecorationImage(
-                                              fit: BoxFit.fitWidth,
+                                              fit: BoxFit.fill,
                                               image: CachedNetworkImageProvider(image),
                                             ),
                                           ),

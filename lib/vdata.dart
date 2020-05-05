@@ -17,7 +17,6 @@ import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:menu_button/menu_button.dart';
-import 'package:ndialog/ndialog.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:route_transitions/route_transitions.dart';
@@ -25,7 +24,6 @@ import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibration/vibration.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/more.dart';
@@ -1008,7 +1006,7 @@ class _VDataState extends State<VData> {
 
   Widget menuButton(String status, int index) {
     final Widget button = SizedBox(
-      width: ScreenUtil().setWidth(310),
+      width: ScreenUtil().setWidth(285),
       height: ScreenUtil().setHeight(60),
       child: Padding(
         padding: const EdgeInsets.only(left: 10, right: 10),
@@ -1018,7 +1016,7 @@ class _VDataState extends State<VData> {
             Flexible(
               child: Text(
                 status,
-                style: TextStyle(fontSize: font14),
+                style: TextStyle(fontSize: font12),
               ),
             ),
             SizedBox(

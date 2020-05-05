@@ -21,7 +21,6 @@ import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibration/vibration.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/leadsDB.dart';
 import 'package:vvin/lineChart.dart';

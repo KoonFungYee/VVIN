@@ -18,13 +18,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vibration/vibration.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/leadsDB.dart';
@@ -425,7 +423,7 @@ class _MoreState extends State<More> {
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(10.0)),
                                         image: DecorationImage(
-                                          fit: BoxFit.fitWidth,
+                                          fit: BoxFit.fill,
                                           image:
                                               CachedNetworkImageProvider(image),
                                         ),

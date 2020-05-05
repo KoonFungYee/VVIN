@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
-import 'package:ndialog/ndialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +22,6 @@ import 'package:vvin/notifications.dart';
 import 'package:vvin/profile.dart';
 import 'package:vvin/data.dart';
 import 'package:http/http.dart' as http;
-import 'package:vibration/vibration.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -296,7 +294,7 @@ class _EditCompanyState extends State<EditCompany> {
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(10.0)),
                                 image: DecorationImage(
-                                  fit: BoxFit.fitWidth,
+                                  fit: BoxFit.fill,
                                   image: CachedNetworkImageProvider(image),
                                 ),
                               ),
