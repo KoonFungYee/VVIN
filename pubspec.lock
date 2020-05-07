@@ -679,13 +679,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.0"
-  zeking_device_info:
-    dependency: "direct main"
-    description:
-      name: zeking_device_info
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.0.1"
 sdks:
   dart: ">=2.7.0 <3.0.0"
   flutter: ">=1.12.13+hotfix.5 <2.0.0"

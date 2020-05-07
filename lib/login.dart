@@ -16,7 +16,6 @@ import 'package:device_info/device_info.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/vanalytics.dart';
-import 'package:zeking_device_info/zeking_device_info.dart';
 import 'package:menu_button/menu_button.dart';
 
 final TextEditingController _emcontroller = TextEditingController();
@@ -239,7 +238,7 @@ class _LoginPageState extends State<Login> {
                                         },
                                         icon: Icon(FontAwesomeIcons.eye,
                                             color: Colors.blue,
-                                            size: ScreenUtil().setHeight(35)),
+                                            size: ScreenUtil().setHeight(30)),
                                       ),
                                 contentPadding:
                                     // EdgeInsets.all(ScreenUtil().setHeight(10)),
@@ -456,12 +455,10 @@ class _LoginPageState extends State<Login> {
   Future<void> checkPlatform() async {
     if (Platform.isAndroid) {
       var androidInfo = await DeviceInfoPlugin().androidInfo;
-      Zekingdeviceinfo.getDevicesInfo('VVIN').then((info) {
-        system = info.systemName + " " + info.systemVersion;
-        manufacture = info.devicesName;
-        model = info.model;
-      });
+      system = "android " + androidInfo.version.release.toString();
       version = "version " + androidInfo.version.sdkInt.toString();
+      manufacture = androidInfo.manufacturer.toString();
+      model = androidInfo.model.toString();
     }
 
     if (Platform.isIOS) {
@@ -495,12 +492,10 @@ class _Default extends State<Default> {
   Future<void> checkPlatform() async {
     if (Platform.isAndroid) {
       var androidInfo = await DeviceInfoPlugin().androidInfo;
-      Zekingdeviceinfo.getDevicesInfo('VVIN').then((info) {
-        system = info.systemName + " " + info.systemVersion;
-        manufacture = info.devicesName;
-        model = info.model;
-      });
+      system = "android " + androidInfo.version.release.toString();
       version = "version " + androidInfo.version.sdkInt.toString();
+      manufacture = androidInfo.manufacturer.toString();
+      model = androidInfo.model.toString();
     }
 
     if (Platform.isIOS) {
@@ -570,7 +565,7 @@ class _Default extends State<Default> {
               alignment: Alignment.centerLeft,
               padding:
                   const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
-              child: Text(value)),
+              child: Text(value, style: TextStyle(fontSize: font14)),),
           toggledChild: Container(
             color: Colors.white,
             child: button,
@@ -589,7 +584,6 @@ class _Default extends State<Default> {
               borderRadius: const BorderRadius.all(Radius.circular(3.0)),
               color: Colors.white),
           onMenuButtonToggle: (isToggle) {
-            // print(isToggle);
           },
         ),
         SizedBox(

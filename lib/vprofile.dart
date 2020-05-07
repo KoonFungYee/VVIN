@@ -362,58 +362,71 @@ class _VProfileState extends State<VProfile>
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
-          backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-          appBar: PreferredSize(
-            preferredSize: Size.fromHeight(ScreenUtil().setHeight(85)),
-            child: AppBar(
-              brightness: Brightness.light,
-              leading: IconButton(
-                onPressed: _onBackPressAppBar,
-                icon: Icon(
-                  Icons.arrow_back_ios,
-                  size: ScreenUtil().setWidth(30),
-                  color: Colors.grey,
-                ),
+        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(ScreenUtil().setHeight(85)),
+          child: AppBar(
+            brightness: Brightness.light,
+            leading: IconButton(
+              onPressed: _onBackPressAppBar,
+              icon: Icon(
+                Icons.arrow_back_ios,
+                size: ScreenUtil().setWidth(30),
+                color: Colors.grey,
               ),
-              backgroundColor: Colors.white,
-              elevation: 1,
-              centerTitle: true,
-              title: Text(
-                "VProfile",
-                style: TextStyle(
-                    color: Colors.black,
-                    fontSize: font18,
-                    fontWeight: FontWeight.bold),
-              ),
-              actions: <Widget>[popupMenuButton()],
             ),
+            backgroundColor: Colors.white,
+            elevation: 1,
+            centerTitle: true,
+            title: Text(
+              "VProfile",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: font18,
+                  fontWeight: FontWeight.bold),
+            ),
+            actions: <Widget>[popupMenuButton()],
           ),
-          body: Column(
-            children: <Widget>[
-              Container(
-                margin:
-                    EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(15), 0, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: font18,
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: ScreenUtil().setHeight(15),
-              ),
-              Row(
+        ),
+        body: Column(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(15), 0, 0),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  BouncingWidget(
-                    scaleFactor: _scaleFactor,
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: font18,
+                    ),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(
+              height: ScreenUtil().setHeight(15),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                BouncingWidget(
+                  scaleFactor: _scaleFactor,
+                  onPressed: () async {
+                    var connectivityResult =
+                        await (Connectivity().checkConnectivity());
+                    if (connectivityResult == ConnectivityResult.wifi ||
+                        connectivityResult == ConnectivityResult.mobile) {
+                      FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
+                    } else {
+                      _toast("This feature need Internet connection");
+                    }
+                  },
+                  child: ButttonWithIcon(
+                    icon: FontAwesomeIcons.whatsapp,
+                    title: "WhatsApp",
+                    buttonColor: Color.fromRGBO(37, 211, 102, 1),
                     onPressed: () async {
                       var connectivityResult =
                           await (Connectivity().checkConnectivity());
@@ -424,116 +437,103 @@ class _VProfileState extends State<VProfile>
                         _toast("This feature need Internet connection");
                       }
                     },
-                    child: ButttonWithIcon(
-                      icon: FontAwesomeIcons.whatsapp,
-                      title: "WhatsApp",
-                      buttonColor: Color.fromRGBO(37, 211, 102, 1),
-                      onPressed: () async {
-                        var connectivityResult =
-                            await (Connectivity().checkConnectivity());
-                        if (connectivityResult == ConnectivityResult.wifi ||
-                            connectivityResult == ConnectivityResult.mobile) {
-                          FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
-                        } else {
-                          _toast("This feature need Internet connection");
-                        }
-                      },
-                    ),
                   ),
-                ],
-              ),
-              SizedBox(
-                height: ScreenUtil().setHeight(20),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  MenuButton(
+                ),
+              ],
+            ),
+            SizedBox(
+              height: ScreenUtil().setHeight(20),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                MenuButton(
+                  child: button,
+                  items: data,
+                  scrollPhysics: AlwaysScrollableScrollPhysics(),
+                  topDivider: true,
+                  itemBuilder: (value) => Container(
+                      height: ScreenUtil().setHeight(60),
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 0.0, horizontal: 10),
+                      child: Text(value, style: TextStyle(fontSize: font14)),),
+                  toggledChild: Container(
+                    color: Colors.white,
                     child: button,
-                    items: data,
-                    scrollPhysics: AlwaysScrollableScrollPhysics(),
-                    topDivider: true,
-                    itemBuilder: (value) => Container(
-                        height: ScreenUtil().setHeight(60),
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 0.0, horizontal: 16),
-                        child: Text(value)),
-                    toggledChild: Container(
-                      color: Colors.white,
-                      child: button,
-                    ),
-                    divider: Container(
-                      height: 1,
-                      color: Colors.grey[300],
-                    ),
-                    onItemSelected: (value) {
-                      setState(() {
-                        status = value;
-                        setStatus(value);
-                      });
-                    },
-                    decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(3.0)),
-                        color: Colors.white),
-                    onMenuButtonToggle: (isToggle) {
-                      print(isToggle);
-                    },
                   ),
-                ],
-              ),
-              SizedBox(
-                height: ScreenUtil().setHeight(20),
-              ),
-              Expanded(
-                child: Scaffold(
-                  backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-                  appBar: PreferredSize(
-                    preferredSize: Size.fromHeight(
-                      ScreenUtil().setHeight(70),
-                    ),
-                    child: TabBar(
-                      controller: controller,
-                      indicator: BoxDecoration(color: Colors.white),
-                      unselectedLabelColor: Colors.grey,
-                      labelColor: Colors.blue,
-                      labelStyle: TextStyle(
-                        fontSize: font18,
-                      ),
-                      unselectedLabelStyle: TextStyle(
-                        fontSize: font18,
-                      ),
-                      tabs: <Widget>[
-                        Tab(
-                          child: Text(
-                            'Details',
-                            style: TextStyle(
-                              fontSize: font18,
-                            ),
-                          ),
-                        ),
-                        Tab(
-                          child: Text(
-                            'Views',
-                            style: TextStyle(
-                              fontSize: font18,
-                            ),
-                          ),
-                        ),
-                        Tab(
-                          child: Text(
-                            'Remarks',
-                            style: TextStyle(
-                              fontSize: font18,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  divider: Container(
+                    height: 1,
+                    color: Colors.grey[300],
                   ),
-                  body: TabBarView(controller: controller, children: <Widget>[
+                  onItemSelected: (value) {
+                    setState(() {
+                      status = value;
+                      setStatus(value);
+                    });
+                  },
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(3.0)),
+                      color: Colors.white),
+                  onMenuButtonToggle: (isToggle) {
+                  },
+                ),
+              ],
+            ),
+            SizedBox(
+              height: ScreenUtil().setHeight(20),
+            ),
+            Expanded(
+              child: Scaffold(
+                backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+                appBar: PreferredSize(
+                  preferredSize: Size.fromHeight(
+                    ScreenUtil().setHeight(70),
+                  ),
+                  child: TabBar(
+                    controller: controller,
+                    indicator: BoxDecoration(color: Colors.white),
+                    unselectedLabelColor: Colors.grey,
+                    labelColor: Colors.blue,
+                    labelStyle: TextStyle(
+                      fontSize: font18,
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: font18,
+                    ),
+                    tabs: <Widget>[
+                      Tab(
+                        child: Text(
+                          'Details',
+                          style: TextStyle(
+                            fontSize: font18,
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          'Views',
+                          style: TextStyle(
+                            fontSize: font18,
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          'Remarks',
+                          style: TextStyle(
+                            fontSize: font18,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                body: TabBarView(
+                  controller: controller,
+                  children: <Widget>[
                     (vProfileData == true &&
                             handlerData == true &&
                             vTagData == true)
@@ -617,11 +617,13 @@ class _VProfileState extends State<VProfile>
                               ),
                             ),
                           ),
-                  ]),
+                  ],
                 ),
               ),
-            ],
-          )),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

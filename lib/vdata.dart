@@ -1040,10 +1040,11 @@ class _VDataState extends State<VData> {
       scrollPhysics: AlwaysScrollableScrollPhysics(),
       topDivider: true,
       itemBuilder: (value) => Container(
-          height: ScreenUtil().setHeight(60),
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
-          child: Text(value)),
+        height: ScreenUtil().setHeight(60),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+        child: Text(value, style: TextStyle(fontSize: font12)),
+      ),
       toggledChild: Container(
         color: Colors.white,
         child: button,
