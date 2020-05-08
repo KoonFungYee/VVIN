@@ -241,7 +241,6 @@ class _LoginPageState extends State<Login> {
                                             size: ScreenUtil().setHeight(30)),
                                       ),
                                 contentPadding:
-                                    // EdgeInsets.all(ScreenUtil().setHeight(10)),
                                     EdgeInsets.fromLTRB(
                                         ScreenUtil().setHeight(10),
                                         ScreenUtil().setHeight(10),

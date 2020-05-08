@@ -142,14 +142,6 @@ class _SettingsState extends State<Settings> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],

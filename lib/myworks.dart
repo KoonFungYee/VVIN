@@ -118,6 +118,7 @@ class _MyWorksState extends State<MyWorks> {
   List<String> scanner = [];
   List<String> phoneList = [];
   List<String> otherList = [];
+  List<String> allHandler = [];
   String tempText = "";
   final _itemExtent = ScreenUtil().setHeight(316);
 
@@ -257,14 +258,6 @@ class _MyWorksState extends State<MyWorks> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],
@@ -1201,65 +1194,8 @@ class _MyWorksState extends State<MyWorks> {
                                         : Wrap(
                                             direction: Axis.horizontal,
                                             alignment: WrapAlignment.start,
-                                            children: <Widget>[
-                                              for (int i = 0;
-                                                  i < handlerList.length;
-                                                  i++)
-                                                InkWell(
-                                                  onTap: () {
-                                                    setModalState(() {
-                                                      handlerList.removeAt(i);
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    width: ScreenUtil()
-                                                        .setWidth((handlerList[
-                                                                        i]
-                                                                    .length *
-                                                                18) +
-                                                            62.8),
-                                                    margin: EdgeInsets.all(
-                                                        ScreenUtil()
-                                                            .setHeight(5)),
-                                                    decoration: BoxDecoration(
-                                                      color: Color.fromRGBO(
-                                                          235, 235, 255, 1),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              100),
-                                                    ),
-                                                    padding: EdgeInsets.all(
-                                                      ScreenUtil()
-                                                          .setHeight(10),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: <Widget>[
-                                                        Text(
-                                                          handlerList[i],
-                                                          style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontSize: font13,
-                                                          ),
-                                                        ),
-                                                        SizedBox(
-                                                          width: ScreenUtil()
-                                                              .setHeight(5),
-                                                        ),
-                                                        Icon(
-                                                          FontAwesomeIcons
-                                                              .timesCircle,
-                                                          size: ScreenUtil()
-                                                              .setHeight(30),
-                                                          color: Colors.grey,
-                                                        )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                            ],
+                                            children: _handler(
+                                                setModalState, handlerList),
                                           ),
                                   ),
                                 ),
@@ -1292,6 +1228,52 @@ class _MyWorksState extends State<MyWorks> {
     } else {
       _toast("This feature need Internet connection");
     }
+  }
+
+  List<Widget> _handler(StateSetter setModalState, List handlerList) {
+    List widgetList = <Widget>[];
+    for (int i = 0; i < handlerList.length; i++) {
+      Widget widget1 = InkWell(
+        onTap: () {
+          setModalState(() {
+            handlerList.removeAt(i);
+          });
+        },
+        child: Container(
+          width: ScreenUtil().setWidth((handlerList[i].length * 18) + 62.8),
+          margin: EdgeInsets.all(ScreenUtil().setHeight(5)),
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(235, 235, 255, 1),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          padding: EdgeInsets.all(
+            ScreenUtil().setHeight(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                handlerList[i],
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: font13,
+                ),
+              ),
+              SizedBox(
+                width: ScreenUtil().setHeight(5),
+              ),
+              Icon(
+                FontAwesomeIcons.timesCircle,
+                size: ScreenUtil().setHeight(30),
+                color: Colors.grey,
+              )
+            ],
+          ),
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   void _assignDone(String handlersOld, List handlerList, String id) async {
@@ -1334,9 +1316,7 @@ class _MyWorksState extends State<MyWorks> {
 
   void _selectHandler(List handlerList, String id) {
     String handler = "";
-    List<String> allHandler = [];
     Navigator.of(context).pop();
-
     allHandler.clear();
     for (var data in handlerAllList) {
       allHandler.add(data.handler);
@@ -1425,15 +1405,7 @@ class _MyWorksState extends State<MyWorks> {
                       onSelectedItemChanged: (int index) {
                         handler = allHandler[index];
                       },
-                      children: <Widget>[
-                        for (int i = 0; i < allHandler.length; i++)
-                          Text(
-                            allHandler[i],
-                            style: TextStyle(
-                              fontSize: font14,
-                            ),
-                          )
-                      ],
+                      children: _allHandlers(allHandler),
                     ),
                   ))
                 ],
@@ -1443,6 +1415,20 @@ class _MyWorksState extends State<MyWorks> {
         );
       },
     );
+  }
+
+  List<Widget> _allHandlers(List allHandler) {
+    List widgetList = <Widget>[];
+    for (int i = 0; i < allHandler.length; i++) {
+      Widget widget1 = Text(
+        allHandler[i],
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   Future<bool> _onBackPressAppBar() async {
@@ -2774,14 +2760,14 @@ class _MyWorksState extends State<MyWorks> {
     }
   }
 
-  // String _dateFormat(String fullDate) {
-  //   String result, date, month, year;
-  //   date = fullDate.substring(8, 10);
-  //   month = fullDate.substring(5, 7);
-  //   year = fullDate.substring(0, 4);
-  //   result = date + "/" + month + "/" + year;
-  //   return result;
-  // }
+  String _dateFormat(String fullDate) {
+    String result, date, month, year;
+    date = fullDate.substring(8, 10);
+    month = fullDate.substring(5, 7);
+    year = fullDate.substring(0, 4);
+    result = date + "/" + month + "/" + year;
+    return result;
+  }
 
   Future<String> get _localDevicePath async {
     final _devicePath = await getApplicationDocumentsDirectory();

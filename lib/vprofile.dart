@@ -221,16 +221,7 @@ class _VProfileState extends State<VProfile>
             CupertinoDialogAction(
               isDefaultAction: true,
               child: Text('Ok'),
-              onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
-              },
+              onPressed: () async {},
             )
           ],
         ),
@@ -453,11 +444,12 @@ class _VProfileState extends State<VProfile>
                   scrollPhysics: AlwaysScrollableScrollPhysics(),
                   topDivider: true,
                   itemBuilder: (value) => Container(
-                      height: ScreenUtil().setHeight(60),
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 0.0, horizontal: 10),
-                      child: Text(value, style: TextStyle(fontSize: font14)),),
+                    height: ScreenUtil().setHeight(60),
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 0.0, horizontal: 10),
+                    child: Text(value, style: TextStyle(fontSize: font14)),
+                  ),
                   toggledChild: Container(
                     color: Colors.white,
                     child: button,
@@ -477,8 +469,7 @@ class _VProfileState extends State<VProfile>
                       borderRadius:
                           const BorderRadius.all(Radius.circular(3.0)),
                       color: Colors.white),
-                  onMenuButtonToggle: (isToggle) {
-                  },
+                  onMenuButtonToggle: (isToggle) {},
                 ),
               ],
             ),
@@ -1230,31 +1221,8 @@ class _DetailsState extends State<Details> {
                                           : Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.start,
-                                              children: <Widget>[
-                                                for (var i = 0;
-                                                    i < widget.handler.length;
-                                                    i++)
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
-                                                    children: <Widget>[
-                                                      (i == 0)
-                                                          ? Text(
-                                                              "Handler",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      font16,
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          128,
-                                                                          128,
-                                                                          128,
-                                                                          1)),
-                                                            )
-                                                          : Text(""),
-                                                    ],
-                                                  ),
-                                              ],
+                                              children: _handlerLength(
+                                                  widget.handler.length),
                                             ),
                                     ),
                                     SizedBox(
@@ -1283,26 +1251,7 @@ class _DetailsState extends State<Details> {
                                         : Flexible(
                                             flex: 1,
                                             child: Column(
-                                              children: <Widget>[
-                                                for (var i in widget.handler)
-                                                  Container(
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: <Widget>[
-                                                        Flexible(
-                                                          child: Text(
-                                                            i.toString(),
-                                                            style: TextStyle(
-                                                              fontSize: font16,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                              ],
+                                              children: _handler(),
                                             ),
                                           ),
                                   ],
@@ -1329,31 +1278,7 @@ class _DetailsState extends State<Details> {
                                               ],
                                             )
                                           : Column(
-                                              children: <Widget>[
-                                                for (var i = 0;
-                                                    i < emailLength;
-                                                    i++)
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
-                                                    children: <Widget>[
-                                                      (i == 0)
-                                                          ? Text(
-                                                              "Email",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      font16,
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          128,
-                                                                          128,
-                                                                          128,
-                                                                          1)),
-                                                            )
-                                                          : Text(""),
-                                                    ],
-                                                  ),
-                                              ],
+                                              children: _emailLength(),
                                             ),
                                     ),
                                     SizedBox(
@@ -2143,46 +2068,7 @@ class _DetailsState extends State<Details> {
                                             child: Wrap(
                                               direction: Axis.horizontal,
                                               alignment: WrapAlignment.start,
-                                              children: <Widget>[
-                                                for (int i = 0;
-                                                    i < widget.vtag.length ?? 0;
-                                                    i++)
-                                                  Container(
-                                                    width: ScreenUtil()
-                                                        .setWidth((widget
-                                                                .vtag[i]
-                                                                .length *
-                                                            28)),
-                                                    margin: EdgeInsets.all(
-                                                        ScreenUtil()
-                                                            .setHeight(5)),
-                                                    decoration: BoxDecoration(
-                                                      color: Color.fromRGBO(
-                                                          235, 235, 255, 1),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              100),
-                                                    ),
-                                                    padding: EdgeInsets.all(
-                                                      ScreenUtil()
-                                                          .setHeight(10),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: <Widget>[
-                                                        Text(
-                                                          widget.vtag[i],
-                                                          style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontSize: 14,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                              ],
+                                              children: _vtagLength(),
                                             ),
                                           ),
                                         ),
@@ -2259,6 +2145,102 @@ class _DetailsState extends State<Details> {
               ),
             ),
     );
+  }
+
+  List<Widget> _handlerLength(int length) {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < length; i++) {
+      Widget widget1 = Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          (i == 0)
+              ? Text(
+                  "Handler",
+                  style: TextStyle(
+                      fontSize: font16,
+                      color: Color.fromRGBO(128, 128, 128, 1)),
+                )
+              : Text(""),
+        ],
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _handler() {
+    List widgetList = <Widget>[];
+    for (var i in widget.handler) {
+      Widget widget1 = Container(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                i.toString(),
+                style: TextStyle(
+                  fontSize: font16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _emailLength() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < emailLength; i++) {
+      Widget widget1 = Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          (i == 0)
+              ? Text(
+                  "Email",
+                  style: TextStyle(
+                      fontSize: font16,
+                      color: Color.fromRGBO(128, 128, 128, 1)),
+                )
+              : Text(""),
+        ],
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _vtagLength() {
+    List widgetList = <Widget>[];
+    for (int i = 0; i < widget.vtag.length ?? 0; i++) {
+      Widget widget1 = Container(
+        width: ScreenUtil().setWidth((widget.vtag[i].length * 28)),
+        margin: EdgeInsets.all(ScreenUtil().setHeight(5)),
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(235, 235, 255, 1),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        padding: EdgeInsets.all(
+          ScreenUtil().setHeight(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              widget.vtag[i],
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   String _dateFormat(String fullDate) {

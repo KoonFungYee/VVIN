@@ -254,14 +254,6 @@ class _VDataState extends State<VData> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],
@@ -2409,16 +2401,7 @@ class _VDataState extends State<VData> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in linksID)
-                                  Text(
-                                    each.link_type + each.link,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _link(linksID),
                             ),
                           ),
                         )
@@ -2513,15 +2496,7 @@ class _VDataState extends State<VData> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in status)
-                                  Text(
-                                    each,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _list(status),
                             ),
                           ),
                         )
@@ -2616,15 +2591,7 @@ class _VDataState extends State<VData> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in executiveList)
-                                  Text(
-                                    each,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _list(executiveList),
                             ),
                           ),
                         )
@@ -2723,15 +2690,7 @@ class _VDataState extends State<VData> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in appsAll)
-                                  Text(
-                                    each,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _list(appsAll),
                             ),
                           ),
                         )
@@ -2745,6 +2704,35 @@ class _VDataState extends State<VData> {
         }
         break;
     }
+  }
+
+  List<Widget> _link(List<Links> linksID) {
+    List widgetList = <Widget>[];
+    for (var each in linksID) {
+      Widget widget1 = Text(
+        each.link_type + each.link,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _list(List list) {
+    List widgetList = <Widget>[];
+    for (var each in list) {
+      Widget widget1 = Text(
+        each,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   void checkConnection() async {
@@ -3312,12 +3300,12 @@ class _VDataState extends State<VData> {
     );
   }
 
-  // String _dateFormat(String fullDate) {
-  //   String result, date, month, year;
-  //   date = fullDate.substring(8, 10);
-  //   month = fullDate.substring(5, 7);
-  //   year = fullDate.substring(0, 4);
-  //   result = date + "/" + month + "/" + year;
-  //   return result;
-  // }
+  String _dateFormat(String fullDate) {
+    String result, date, month, year;
+    date = fullDate.substring(8, 10);
+    month = fullDate.substring(5, 7);
+    year = fullDate.substring(0, 4);
+    result = date + "/" + month + "/" + year;
+    return result;
+  }
 }

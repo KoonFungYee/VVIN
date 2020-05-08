@@ -89,6 +89,8 @@ class _EditVProfileState extends State<EditVProfile> {
   List<States> statesList = [];
   List vtagList = [];
   List<String> otherList = [];
+  List tags = <Widget>[];
+  List texts = <Widget>[];
 
   List<String> industry = [
     "-",
@@ -409,7 +411,6 @@ class _EditVProfileState extends State<EditVProfile> {
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
         _showNotification();
       },
       onResume: (Map<String, dynamic> message) async {
@@ -494,14 +495,6 @@ class _EditVProfileState extends State<EditVProfile> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],
@@ -642,13 +635,15 @@ class _EditVProfileState extends State<EditVProfile> {
                       (widget.vdata.level == "0")
                           ? (widget.handler.length > 0)
                               ? Container(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      for (int i = 0;
-                                          i < widget.handler.length;
-                                          i++)
-                                        Container(
+                                  height: (widget.handler.length *
+                                      ScreenUtil().setHeight(80)),
+                                  child: ListView.builder(
+                                      itemCount: widget.handler.length,
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return Container(
                                           margin: EdgeInsets.fromLTRB(
                                             0,
                                             0,
@@ -675,7 +670,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                                     children: <Widget>[
                                                       Flexible(
                                                         child: Text(
-                                                          widget.handler[i],
+                                                          widget.handler[index],
                                                           style: TextStyle(
                                                             fontSize: font14,
                                                           ),
@@ -693,7 +688,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                               ),
                                               InkWell(
                                                 onTap: () {
-                                                  _deleteHandler(i);
+                                                  _deleteHandler(index);
                                                 },
                                                 child: Container(
                                                   height: ScreenUtil()
@@ -717,20 +712,21 @@ class _EditVProfileState extends State<EditVProfile> {
                                               ),
                                             ],
                                           ),
-                                        )
-                                    ],
-                                  ),
+                                        );
+                                      }),
                                 )
                               : Container()
                           : (widget.handler.length > 0)
                               ? Container(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      for (int i = 0;
-                                          i < widget.handler.length;
-                                          i++)
-                                        Container(
+                                  height: (widget.handler.length *
+                                      ScreenUtil().setHeight(80)),
+                                  child: ListView.builder(
+                                      itemCount: widget.handler.length,
+                                      shrinkWrap: true,
+                                      physics: NeverScrollableScrollPhysics(),
+                                      itemBuilder:
+                                          (BuildContext context, int index) {
+                                        return Container(
                                           margin: EdgeInsets.fromLTRB(
                                             0,
                                             0,
@@ -763,7 +759,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                                     children: <Widget>[
                                                       Flexible(
                                                         child: Text(
-                                                          widget.handler[i],
+                                                          widget.handler[index],
                                                           style: TextStyle(
                                                             fontSize: font14,
                                                           ),
@@ -777,9 +773,8 @@ class _EditVProfileState extends State<EditVProfile> {
                                               ),
                                             ],
                                           ),
-                                        )
-                                    ],
-                                  ),
+                                        );
+                                      }),
                                 )
                               : Container(),
                       (widget.vdata.level == "0")
@@ -1637,58 +1632,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                     : Wrap(
                                         direction: Axis.horizontal,
                                         alignment: WrapAlignment.start,
-                                        children: <Widget>[
-                                          for (int i = 0;
-                                              i < widget.vtag.length;
-                                              i++)
-                                            InkWell(
-                                              onTap: () {
-                                                _deleteTag(i);
-                                              },
-                                              child: Container(
-                                                width: ScreenUtil().setWidth(
-                                                    (widget.vtag[i].length *
-                                                            20) +
-                                                        62.8),
-                                                margin: EdgeInsets.all(
-                                                    ScreenUtil().setHeight(5)),
-                                                decoration: BoxDecoration(
-                                                  color: Color.fromRGBO(
-                                                      235, 235, 255, 1),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                ),
-                                                padding: EdgeInsets.all(
-                                                  ScreenUtil().setHeight(10),
-                                                ),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      widget.vtag[i],
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: font14,
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: ScreenUtil()
-                                                          .setHeight(5),
-                                                    ),
-                                                    Icon(
-                                                      FontAwesomeIcons
-                                                          .timesCircle,
-                                                      size: ScreenUtil()
-                                                          .setHeight(30),
-                                                      color: Colors.grey,
-                                                    )
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                        ],
+                                        children: _tags(widget.vtag.length),
                                       ),
                               ),
                             ),
@@ -1743,6 +1687,50 @@ class _EditVProfileState extends State<EditVProfile> {
         ),
       ),
     );
+  }
+
+  List<Widget> _tags(int length) {
+    tags.clear();
+    for (int i = 0; i < length; i++) {
+      Widget widget1 = InkWell(
+        onTap: () {
+          _deleteTag(i);
+        },
+        child: Container(
+          width: ScreenUtil().setWidth((widget.vtag[i].length * 20) + 62.8),
+          margin: EdgeInsets.all(ScreenUtil().setHeight(5)),
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(235, 235, 255, 1),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          padding: EdgeInsets.all(
+            ScreenUtil().setHeight(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                widget.vtag[i],
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: font14,
+                ),
+              ),
+              SizedBox(
+                width: ScreenUtil().setHeight(5),
+              ),
+              Icon(
+                FontAwesomeIcons.timesCircle,
+                size: ScreenUtil().setHeight(30),
+                color: Colors.grey,
+              )
+            ],
+          ),
+        ),
+      );
+      tags.add(widget1);
+    }
+    return tags;
   }
 
   void _deleteTag(int index) {
@@ -1838,15 +1826,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           selectedTag = vtagList[index];
                         }
                       },
-                      children: <Widget>[
-                        for (var each in vtagList)
-                          Text(
-                            each,
-                            style: TextStyle(
-                              fontSize: font14,
-                            ),
-                          )
-                      ],
+                      children: _text('vtagList'),
                     ),
                   ))
                 ],
@@ -1856,6 +1836,96 @@ class _EditVProfileState extends State<EditVProfile> {
         );
       },
     );
+  }
+
+  List<Widget> _text(String type) {
+    List widgetList = <Widget>[];
+    switch (type) {
+      case 'vtagList':
+        List list = vtagList;
+        for (var each in list) {
+          Widget widget1 = Text(
+            each,
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          );
+          widgetList.add(widget1);
+        }
+        break;
+      case 'genderList':
+        List<Gender> list = genderList;
+        for (var each in list) {
+          Widget widget1 = Text(
+            each.gender,
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          );
+          widgetList.add(widget1);
+        }
+        break;
+      case 'industryList':
+        List<Industry> list = industryList;
+        for (var each in list) {
+          Widget widget1 = Text(
+            each.industry,
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          );
+          widgetList.add(widget1);
+        }
+        break;
+      case 'countryList':
+        List<Country> list = countryList;
+        for (var each in list) {
+          Widget widget1 = Text(
+            each.country,
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          );
+          widgetList.add(widget1);
+        }
+        break;
+      case 'statesList':
+        List<States> list = statesList;
+        for (var each in list) {
+          Widget widget1 = Text(
+            each.state,
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          );
+          widgetList.add(widget1);
+        }
+        break;
+      case 'handlerList':
+        List<Handler> list = handlerList;
+        for (var each in list) {
+          Widget widget1 = Text(
+            each.handler,
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          );
+          widgetList.add(widget1);
+        }
+        break;
+      default:
+      List list = otherList;
+        for (var each in list) {
+          Widget widget1 = Text(
+            each,
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          );
+          widgetList.add(widget1);
+        }
+    }
+    return widgetList;
   }
 
   Future<bool> _onBackPressAppBar() async {
@@ -2038,15 +2108,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           });
                         }
                       },
-                      children: <Widget>[
-                        for (var each in handlerList)
-                          Text(
-                            each.handler,
-                            style: TextStyle(
-                              fontSize: font14,
-                            ),
-                          )
-                      ],
+                      children: _text('handlerList'),
                     ),
                   ))
                 ],
@@ -2187,15 +2249,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 });
                               }
                             },
-                            children: <Widget>[
-                              for (var each in genderList)
-                                Text(
-                                  each.gender,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text("genderList"),
                           ),
                         ))
                       ],
@@ -2294,15 +2348,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 });
                               }
                             },
-                            children: <Widget>[
-                              for (var data in industryList)
-                                Text(
-                                  data.industry,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('industryList'),
                           ),
                         ))
                       ],
@@ -2401,15 +2447,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 });
                               }
                             },
-                            children: <Widget>[
-                              for (var each in countryList)
-                                Text(
-                                  each.country,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('countryList'),
                           ),
                         ))
                       ],
@@ -2505,15 +2543,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 });
                               }
                             },
-                            children: <Widget>[
-                              for (var each in statesList)
-                                Text(
-                                  each.state,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('statesList'),
                           ),
                         ))
                       ],
@@ -2614,15 +2644,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 }
                               }
                             },
-                            children: <Widget>[
-                              for (var each in otherList)
-                                Text(
-                                  each,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('otherList'),
                           ),
                         ))
                       ],
@@ -2723,15 +2745,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 }
                               }
                             },
-                            children: <Widget>[
-                              for (var each in otherList)
-                                Text(
-                                  each,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('otherList'),
                           ),
                         ))
                       ],
@@ -2832,15 +2846,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 }
                               }
                             },
-                            children: <Widget>[
-                              for (var each in otherList)
-                                Text(
-                                  each,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('otherList'),
                           ),
                         ))
                       ],
@@ -2941,15 +2947,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 }
                               }
                             },
-                            children: <Widget>[
-                              for (var each in otherList)
-                                Text(
-                                  each,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('otherList'),
                           ),
                         ))
                       ],
@@ -3050,15 +3048,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                 }
                               }
                             },
-                            children: <Widget>[
-                              for (var each in otherList)
-                                Text(
-                                  each,
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                )
-                            ],
+                            children: _text('otherList'),
                           ),
                         ))
                       ],
@@ -3248,52 +3238,53 @@ class _EditVProfileState extends State<EditVProfile> {
 
   void _onLoading1() {
     showGeneralDialog(
-        barrierColor: Colors.grey.withOpacity(0.5),
-        transitionBuilder: (context, a1, a2, widget) {
-          final curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
-          return Transform(
-            transform: Matrix4.translationValues(0.0, curvedValue * -200, 0.0),
-            child: Opacity(
-              opacity: a1.value,
-              child: WillPopScope(
-                child: Dialog(
-                  elevation: 0.0,
-                  backgroundColor: Colors.transparent,
-                  child: Container(
-                    height: MediaQuery.of(context).size.height * 0.12,
-                    width: MediaQuery.of(context).size.width * 0.1,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          JumpingText('Loading...'),
-                          SizedBox(
-                              height:
-                                  MediaQuery.of(context).size.height * 0.02),
-                          SpinKitRing(
-                            lineWidth: 3,
-                            color: Colors.blue,
-                            size: 30.0,
-                            duration: Duration(milliseconds: 600),
-                          ),
-                        ],
-                      ),
+      barrierColor: Colors.grey.withOpacity(0.5),
+      transitionBuilder: (context, a1, a2, widget) {
+        final curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
+        return Transform(
+          transform: Matrix4.translationValues(0.0, curvedValue * -200, 0.0),
+          child: Opacity(
+            opacity: a1.value,
+            child: WillPopScope(
+              child: Dialog(
+                elevation: 0.0,
+                backgroundColor: Colors.transparent,
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.12,
+                  width: MediaQuery.of(context).size.width * 0.1,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        JumpingText('Loading...'),
+                        SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.02),
+                        SpinKitRing(
+                          lineWidth: 3,
+                          color: Colors.blue,
+                          size: 30.0,
+                          duration: Duration(milliseconds: 600),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                onWillPop: () {},
               ),
+              onWillPop: () {},
             ),
-          );
-        },
-        transitionDuration: Duration(milliseconds: 300),
-        barrierDismissible: false,
-        context: context,
-        pageBuilder: (context, animation1, animation2) {});
+          ),
+        );
+      },
+      transitionDuration: Duration(milliseconds: 300),
+      barrierDismissible: false,
+      context: context,
+      pageBuilder: (BuildContext context, Animation animation,
+          Animation secondaryAnimation) {},
+    );
   }
 
   void _deleteHandler(int i) {

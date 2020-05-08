@@ -306,14 +306,6 @@ class _VAnalyticsState extends State<VAnalytics>
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],
@@ -662,27 +654,36 @@ class _VAnalyticsState extends State<VAnalytics>
                                                   header: "Total Leads"),
                                               primaryXAxis: CategoryAxis(),
                                               series: <ChartSeries>[
-                                                // Initialize line series
                                                 LineSeries<LeadsData, String>(
                                                     enableTooltip: true,
-                                                    dataSource: (connection ==
-                                                            true)
-                                                        ? [
-                                                            for (var data
-                                                                in leadsDatas)
-                                                              LeadsData(
-                                                                  data.date,
-                                                                  double.parse(
-                                                                      data.number))
-                                                          ]
-                                                        : [
-                                                            for (var data
-                                                                in offlineChartData)
-                                                              LeadsData(
-                                                                  data['date'],
-                                                                  double.parse(data[
-                                                                      'number'])),
-                                                          ],
+                                                    dataSource:
+                                                        (connection == true)
+                                                            ? List.generate(
+                                                                leadsDatas
+                                                                    .length,
+                                                                (index) {
+                                                                return LeadsData(
+                                                                    leadsDatas[
+                                                                            index]
+                                                                        .date,
+                                                                    double.parse(
+                                                                        leadsDatas[index]
+                                                                            .number));
+                                                              })
+                                                            : List.generate(
+                                                                offlineChartData
+                                                                    .length,
+                                                                (index) {
+                                                                return LeadsData(
+                                                                    offlineChartData[
+                                                                            index]
+                                                                        [
+                                                                        'date'],
+                                                                    double.parse(
+                                                                        offlineChartData[index]
+                                                                            [
+                                                                            'number']));
+                                                              }),
                                                     color: Colors.blue,
                                                     xValueMapper:
                                                         (LeadsData sales, _) =>
@@ -1183,7 +1184,6 @@ class _VAnalyticsState extends State<VAnalytics>
                                                         ),
                                                       )
                                                     : Container(
-                                                        // height: ScreenUtil().setHeight(847),
                                                         height: (connection ==
                                                                 true)
                                                             ? ScreenUtil()
@@ -1210,126 +1210,12 @@ class _VAnalyticsState extends State<VAnalytics>
                                                                   (connection ==
                                                                           true)
                                                                       ? Column(
-                                                                          children: <
-                                                                              Widget>[
-                                                                            for (var i = 0;
-                                                                                i < topViews.length + 1;
-                                                                                i++)
-                                                                              (i == 0)
-                                                                                  ? Row(
-                                                                                      mainAxisAlignment: MainAxisAlignment.start,
-                                                                                      children: <Widget>[
-                                                                                        Container(
-                                                                                          width: MediaQuery.of(context).size.width * 0.45,
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Name",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ],
-                                                                                    )
-                                                                                  : InkWell(
-                                                                                      onTap: () async {
-                                                                                        var connectivityResult = await (Connectivity().checkConnectivity());
-                                                                                        if (connectivityResult == ConnectivityResult.wifi || connectivityResult == ConnectivityResult.mobile) {
-                                                                                          _redirectVProfile(i - 1);
-                                                                                        } else {
-                                                                                          _noInternet();
-                                                                                        }
-                                                                                      },
-                                                                                      child: Container(
-                                                                                        height: (i == topViews.length) ? ScreenUtil().setHeight(80) : ScreenUtil().setHeight(77),
-                                                                                        decoration: BoxDecoration(
-                                                                                          border: Border(
-                                                                                            right: BorderSide(width: ScreenUtil().setWidth(2), color: Colors.grey.shade300),
-                                                                                          ),
-                                                                                        ),
-                                                                                        padding: EdgeInsets.all(
-                                                                                          ScreenUtil().setHeight(20),
-                                                                                        ),
-                                                                                        child: Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment.start,
-                                                                                          children: <Widget>[
-                                                                                            Text(
-                                                                                              topViews[i - 1].name,
-                                                                                              style: TextStyle(
-                                                                                                color: Colors.blue,
-                                                                                                fontSize: font14,
-                                                                                              ),
-                                                                                              overflow: TextOverflow.ellipsis,
-                                                                                            ),
-                                                                                          ],
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                          ],
+                                                                          children:
+                                                                              _topViewLength(),
                                                                         )
                                                                       : Column(
-                                                                          children: <
-                                                                              Widget>[
-                                                                            for (var i = 0;
-                                                                                i < offlineTopViewData.length + 1;
-                                                                                i++)
-                                                                              (i == 0)
-                                                                                  ? Row(
-                                                                                      mainAxisAlignment: MainAxisAlignment.start,
-                                                                                      children: <Widget>[
-                                                                                        Container(
-                                                                                          width: MediaQuery.of(context).size.width * 0.45,
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Name",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                      ],
-                                                                                    )
-                                                                                  : Container(
-                                                                                      height: (i == offlineTopViewData.length) ? ScreenUtil().setHeight(80) : ScreenUtil().setHeight(77),
-                                                                                      decoration: BoxDecoration(
-                                                                                        border: Border(
-                                                                                          right: BorderSide(width: ScreenUtil().setWidth(2), color: Colors.grey.shade300),
-                                                                                        ),
-                                                                                      ),
-                                                                                      padding: EdgeInsets.all(
-                                                                                        ScreenUtil().setHeight(20),
-                                                                                      ),
-                                                                                      child: Row(
-                                                                                        mainAxisAlignment: MainAxisAlignment.start,
-                                                                                        children: <Widget>[
-                                                                                          Text(
-                                                                                            (connection == true) ? topViews[i - 1].name : offlineTopViewData[i - 1]['name'],
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.blue,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                            overflow: TextOverflow.ellipsis,
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                          ],
+                                                                          children:
+                                                                              _offLinetopViewLength(),
                                                                         ),
                                                             ),
                                                             Container(
@@ -1362,139 +1248,13 @@ class _VAnalyticsState extends State<VAnalytics>
                                                                           children: <
                                                                               Widget>[
                                                                             Column(
-                                                                              children: <Widget>[
-                                                                                for (var i = 0; i < topViews.length + 1; i++)
-                                                                                  (i == 0)
-                                                                                      ? Container(
-                                                                                          width: ScreenUtil().setWidth(345),
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Status",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        )
-                                                                                      : Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment.start,
-                                                                                          children: <Widget>[
-                                                                                            Container(
-                                                                                              height: ScreenUtil().setHeight(77),
-                                                                                              width: ScreenUtil().setWidth(345),
-                                                                                              decoration: BoxDecoration(
-                                                                                                border: Border(
-                                                                                                  right: BorderSide(width: ScreenUtil().setHeight(2), color: Colors.grey.shade300),
-                                                                                                ),
-                                                                                              ),
-                                                                                              padding: EdgeInsets.all(
-                                                                                                ScreenUtil().setHeight(20),
-                                                                                              ),
-                                                                                              child: Text(
-                                                                                                topViews[i - 1].status,
-                                                                                                style: TextStyle(
-                                                                                                  color: Colors.grey,
-                                                                                                  fontSize: font14,
-                                                                                                ),
-                                                                                              ),
-                                                                                            ),
-                                                                                          ],
-                                                                                        )
-                                                                              ],
+                                                                              children: _status(),
                                                                             ),
                                                                             Column(
-                                                                              children: <Widget>[
-                                                                                for (var i = 0; i < topViews.length + 1; i++)
-                                                                                  (i == 0)
-                                                                                      ? Container(
-                                                                                          width: ScreenUtil().setWidth(345),
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Channel",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        )
-                                                                                      : Container(
-                                                                                          height: ScreenUtil().setHeight(77),
-                                                                                          width: ScreenUtil().setWidth(345),
-                                                                                          decoration: BoxDecoration(
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: ScreenUtil().setHeight(2), color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          padding: EdgeInsets.all(
-                                                                                            ScreenUtil().setHeight(20),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            topViews[i - 1].channel,
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                              ],
+                                                                              children: _channel(),
                                                                             ),
                                                                             Column(
-                                                                              children: <Widget>[
-                                                                                for (var i = 0; i < topViews.length + 1; i++)
-                                                                                  (i == 0)
-                                                                                      ? Container(
-                                                                                          width: ScreenUtil().setWidth(180),
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Views",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        )
-                                                                                      : Container(
-                                                                                          height: ScreenUtil().setHeight(77),
-                                                                                          width: ScreenUtil().setWidth(180),
-                                                                                          decoration: BoxDecoration(
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: ScreenUtil().setHeight(2), color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          padding: EdgeInsets.all(
-                                                                                            ScreenUtil().setHeight(20),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            topViews[i - 1].views,
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                            overflow: TextOverflow.ellipsis,
-                                                                                          ),
-                                                                                        ),
-                                                                              ],
+                                                                              children: _view(),
                                                                             )
                                                                           ],
                                                                         )
@@ -1504,139 +1264,13 @@ class _VAnalyticsState extends State<VAnalytics>
                                                                           children: <
                                                                               Widget>[
                                                                             Column(
-                                                                              children: <Widget>[
-                                                                                for (var i = 0; i < offlineTopViewData.length + 1; i++)
-                                                                                  (i == 0)
-                                                                                      ? Container(
-                                                                                          width: ScreenUtil().setWidth(345),
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Status",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        )
-                                                                                      : Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment.start,
-                                                                                          children: <Widget>[
-                                                                                            Container(
-                                                                                              height: ScreenUtil().setHeight(77),
-                                                                                              width: ScreenUtil().setWidth(345),
-                                                                                              decoration: BoxDecoration(
-                                                                                                border: Border(
-                                                                                                  right: BorderSide(width: ScreenUtil().setHeight(2), color: Colors.grey.shade300),
-                                                                                                ),
-                                                                                              ),
-                                                                                              padding: EdgeInsets.all(
-                                                                                                ScreenUtil().setHeight(20),
-                                                                                              ),
-                                                                                              child: Text(
-                                                                                                offlineTopViewData[i - 1]['status'],
-                                                                                                style: TextStyle(
-                                                                                                  color: Colors.grey,
-                                                                                                  fontSize: font14,
-                                                                                                ),
-                                                                                              ),
-                                                                                            ),
-                                                                                          ],
-                                                                                        )
-                                                                              ],
+                                                                              children: _offlineStatus(),
                                                                             ),
                                                                             Column(
-                                                                              children: <Widget>[
-                                                                                for (var i = 0; i < offlineTopViewData.length + 1; i++)
-                                                                                  (i == 0)
-                                                                                      ? Container(
-                                                                                          width: ScreenUtil().setWidth(345),
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Channel",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        )
-                                                                                      : Container(
-                                                                                          height: ScreenUtil().setHeight(77),
-                                                                                          width: ScreenUtil().setWidth(345),
-                                                                                          decoration: BoxDecoration(
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: ScreenUtil().setHeight(2), color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          padding: EdgeInsets.all(
-                                                                                            ScreenUtil().setHeight(20),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            offlineTopViewData[i - 1]['channel'],
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                              ],
+                                                                              children: _offlineChannel(),
                                                                             ),
                                                                             Column(
-                                                                              children: <Widget>[
-                                                                                for (var i = 0; i < offlineTopViewData.length + 1; i++)
-                                                                                  (i == 0)
-                                                                                      ? Container(
-                                                                                          width: ScreenUtil().setWidth(180),
-                                                                                          padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-                                                                                          decoration: BoxDecoration(
-                                                                                            color: Color.fromRGBO(235, 235, 255, 1),
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: 1, color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            "Views",
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontWeight: FontWeight.bold,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                          ),
-                                                                                        )
-                                                                                      : Container(
-                                                                                          height: ScreenUtil().setHeight(77),
-                                                                                          width: ScreenUtil().setWidth(180),
-                                                                                          decoration: BoxDecoration(
-                                                                                            border: Border(
-                                                                                              right: BorderSide(width: ScreenUtil().setHeight(2), color: Colors.grey.shade300),
-                                                                                            ),
-                                                                                          ),
-                                                                                          padding: EdgeInsets.all(
-                                                                                            ScreenUtil().setHeight(20),
-                                                                                          ),
-                                                                                          child: Text(
-                                                                                            offlineTopViewData[i - 1]['views'],
-                                                                                            style: TextStyle(
-                                                                                              color: Colors.grey,
-                                                                                              fontSize: font14,
-                                                                                            ),
-                                                                                            overflow: TextOverflow.ellipsis,
-                                                                                          ),
-                                                                                        ),
-                                                                              ],
+                                                                              children: _offlineViews(),
                                                                             )
                                                                           ],
                                                                         ),
@@ -2121,7 +1755,6 @@ class _VAnalyticsState extends State<VAnalytics>
                                               PieSeries<AppData, String>(
                                                 enableSmartLabels: true,
                                                 dataSource: [
-                                                  // Bind data source
                                                   AppData(
                                                       'VFlex',
                                                       (connection == true)
@@ -2216,7 +1849,6 @@ class _VAnalyticsState extends State<VAnalytics>
                                               PieSeries<ChannelData, String>(
                                                 enableSmartLabels: true,
                                                 dataSource: [
-                                                  // Bind data source
                                                   ChannelData(
                                                       'WhatsApp Forward',
                                                       (connection == true)
@@ -2312,6 +1944,453 @@ class _VAnalyticsState extends State<VAnalytics>
             ),
           );
         });
+  }
+
+  List<Widget> _topViewLength() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < topViews.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(235, 235, 255, 1),
+                    border: Border(
+                      right: BorderSide(width: 1, color: Colors.grey.shade300),
+                    ),
+                  ),
+                  child: Text(
+                    "Name",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: font14,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : widget1 = InkWell(
+              onTap: () async {
+                var connectivityResult =
+                    await (Connectivity().checkConnectivity());
+                if (connectivityResult == ConnectivityResult.wifi ||
+                    connectivityResult == ConnectivityResult.mobile) {
+                  _redirectVProfile(i - 1);
+                } else {
+                  _noInternet();
+                }
+              },
+              child: Container(
+                height: (i == topViews.length)
+                    ? ScreenUtil().setHeight(80)
+                    : ScreenUtil().setHeight(77),
+                decoration: BoxDecoration(
+                  border: Border(
+                    right: BorderSide(
+                        width: ScreenUtil().setWidth(2),
+                        color: Colors.grey.shade300),
+                  ),
+                ),
+                padding: EdgeInsets.all(
+                  ScreenUtil().setHeight(20),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      topViews[i - 1].name,
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: font14,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _offLinetopViewLength() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < offlineTopViewData.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.45,
+                  padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+                  decoration: BoxDecoration(
+                    color: Color.fromRGBO(235, 235, 255, 1),
+                    border: Border(
+                      right: BorderSide(width: 1, color: Colors.grey.shade300),
+                    ),
+                  ),
+                  child: Text(
+                    "Name",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: font14,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : widget1 = Container(
+              height: (i == offlineTopViewData.length)
+                  ? ScreenUtil().setHeight(80)
+                  : ScreenUtil().setHeight(77),
+              decoration: BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                      width: ScreenUtil().setWidth(2),
+                      color: Colors.grey.shade300),
+                ),
+              ),
+              padding: EdgeInsets.all(
+                ScreenUtil().setHeight(20),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    (connection == true)
+                        ? topViews[i - 1].name
+                        : offlineTopViewData[i - 1]['name'],
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontSize: font14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _status() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < topViews.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Container(
+              width: ScreenUtil().setWidth(345),
+              padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(235, 235, 255, 1),
+                border: Border(
+                  right: BorderSide(width: 1, color: Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                "Status",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: font14,
+                ),
+              ),
+            )
+          : widget1 = Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  height: ScreenUtil().setHeight(77),
+                  width: ScreenUtil().setWidth(345),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(
+                          width: ScreenUtil().setHeight(2),
+                          color: Colors.grey.shade300),
+                    ),
+                  ),
+                  padding: EdgeInsets.all(
+                    ScreenUtil().setHeight(20),
+                  ),
+                  child: Text(
+                    topViews[i - 1].status,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: font14,
+                    ),
+                  ),
+                ),
+              ],
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _channel() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < topViews.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Container(
+              width: ScreenUtil().setWidth(345),
+              padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(235, 235, 255, 1),
+                border: Border(
+                  right: BorderSide(width: 1, color: Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                "Channel",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: font14,
+                ),
+              ),
+            )
+          : widget1 = Container(
+              height: ScreenUtil().setHeight(77),
+              width: ScreenUtil().setWidth(345),
+              decoration: BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                      width: ScreenUtil().setHeight(2),
+                      color: Colors.grey.shade300),
+                ),
+              ),
+              padding: EdgeInsets.all(
+                ScreenUtil().setHeight(20),
+              ),
+              child: Text(
+                topViews[i - 1].channel,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: font14,
+                ),
+              ),
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _view() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < topViews.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Container(
+              width: ScreenUtil().setWidth(180),
+              padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(235, 235, 255, 1),
+                border: Border(
+                  right: BorderSide(width: 1, color: Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                "Views",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: font14,
+                ),
+              ),
+            )
+          : widget1 = Container(
+              height: ScreenUtil().setHeight(77),
+              width: ScreenUtil().setWidth(180),
+              decoration: BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                      width: ScreenUtil().setHeight(2),
+                      color: Colors.grey.shade300),
+                ),
+              ),
+              padding: EdgeInsets.all(
+                ScreenUtil().setHeight(20),
+              ),
+              child: Text(
+                topViews[i - 1].views,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: font14,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _offlineStatus() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < offlineTopViewData.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Container(
+              width: ScreenUtil().setWidth(345),
+              padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(235, 235, 255, 1),
+                border: Border(
+                  right: BorderSide(width: 1, color: Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                "Status",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: font14,
+                ),
+              ),
+            )
+          : widget1 = Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  height: ScreenUtil().setHeight(77),
+                  width: ScreenUtil().setWidth(345),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(
+                          width: ScreenUtil().setHeight(2),
+                          color: Colors.grey.shade300),
+                    ),
+                  ),
+                  padding: EdgeInsets.all(
+                    ScreenUtil().setHeight(20),
+                  ),
+                  child: Text(
+                    offlineTopViewData[i - 1]['status'],
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: font14,
+                    ),
+                  ),
+                ),
+              ],
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _offlineChannel() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < offlineTopViewData.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Container(
+              width: ScreenUtil().setWidth(345),
+              padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(235, 235, 255, 1),
+                border: Border(
+                  right: BorderSide(width: 1, color: Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                "Status",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: font14,
+                ),
+              ),
+            )
+          : widget1 = Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  height: ScreenUtil().setHeight(77),
+                  width: ScreenUtil().setWidth(345),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(
+                          width: ScreenUtil().setHeight(2),
+                          color: Colors.grey.shade300),
+                    ),
+                  ),
+                  padding: EdgeInsets.all(
+                    ScreenUtil().setHeight(20),
+                  ),
+                  child: Text(
+                    offlineTopViewData[i - 1]['status'],
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: font14,
+                    ),
+                  ),
+                ),
+              ],
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _offlineViews() {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < offlineTopViewData.length + 1; i++) {
+      Widget widget1;
+      (i == 0)
+          ? widget1 = Container(
+              width: ScreenUtil().setWidth(180),
+              padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(235, 235, 255, 1),
+                border: Border(
+                  right: BorderSide(width: 1, color: Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                "Views",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: font14,
+                ),
+              ),
+            )
+          : widget1 = Container(
+              height: ScreenUtil().setHeight(77),
+              width: ScreenUtil().setWidth(180),
+              decoration: BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                      width: ScreenUtil().setHeight(2),
+                      color: Colors.grey.shade300),
+                ),
+              ),
+              padding: EdgeInsets.all(
+                ScreenUtil().setHeight(20),
+              ),
+              child: Text(
+                offlineTopViewData[i - 1]['views'],
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: font14,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   void _redirectVProfile(int position) async {
@@ -2817,7 +2896,6 @@ class _VAnalyticsState extends State<VAnalytics>
       "startDate": _startDate.toString().substring(0, 10),
       "endDate": _endDate.toString().substring(0, 10)
     }).then((res) {
-      // print("VAnalytics top view status:" + (res.statusCode).toString());
       // print("VAnalytics top view body: " + res.body);
       if (res.body == "nodata") {
         if (this.mounted) {
@@ -2974,7 +3052,6 @@ class _VAnalyticsState extends State<VAnalytics>
       "startDate": _startDate.toString().substring(0, 10),
       "endDate": _endDate.toString().substring(0, 10),
     }).then((res) {
-      // print("VAnalytics total leads status:" + (res.statusCode).toString());
       // print("VAnalytics total leads body: " + res.body);
       if (res.body == "nodata") {
         LeadData leadsData = LeadData(
@@ -3037,7 +3114,6 @@ class _VAnalyticsState extends State<VAnalytics>
       "startDate": _startDate.toString().substring(0, 10),
       "endDate": _endDate.toString().substring(0, 10),
     }).then((res) {
-      // print("VAnalytics status:" + (res.statusCode).toString());
       // print("VAnalytics body: " + res.body);
       var jsonData = json.decode(res.body);
       if (jsonData[0] == "nodata") {

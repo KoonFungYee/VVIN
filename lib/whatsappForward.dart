@@ -163,14 +163,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],
@@ -719,73 +711,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                             : Wrap(
                                                 direction: Axis.horizontal,
                                                 alignment: WrapAlignment.start,
-                                                children: <Widget>[
-                                                  for (int i = 0;
-                                                      i < seletedVTag.length;
-                                                      i++)
-                                                    InkWell(
-                                                      onTap: () {
-                                                        if (this.mounted) {
-                                                          setState(() {
-                                                            seletedVTag
-                                                                .removeAt(i);
-                                                          });
-                                                        }
-                                                      },
-                                                      child: Container(
-                                                        width: ScreenUtil()
-                                                            .setWidth((seletedVTag[
-                                                                            i]
-                                                                        .length *
-                                                                    16.8) +
-                                                                62.8),
-                                                        margin: EdgeInsets.all(
-                                                            ScreenUtil()
-                                                                .setHeight(5)),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Color.fromRGBO(
-                                                              235, 235, 255, 1),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(
-                                                                      100),
-                                                        ),
-                                                        padding: EdgeInsets.all(
-                                                          ScreenUtil()
-                                                              .setHeight(10),
-                                                        ),
-                                                        child: Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: <Widget>[
-                                                            Text(
-                                                              seletedVTag[i],
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .black,
-                                                                fontSize: 12,
-                                                              ),
-                                                            ),
-                                                            SizedBox(
-                                                              width: ScreenUtil()
-                                                                  .setHeight(5),
-                                                            ),
-                                                            Icon(
-                                                              FontAwesomeIcons
-                                                                  .timesCircle,
-                                                              size: ScreenUtil()
-                                                                  .setHeight(
-                                                                      30),
-                                                              color:
-                                                                  Colors.grey,
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                ],
+                                                children: _selectedVTag(),
                                               ),
                                       ),
                                     ),
@@ -934,6 +860,54 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         ),
       ),
     );
+  }
+
+  List<Widget> _selectedVTag() {
+    List widgetList = <Widget>[];
+    for (int i = 0; i < seletedVTag.length; i++) {
+      Widget widget1 = InkWell(
+        onTap: () {
+          if (this.mounted) {
+            setState(() {
+              seletedVTag.removeAt(i);
+            });
+          }
+        },
+        child: Container(
+          width: ScreenUtil().setWidth((seletedVTag[i].length * 16.8) + 62.8),
+          margin: EdgeInsets.all(ScreenUtil().setHeight(5)),
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(235, 235, 255, 1),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          padding: EdgeInsets.all(
+            ScreenUtil().setHeight(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                seletedVTag[i],
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                ),
+              ),
+              SizedBox(
+                width: ScreenUtil().setHeight(5),
+              ),
+              Icon(
+                FontAwesomeIcons.timesCircle,
+                size: ScreenUtil().setHeight(30),
+                color: Colors.grey,
+              )
+            ],
+          ),
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   void _toast(String message) {
@@ -1177,11 +1151,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                         seletedVTag.add(selectedTag);
                                       });
                                     }
-                                    if (this.mounted) {
-                                      setState(() {
-                                        seletedVTag.add(selectedTag);
-                                      });
-                                    }
                                   }
                                 } else {
                                   if (this.mounted) {
@@ -1215,15 +1184,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                               }
                             }
                           },
-                          children: <Widget>[
-                            for (var each in widget.whatsappForward.vtagList)
-                              Text(
-                                each,
-                                style: TextStyle(
-                                  fontSize: font14,
-                                ),
-                              )
-                          ],
+                          children: _vTagList(),
                         ),
                       ),
                     ),
@@ -1237,6 +1198,20 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     } else {
       _toast("VTag list is empty");
     }
+  }
+
+  List<Widget> _vTagList() {
+    List widgetList = <Widget>[];
+    for (var each in widget.whatsappForward.vtagList) {
+      Widget widget1 = Text(
+        each,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   void _showBottomSheet(String type) {
@@ -1325,15 +1300,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                             }
                           }
                         },
-                        children: <Widget>[
-                          for (var each in phoneList)
-                            Text(
-                              each,
-                              style: TextStyle(
-                                fontSize: font14,
-                              ),
-                            )
-                        ],
+                        children: _phoneList(),
                       ),
                     ))
                   ],
@@ -1422,15 +1389,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                         onSelectedItemChanged: (int index) {
                           tempText = otherList[index];
                         },
-                        children: <Widget>[
-                          for (var each in otherList)
-                            Text(
-                              each,
-                              style: TextStyle(
-                                fontSize: font14,
-                              ),
-                            )
-                        ],
+                        children: _otherList(),
                       ),
                     ))
                   ],
@@ -1441,6 +1400,34 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         },
       );
     }
+  }
+
+  List<Widget> _phoneList() {
+    List widgetList = <Widget>[];
+    for (var each in phoneList) {
+      Widget widget1 = Text(
+        each,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _otherList() {
+    List widgetList = <Widget>[];
+    for (var each in otherList) {
+      Widget widget1 = Text(
+        each,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   TextEditingController _checkTextField(String textfield) {

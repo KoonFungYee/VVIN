@@ -179,14 +179,6 @@ class _ProfileState extends State<Profile> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],
@@ -349,7 +341,8 @@ class _ProfileState extends State<Profile> {
                                                 Radius.circular(10.0)),
                                             image: DecorationImage(
                                               fit: BoxFit.fill,
-                                              image: CachedNetworkImageProvider(image),
+                                              image: CachedNetworkImageProvider(
+                                                  image),
                                             ),
                                           ),
                                         ),
@@ -539,50 +532,13 @@ class _ProfileState extends State<Profile> {
                                             ? Column(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.start,
-                                                children: <Widget>[
-                                                  for (var i = 0;
-                                                      i < emailLength;
-                                                      i++)
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        (i == 0)
-                                                            ? Text("Email",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        font14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold))
-                                                            : Text(""),
-                                                      ],
-                                                    ),
-                                                ],
+                                                children: _email(emailLength),
                                               )
                                             : Column(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.start,
-                                                children: <Widget>[
-                                                  for (var i = 0;
-                                                      i < offLineEmailLength;
-                                                      i++)
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        (i == 0)
-                                                            ? Text("Email",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        font14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold))
-                                                            : Text(""),
-                                                      ],
-                                                    ),
-                                                ],
+                                                children:
+                                                    _email(offLineEmailLength),
                                               ),
                                       ),
                                       SizedBox(
@@ -715,28 +671,7 @@ class _ProfileState extends State<Profile> {
                                               child: Column(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.start,
-                                                children: <Widget>[
-                                                  for (var i = 0;
-                                                      i < addressLength;
-                                                      i++)
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        (i == 0)
-                                                            ? Text(
-                                                                "Address",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        font14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              )
-                                                            : Text(""),
-                                                      ],
-                                                    )
-                                                ],
+                                                children: _address(addressLength),
                                               ),
                                             )
                                           : Container(
@@ -744,28 +679,7 @@ class _ProfileState extends State<Profile> {
                                               child: Column(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.start,
-                                                children: <Widget>[
-                                                  for (var i = 0;
-                                                      i < offLineAddressLength;
-                                                      i++)
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: <Widget>[
-                                                        (i == 0)
-                                                            ? Text(
-                                                                "Address",
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        font14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              )
-                                                            : Text(""),
-                                                      ],
-                                                    )
-                                                ],
+                                                children: _address(offLineAddressLength),
                                               ),
                                             ),
                                       SizedBox(
@@ -856,6 +770,44 @@ class _ProfileState extends State<Profile> {
         ),
       ),
     );
+  }
+
+  List<Widget> _email(int emailLength) {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < emailLength; i++) {
+      Widget widget1 = Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          (i == 0)
+              ? Text("Email",
+                  style:
+                      TextStyle(fontSize: font14, fontWeight: FontWeight.bold))
+              : Text(""),
+        ],
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _address(int addressLength) {
+    List widgetList = <Widget>[];
+    for (var i = 0; i < offLineAddressLength; i++) {
+      Widget widget1 = Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          (i == 0)
+              ? Text(
+                  "Address",
+                  style:
+                      TextStyle(fontSize: font14, fontWeight: FontWeight.bold),
+                )
+              : Text(""),
+        ],
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   Future<bool> _onBackPressAppBar() async {
@@ -1097,8 +1049,7 @@ class _ProfileState extends State<Profile> {
     if (_response.statusCode == 200) {
       final _file = await _localImage(path: path, name: name);
       await _file.writeAsBytes(_response.bodyBytes);
-    } else {
-    }
+    } else {}
   }
 
   Future<File> _localImage({String path, String name}) async {

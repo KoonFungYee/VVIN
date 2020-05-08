@@ -95,10 +95,10 @@ class _LineChartState extends State<LineChart> {
                 series: <ChartSeries>[
                   LineSeries<LeadsData, String>(
                       enableTooltip: true,
-                      dataSource: [
-                        for (var data in widget.leadsDatas)
-                          LeadsData(data.date, double.parse(data.number))
-                      ],
+                      dataSource: List.generate(widget.leadsDatas.length, (index) {
+                        return LeadsData(widget.leadsDatas[index].date,
+                            double.parse(widget.leadsDatas[index].number));
+                      }),
                       color: Colors.blue,
                       xValueMapper: (LeadsData sales, _) => sales.x,
                       yValueMapper: (LeadsData sales, _) => sales.y)

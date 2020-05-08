@@ -254,14 +254,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
               isDefaultAction: true,
               child: Text('Ok'),
               onPressed: () async {
-                // Navigator.of(context, rootNavigator: true).pop();
-                // await Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) =>
-                //         SecondScreen(receivedNotification.payload),
-                //   ),
-                // );
               },
             )
           ],
@@ -2154,16 +2146,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in linksID)
-                                  Text(
-                                    each.link_type + each.link,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _link(linksID),
                             ),
                           ),
                         )
@@ -2258,15 +2241,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in status)
-                                  Text(
-                                    each,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _list(status),
                             ),
                           ),
                         )
@@ -2361,15 +2336,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in executiveList)
-                                  Text(
-                                    each,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _list(executiveList),
                             ),
                           ),
                         )
@@ -2468,15 +2435,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                   });
                                 }
                               },
-                              children: <Widget>[
-                                for (var each in appsAll)
-                                  Text(
-                                    each,
-                                    style: TextStyle(
-                                      fontSize: font14,
-                                    ),
-                                  )
-                              ],
+                              children: _list(appsAll),
                             ),
                           ),
                         )
@@ -2490,6 +2449,35 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         }
         break;
     }
+  }
+
+  List<Widget> _link(List<Links> linksID) {
+    List widgetList = <Widget>[];
+    for (var each in linksID) {
+      Widget widget1 = Text(
+        each.link_type + each.link,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  List<Widget> _list(List list) {
+    List widgetList = <Widget>[];
+    for (var each in list) {
+      Widget widget1 = Text(
+        each,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   void _redirectWhatsApp(int index) async {
