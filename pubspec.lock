@@ -359,6 +359,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
+  map_launcher:
+    dependency: "direct main"
+    description:
+      name: map_launcher
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.5"
   matcher:
     dependency: transitive
     description:
@@ -394,6 +401,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.8"
+  new_geolocation:
+    dependency: "direct main"
+    description:
+      name: new_geolocation
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   open_file:
     dependency: "direct main"
     description:
@@ -567,6 +581,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  streams_channel:
+    dependency: transitive
+    description:
+      name: streams_channel
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.3"
   string_scanner:
     dependency: transitive
     description:

@@ -12,7 +12,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:map_launcher/map_launcher.dart';
 import 'package:menu_button/menu_button.dart';
+import 'package:new_geolocation/geolocation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pinch_zoom_image_updated/pinch_zoom_image_updated.dart';
 import 'package:progress_indicators/progress_indicators.dart';
@@ -667,6 +669,15 @@ class _VProfileState extends State<VProfile>
           ),
         ),
         PopupMenuItem<String>(
+          value: "open map",
+          child: Text(
+            "Open Map",
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          ),
+        ),
+        PopupMenuItem<String>(
           value: "edit",
           child: Text(
             "Edit",
@@ -782,6 +793,11 @@ class _VProfileState extends State<VProfile>
               requestPermission();
             }
             break;
+          case "open map":
+            {
+              enableLocationServices();
+            }
+            break;
           case "edit":
             {
               _editVProfile();
@@ -790,6 +806,63 @@ class _VProfileState extends State<VProfile>
         }
       },
     );
+  }
+
+  void enableLocationServices() async {
+    Geolocation.enableLocationServices().then((result) {
+      openMapsSheet();
+    }).catchError((e) {});
+  }
+
+  void openMapsSheet() async {
+    if (vProfileData == true) {
+      if (vProfileDetails[0].company != '') {
+        try {
+          final availableMaps = await MapLauncher.installedMaps;
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return SafeArea(
+                child: SingleChildScrollView(
+                  child: Container(
+                    child: Wrap(
+                      children: _availableMaps(availableMaps),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        } catch (e) {
+          _toast("Something's wrong");
+        }
+      } else {
+        _toast("No company name");
+      }
+    } else {
+      _toast('Data still loading, please try again later');
+    }
+  }
+
+  List<Widget> _availableMaps(List<AvailableMap> availableMaps) {
+    List widgetList = <Widget>[];
+    for (var map in availableMaps) {
+      Widget widget1 = ListTile(
+        onTap: () => map.showMarker(
+          coords: Coords(double.parse('3.091752'), double.parse("101.689575")),
+          title: vProfileDetails[0].company,
+          description: "Location",
+        ),
+        title: Text(map.mapName),
+        leading: Image(
+          image: map.icon,
+          height: 30.0,
+          width: 30.0,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   Future requestPermission() async {
@@ -833,6 +906,8 @@ class _VProfileState extends State<VProfile>
       contact.postalAddresses = [address];
       ContactsService.addContact(contact);
       _toast('Saved to contact');
+    } else {
+      _toast('Data still loading, please try again later');
     }
   }
 
