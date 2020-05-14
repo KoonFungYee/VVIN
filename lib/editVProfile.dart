@@ -494,8 +494,7 @@ class _EditVProfileState extends State<EditVProfile> {
             CupertinoDialogAction(
               isDefaultAction: true,
               child: Text('Ok'),
-              onPressed: () async {
-              },
+              onPressed: () async {},
             )
           ],
         ),
@@ -1914,7 +1913,7 @@ class _EditVProfileState extends State<EditVProfile> {
         }
         break;
       default:
-      List list = otherList;
+        List list = otherList;
         for (var each in list) {
           Widget widget1 = Text(
             each,
@@ -2093,24 +2092,25 @@ class _EditVProfileState extends State<EditVProfile> {
                     ),
                   ),
                   Flexible(
-                      child: Container(
-                    color: Colors.white,
-                    child: CupertinoPicker(
-                      backgroundColor: Colors.white,
-                      itemExtent: 28,
-                      scrollController:
-                          FixedExtentScrollController(initialItem: 0),
-                      onSelectedItemChanged: (int index) {
-                        if (this.mounted) {
-                          setState(() {
-                            handlerIndex = index;
-                            handler = handlerList[index].handler;
-                          });
-                        }
-                      },
-                      children: _text('handlerList'),
+                    child: Container(
+                      color: Colors.white,
+                      child: CupertinoPicker(
+                        backgroundColor: Colors.white,
+                        itemExtent: 28,
+                        scrollController:
+                            FixedExtentScrollController(initialItem: 0),
+                        onSelectedItemChanged: (int index) {
+                          if (this.mounted) {
+                            setState(() {
+                              handlerIndex = index;
+                              handler = handlerList[index].handler;
+                            });
+                          }
+                        },
+                        children: _text('handlerList'),
+                      ),
                     ),
-                  ))
+                  ),
                 ],
               ),
             );

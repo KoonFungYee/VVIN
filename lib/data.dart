@@ -37,8 +37,8 @@ class EditCompanyDetails {
 }
 
 class Noti {
-  String title, subtitle, date, notiID, status;
-  Noti({this.title, this.subtitle, this.date, this.notiID, this.status});
+  String title, subtitle, date, notiID, status, vdataStatus;
+  Noti({this.title, this.subtitle, this.date, this.notiID, this.status, this.vdataStatus});
 }
 
 class Myworks {

@@ -1299,7 +1299,8 @@ class _MyWorksState extends State<MyWorks> {
         "level": level,
         "user_type": userType,
         "id": id,
-        "handler": handlers
+        "handler": handlers,
+        "type": 'myworks',
       }).then((res) async {
         if (res.body == "success") {
           _toast("Handler updated");

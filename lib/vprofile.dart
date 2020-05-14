@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pinch_zoom_image_updated/pinch_zoom_image_updated.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,14 +31,27 @@ import 'dart:async';
 // import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/notifications.dart';
-import 'package:scalable_image/scalable_image.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:contacts_service/contacts_service.dart';
+
+_VProfileState pageState;
+
+class Item1 {
+  PermissionGroup group;
+  PermissionStatus status;
+
+  Item1(this.group, this.status);
+}
 
 class VProfile extends StatefulWidget {
   final VDataDetails vdata;
   const VProfile({Key key, this.vdata}) : super(key: key);
 
   @override
-  _VProfileState createState() => _VProfileState();
+  _VProfileState createState() {
+    pageState = _VProfileState();
+    return pageState;
+  }
 }
 
 enum UniLinksType { string, uri }
@@ -45,6 +59,9 @@ enum UniLinksType { string, uri }
 class _VProfileState extends State<VProfile>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   // final SpeechToText speech = SpeechToText();
+  List<Item1> list = List<Item1>();
+  Contact contact = Contact();
+  PostalAddress address = PostalAddress(label: "Home");
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   final BehaviorSubject<ReceivedNotification>
@@ -111,6 +128,8 @@ class _VProfileState extends State<VProfile>
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     controller = TabController(vsync: this, length: 3, initialIndex: 0);
+    list.clear();
+    list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     check();
     _init();
     name = widget.vdata.name;
@@ -435,44 +454,47 @@ class _VProfileState extends State<VProfile>
             SizedBox(
               height: ScreenUtil().setHeight(20),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                MenuButton(
-                  child: button,
-                  items: data,
-                  scrollPhysics: AlwaysScrollableScrollPhysics(),
-                  topDivider: true,
-                  itemBuilder: (value) => Container(
-                    height: ScreenUtil().setHeight(60),
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 0.0, horizontal: 10),
-                    child: Text(value, style: TextStyle(fontSize: font14)),
+            (status == '')
+                ? Container()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      MenuButton(
+                        child: button,
+                        items: data,
+                        scrollPhysics: AlwaysScrollableScrollPhysics(),
+                        topDivider: true,
+                        itemBuilder: (value) => Container(
+                          height: ScreenUtil().setHeight(60),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 0.0, horizontal: 10),
+                          child:
+                              Text(value, style: TextStyle(fontSize: font14)),
+                        ),
+                        toggledChild: Container(
+                          color: Colors.white,
+                          child: button,
+                        ),
+                        divider: Container(
+                          height: 1,
+                          color: Colors.grey[300],
+                        ),
+                        onItemSelected: (value) {
+                          setState(() {
+                            status = value;
+                            setStatus(value);
+                          });
+                        },
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(3.0)),
+                            color: Colors.white),
+                        onMenuButtonToggle: (isToggle) {},
+                      ),
+                    ],
                   ),
-                  toggledChild: Container(
-                    color: Colors.white,
-                    child: button,
-                  ),
-                  divider: Container(
-                    height: 1,
-                    color: Colors.grey[300],
-                  ),
-                  onItemSelected: (value) {
-                    setState(() {
-                      status = value;
-                      setStatus(value);
-                    });
-                  },
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(3.0)),
-                      color: Colors.white),
-                  onMenuButtonToggle: (isToggle) {},
-                ),
-              ],
-            ),
             SizedBox(
               height: ScreenUtil().setHeight(20),
             ),
@@ -636,6 +658,15 @@ class _VProfileState extends State<VProfile>
           ),
         ),
         PopupMenuItem<String>(
+          value: "save contact",
+          child: Text(
+            "Save Contact",
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          ),
+        ),
+        PopupMenuItem<String>(
           value: "edit",
           child: Text(
             "Edit",
@@ -746,7 +777,11 @@ class _VProfileState extends State<VProfile>
                   pageBuilder: (context, animation1, animation2) {});
             }
             break;
-
+          case "save contact":
+            {
+              requestPermission();
+            }
+            break;
           case "edit":
             {
               _editVProfile();
@@ -755,6 +790,50 @@ class _VProfileState extends State<VProfile>
         }
       },
     );
+  }
+
+  Future requestPermission() async {
+    var status =
+        await PermissionHandler().requestPermissions([pageState.list[0].group]);
+    if (status.toString() ==
+        "{PermissionGroup.contacts: PermissionStatus.granted}") {
+      _saveContact();
+    }
+  }
+
+  void _saveContact() {
+    if (vProfileData == true) {
+      contact.givenName = vProfileDetails[0].name;
+      contact.phones = [Item(label: "mobile", value: widget.vdata.phoneNo)];
+      if (vProfileDetails[0].company != '') {
+        contact.company = vProfileDetails[0].company;
+      }
+      if (vProfileDetails[0].email != '') {
+        contact.emails = [Item(label: "work", value: vProfileDetails[0].email)];
+      }
+      if (vProfileDetails[0].area != '') {
+        address.city = vProfileDetails[0].area;
+      }
+      if (vProfileDetails[0].state != '') {
+        address.region = vProfileDetails[0].state;
+      }
+      if (vProfileDetails[0].country != '') {
+        address.country = vProfileDetails[0].country;
+      }
+      if (vProfileDetails[0].industry != '') {
+        contact.jobTitle = vProfileDetails[0].industry;
+      }
+      if (vProfileDetails[0].dob != '') {
+        int year, month, date;
+        year = int.parse(vProfileDetails[0].dob.substring(0, 4));
+        month = int.parse(vProfileDetails[0].dob.substring(5, 7));
+        date = int.parse(vProfileDetails[0].dob.substring(8, 10));
+        contact.birthday = DateTime(year, month, date);
+      }
+      contact.postalAddresses = [address];
+      ContactsService.addContact(contact);
+      _toast('Saved to contact');
+    }
   }
 
   void _toast(String message) {
@@ -976,6 +1055,11 @@ class _VProfileState extends State<VProfile>
             img: data['img'] ?? "",
           );
           vProfileDetails.add(vprofile);
+          if (this.mounted) {
+            setState(() {
+              status = data['status'];
+            });
+          }
         }
       }
       if (this.mounted) {
@@ -2585,8 +2669,12 @@ class _ImageScreenState extends State<ImageScreen> {
           child: Center(
             child: Hero(
               tag: 'imageHero',
-              child: ScalableImage(
-                imageProvider: NetworkImage(widget.image),
+              child: PinchZoomImage(
+                image: CachedNetworkImage(
+                  imageUrl: widget.image,
+                ),
+                zoomedBackgroundColor: Color.fromRGBO(240, 240, 240, 1.0),
+                hideStatusBarWhileZooming: false,
               ),
             ),
           ),

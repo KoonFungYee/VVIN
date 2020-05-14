@@ -728,7 +728,13 @@ class _NotificationsState extends State<Notifications> {
         AwesomePageRoute(
           transitionDuration: Duration(milliseconds: 600),
           exitPage: widget,
-          enterPage: NotiDetail(notification: notification),
+          enterPage: NotiDetail(
+            notification: notification,
+            companyID: companyID,
+            level: level,
+            userID: userID,
+            userType: userType,
+          ),
           transition: StackTransition(),
         ),
       );
@@ -787,6 +793,10 @@ class _NotificationsState extends State<Notifications> {
 
   void checkConnection() async {
     prefs = await SharedPreferences.getInstance();
+    companyID = prefs.getString('companyID');
+    level = prefs.getString('level');
+    userID = prefs.getString('userID');
+    userType = prefs.getString('user_type');
     if (prefs.getString("noti") != null) {
       if (this.mounted) {
         setState(() {
@@ -828,9 +838,9 @@ class _NotificationsState extends State<Notifications> {
           });
         }
       } else {
-        endTime = DateTime.now().millisecondsSinceEpoch;
-        int result = endTime - startTime;
-        print("Notification loading Time: " + result.toString());
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("Notification loading Time: " + result.toString());
         var jsonData = json.decode(res.body);
         total = jsonData[0]['total'];
         String subtitle, subtitle1;
@@ -912,7 +922,6 @@ class _NotificationsState extends State<Notifications> {
           } else {
             subtitle = jsonData[i]['subtitle'];
           }
-
           Noti notification = Noti(
               title: jsonData[i]['title'],
               subtitle: subtitle,

@@ -32,7 +32,7 @@ dependencies:
   route_transitions: ^1.0.2
   flutter_page_transition: ^0.1.6
   awesome_page_transitions: ^1.0.0
-  scalable_image: ^1.1.2
+  pinch_zoom_image_updated: ^0.2.6
   bouncing_widget: ^1.2.0
   empty_widget: ^0.0.1
   cached_network_image: ^2.0.0
@@ -57,7 +57,8 @@ dependencies:
   http: ^0.12.0+2
   shared_preferences: ^0.5.3
   flutter_launcher_icons: ^0.7.4
-  permission_handler: ^4.2.0+hotfix.3
+  permission_handler: ^3.2.2
+  contacts_service: ^0.4.6
   flutter_screenutil: ^1.0.2
   firebase_ml_vision: ^0.9.3+5
   network_to_file_image: ^2.2.4

@@ -106,6 +106,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.3"
+  contacts_service:
+    dependency: "direct main"
+    description:
+      name: contacts_service
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.6"
   convert:
     dependency: transitive
     description:
@@ -428,7 +435,7 @@ packages:
       name: permission_handler
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.2.0+hotfix.3"
+    version: "3.3.0"
   petitparser:
     dependency: transitive
     description:
@@ -436,6 +443,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.4.0"
+  pinch_zoom_image_updated:
+    dependency: "direct main"
+    description:
+      name: pinch_zoom_image_updated
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.6"
   platform:
     dependency: transitive
     description:
@@ -485,13 +499,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.24.0"
-  scalable_image:
-    dependency: "direct main"
-    description:
-      name: scalable_image
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.2"
   shared_preferences:
     dependency: "direct main"
     description:
