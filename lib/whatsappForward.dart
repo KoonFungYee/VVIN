@@ -28,6 +28,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/vdata.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 
 class WhatsAppForward extends StatefulWidget {
   final WhatsappForward whatsappForward;
@@ -54,7 +55,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
   final ScrollController controller = ScrollController();
-  final TextEditingController _phonecontroller = TextEditingController();
+  var _phonecontroller = MaskedTextController(mask: '000000000000');
   final TextEditingController _namecontroller = TextEditingController();
   final TextEditingController _companycontroller = TextEditingController();
   final TextEditingController _remarkcontroller = TextEditingController();
@@ -162,8 +163,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
             CupertinoDialogAction(
               isDefaultAction: true,
               child: Text('Ok'),
-              onPressed: () async {
-              },
+              onPressed: () async {},
             )
           ],
         ),
@@ -393,6 +393,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                                 children: <Widget>[
                                                   InkWell(
                                                       onTap: () {
+                                                        FocusScope.of(context)
+                                                            .requestFocus(
+                                                                new FocusNode());
                                                         _scanner();
                                                       },
                                                       child: Text(
@@ -717,6 +720,8 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                     ),
                                     InkWell(
                                       onTap: () {
+                                        FocusScope.of(context)
+                                            .requestFocus(new FocusNode());
                                         _selectVTag();
                                       },
                                       child: Container(
@@ -988,29 +993,32 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => Dialog(
-        elevation: 0.0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          height: MediaQuery.of(context).size.height * 0.1,
-          width: MediaQuery.of(context).size.width * 0.1,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                JumpingText('Sending...'),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                SpinKitRing(
-                  lineWidth: 3,
-                  color: Colors.blue,
-                  size: 30.0,
-                  duration: Duration(milliseconds: 600),
-                ),
-              ],
+      builder: (_) => WillPopScope(
+        onWillPop: () {},
+        child: Dialog(
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.1,
+            width: MediaQuery.of(context).size.width * 0.1,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  JumpingText('Sending...'),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  SpinKitRing(
+                    lineWidth: 3,
+                    color: Colors.blue,
+                    size: 30.0,
+                    duration: Duration(milliseconds: 600),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1538,6 +1546,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
           "url": widget.whatsappForward.url,
           "nameCard": base64Image,
           "system": platform,
+          "details": '',
         })
         .then((res) {})
         .catchError((err) {
@@ -1558,7 +1567,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
             temPhone = temPhone + line.text[i];
           }
         }
-        if (temPhone.length >= 10) {
+        if (temPhone.length / line.text.length >= 0.8) {
           if (temPhone.substring(0, 1).toString() != "6") {
             phoneList.add("6" + temPhone);
           } else {

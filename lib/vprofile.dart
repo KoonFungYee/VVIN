@@ -35,7 +35,14 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'dart:math';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_ml_vision/firebase_ml_vision.dart';
+import 'package:flutter_native_image/flutter_native_image.dart';
 
+bool isScan;
+String full = "";
+File pickedImage;
 _VProfileState pageState;
 
 class Item1 {
@@ -93,6 +100,7 @@ class _VProfileState extends State<VProfile>
       userType,
       resultText,
       now,
+      base64Image,
       speechText;
   String urlVProfile = "https://vvinoa.vvin.com/api/vprofile.php";
   String urlHandler = "https://vvinoa.vvin.com/api/handler.php";
@@ -101,6 +109,7 @@ class _VProfileState extends State<VProfile>
   String urlRemarks = "https://vvinoa.vvin.com/api/remarks.php";
   String urlChangeStatus = "https://vvinoa.vvin.com/api/vdataChangeStatus.php";
   String urlSaveRemark = "https://vvinoa.vvin.com/api/saveRemark.php";
+  String urlWhatsApp = "https://vvinoa.vvin.com/api/whatsappForward.php";
   bool vProfileData,
       handlerData,
       viewsData,
@@ -113,6 +122,7 @@ class _VProfileState extends State<VProfile>
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
+  List<String> otherList = [];
   List<String> data = [
     "New",
     "Contacting",
@@ -141,17 +151,9 @@ class _VProfileState extends State<VProfile>
     userID = widget.vdata.userID;
     level = widget.vdata.level;
     userType = widget.vdata.userType;
-    vProfileData = false;
-    handlerData = false;
-    viewsData = false;
-    remarksData = false;
-    vTagData = false;
-    hasSpeech = false;
-    start = false;
-    isSend = false;
-    speechText = "";
-    resultText = "";
-    _addRemark.text = "";
+    isSend = start = hasSpeech = vTagData =
+        remarksData = viewsData = handlerData = isScan = vProfileData = false;
+    base64Image = _addRemark.text = resultText = speechText = "";
     WidgetsBinding.instance.addObserver(this);
     // PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
     // askPermission();
@@ -651,6 +653,15 @@ class _VProfileState extends State<VProfile>
       ),
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
+          value: "edit",
+          child: Text(
+            "Edit",
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          ),
+        ),
+        PopupMenuItem<String>(
           value: "add remark",
           child: Text(
             "Add Remark",
@@ -669,18 +680,18 @@ class _VProfileState extends State<VProfile>
           ),
         ),
         PopupMenuItem<String>(
-          value: "open map",
+          value: "scan card",
           child: Text(
-            "Open Map",
+            "Scan Name Card",
             style: TextStyle(
               fontSize: font14,
             ),
           ),
         ),
         PopupMenuItem<String>(
-          value: "edit",
+          value: "open map",
           child: Text(
-            "Edit",
+            "Open Map",
             style: TextStyle(
               fontSize: font14,
             ),
@@ -798,6 +809,11 @@ class _VProfileState extends State<VProfile>
               enableLocationServices();
             }
             break;
+          case "scan card":
+            {
+              _scanner();
+            }
+            break;
           case "edit":
             {
               _editVProfile();
@@ -805,6 +821,197 @@ class _VProfileState extends State<VProfile>
             break;
         }
       },
+    );
+  }
+
+  void _scanner() async {
+    showCupertinoModalPopup(
+        context: context,
+        builder: (context) {
+          return CupertinoActionSheet(
+            title: Text(
+              "Action",
+              style: TextStyle(
+                fontSize: font14,
+              ),
+            ),
+            cancelButton: CupertinoActionSheetAction(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                "Cancel",
+                style: TextStyle(
+                  fontSize: font18,
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              CupertinoActionSheetAction(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  var tempStore =
+                      await ImagePicker.pickImage(source: ImageSource.gallery);
+                  if (tempStore != null) {
+                    _onLoading1();
+                    if (this.mounted) {
+                      setState(() {
+                        pickedImage = tempStore;
+                        isScan = true;
+                      });
+                    }
+                    readText();
+                  }
+                },
+                child: Text(
+                  "Browse Gallery",
+                  style: TextStyle(
+                    fontSize: font18,
+                  ),
+                ),
+              ),
+              CupertinoActionSheetAction(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  var tempStore =
+                      await ImagePicker.pickImage(source: ImageSource.camera);
+                  if (tempStore != null) {
+                    _onLoading1();
+                    if (this.mounted) {
+                      setState(() {
+                        pickedImage = tempStore;
+                        isScan = true;
+                      });
+                    }
+                    readText();
+                  }
+                },
+                child: Text(
+                  "Take Photo",
+                  style: TextStyle(
+                    fontSize: font18,
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  Future readText() async {
+    pickedImage = await FlutterNativeImage.compressImage(pickedImage.path,
+        quality: 40, percentage: 30);
+    base64Image = base64Encode(pickedImage.readAsBytesSync());
+    String number = Random().nextInt(200).toString();
+    http.post(urlWhatsApp, body: {
+      "companyID": companyID,
+      "userID": userID,
+      "user_type": userType,
+      "level": level,
+      "phoneNo": phoneNo,
+      "name": name,
+      "companyName": "",
+      "remark": "",
+      "vtag": "",
+      "number": name + number,
+      "url": '',
+      "nameCard": base64Image,
+      "system": 'android',
+      "details": '',
+    }).then((res) {
+      print('Saved name card' + res.body);
+    }).catchError((err) {
+      _toast('Something error on save image');
+      print((err).toString());
+    });
+    FirebaseVisionImage image = FirebaseVisionImage.fromFile(pickedImage);
+    TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
+    VisionText readText = await recognizeText.processImage(image);
+
+    String patttern = r'[0-9]';
+    RegExp regExp = new RegExp(patttern);
+    for (TextBlock block in readText.blocks) {
+      for (TextLine line in block.lines) {
+        String temPhone = "";
+        for (int i = 0; i < line.text.length; i++) {
+          if (regExp.hasMatch(line.text[i])) {
+            temPhone = temPhone + line.text[i];
+          }
+        }
+        if (temPhone.length / line.text.length <= 0.8) {
+          otherList.add(line.text);
+        }
+      }
+    }
+    if (otherList.length != 0) {
+      for (int i = 0; i < otherList.length; i++) {
+        if (i != otherList.length - 1) {
+          full = full + otherList[i] + "~!";
+        } else {
+          full = full + otherList[i];
+        }
+      }
+    }
+    http.post(urlWhatsApp, body: {
+      "companyID": companyID,
+      "userID": userID,
+      "user_type": userType,
+      "level": level,
+      "phoneNo": phoneNo,
+      "name": name,
+      "companyName": "",
+      "remark": "",
+      "vtag": "",
+      "number": name + number,
+      "url": '',
+      "nameCard": '',
+      "system": 'android',
+      "details": full,
+    }).then((res) {
+      print("Saved data: " + res.body);
+      Navigator.of(context).pop();
+      _toast('Done');
+    }).catchError((err) {
+      Navigator.of(context).pop();
+      _toast(err.toString());
+      print("Scan name card error: " + (err).toString());
+    });
+  }
+
+  void _onLoading1() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () {},
+        child: Dialog(
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.12,
+            width: MediaQuery.of(context).size.width * 0.1,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  JumpingText('Scanning and saving data...'),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  SpinKitRing(
+                    lineWidth: 3,
+                    color: Colors.blue,
+                    size: 30.0,
+                    duration: Duration(milliseconds: 600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -848,11 +1055,15 @@ class _VProfileState extends State<VProfile>
     List widgetList = <Widget>[];
     for (var map in availableMaps) {
       Widget widget1 = ListTile(
-        onTap: () => map.showMarker(
-          coords: Coords(double.parse('3.091752'), double.parse("101.689575")),
-          title: vProfileDetails[0].company,
-          description: "Location",
-        ),
+        onTap: () {
+          map.showMarker(
+            coords:
+                Coords(double.parse('3.091752'), double.parse("101.689575")),
+            title: vProfileDetails[0].company,
+            description: "Location",
+          );
+          Navigator.of(context).pop();
+        },
         title: Text(map.mapName),
         leading: Image(
           image: map.icon,
@@ -946,12 +1157,20 @@ class _VProfileState extends State<VProfile>
       );
       Navigator.of(context).push(PageTransition(
         type: PageTransitionType.rippleRightDown,
-        child: EditVProfile(
-          vprofileData: vprofile,
-          handler: handler,
-          vdata: widget.vdata,
-          vtag: vTag,
-        ),
+        child: (isScan == false)
+            ? EditVProfile(
+                vprofileData: vprofile,
+                handler: handler,
+                vdata: widget.vdata,
+                vtag: vTag,
+              )
+            : EditVProfile(
+                vprofileData: vprofile,
+                handler: handler,
+                vdata: widget.vdata,
+                vtag: vTag,
+                details: full,
+              ),
       ));
     } else {
       _toast("Please check your Internet connection");
@@ -959,17 +1178,19 @@ class _VProfileState extends State<VProfile>
   }
 
   String _gender(String gender) {
+    String gender;
     switch (gender.toLowerCase()) {
       case "m":
-        return "Male";
+        gender = "Male";
         break;
       case "f":
-        return "Female";
+        gender = "Female";
         break;
       case "o":
-        return "Other";
+        gender = "Other";
         break;
     }
+    return gender;
   }
 
   void _onSubmit() async {
@@ -1309,7 +1530,7 @@ class Details extends StatefulWidget {
 class _DetailsState extends State<Details> {
   double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
   int emailLength;
-  File file, pickedImage;
+  File file;
   List<String> phoneList = [];
   List<String> otherList = [];
   bool ready = false;
@@ -2238,9 +2459,9 @@ class _DetailsState extends State<Details> {
                               ),
                             ),
                           ),
-                          (widget.vProfileDetails[0].img == "")
-                              ? Container()
-                              : Container(
+                          (widget.vProfileDetails[0].img != "" ||
+                                  isScan == true)
+                              ? Container(
                                   margin: EdgeInsets.all(
                                       ScreenUtil().setHeight(20)),
                                   child: Column(
@@ -2256,46 +2477,79 @@ class _DetailsState extends State<Details> {
                                               color: Color.fromRGBO(
                                                   128, 128, 128, 1),
                                             ),
-                                          )
+                                          ),
                                         ],
                                       ),
                                       SizedBox(
                                         height: ScreenUtil().setHeight(20),
                                       ),
-                                      InkWell(
-                                        onTap: () {
-                                          Navigator.push(context,
-                                              MaterialPageRoute(builder: (_) {
-                                            return ImageScreen(
-                                              image:
-                                                  widget.vProfileDetails[0].img,
-                                            );
-                                          }));
-                                        },
-                                        child: Hero(
-                                          tag: 'imageHero',
-                                          child: Container(
-                                            height: ScreenUtil().setHeight(500),
-                                            width: ScreenUtil().setHeight(500),
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.rectangle,
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(10.0)),
-                                              image: DecorationImage(
-                                                image:
-                                                    CachedNetworkImageProvider(
-                                                        widget
-                                                            .vProfileDetails[0]
-                                                            .img),
+                                      (isScan == false)
+                                          ? InkWell(
+                                              onTap: () {
+                                                Navigator.push(context,
+                                                    MaterialPageRoute(
+                                                        builder: (_) {
+                                                  return ImageScreen(
+                                                    image: widget
+                                                        .vProfileDetails[0].img,
+                                                  );
+                                                }));
+                                              },
+                                              child: Hero(
+                                                tag: 'imageHero',
+                                                child: Container(
+                                                  height: ScreenUtil()
+                                                      .setHeight(500),
+                                                  width: ScreenUtil()
+                                                      .setHeight(500),
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.rectangle,
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                            Radius.circular(
+                                                                10.0)),
+                                                    image: DecorationImage(
+                                                      image: CachedNetworkImageProvider(
+                                                          widget
+                                                              .vProfileDetails[
+                                                                  0]
+                                                              .img),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          : Center(
+                                              child: InkWell(
+                                                onTap: () {
+                                                  Navigator.push(context,
+                                                      MaterialPageRoute(
+                                                          builder: (_) {
+                                                    return ImageScreen(
+                                                      fileImage: pickedImage,
+                                                    );
+                                                  }));
+                                                },
+                                                child: Hero(
+                                                  tag: 'imageHero',
+                                                  child: Container(
+                                                    height: 177,
+                                                    width: 280,
+                                                    decoration: BoxDecoration(
+                                                      image: DecorationImage(
+                                                          image: FileImage(
+                                                              pickedImage),
+                                                          fit: BoxFit.contain),
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                      ),
                                     ],
                                   ),
-                                ),
+                                )
+                              : Container(),
                         ],
                       ),
                     ),
@@ -2698,7 +2952,8 @@ class _RemarkState extends State<Remark> {
 
 class ImageScreen extends StatefulWidget {
   final String image;
-  const ImageScreen({Key key, this.image}) : super(key: key);
+  final File fileImage;
+  const ImageScreen({Key key, this.image, this.fileImage}) : super(key: key);
 
   @override
   _ImageScreenState createState() => _ImageScreenState();
@@ -2742,16 +2997,31 @@ class _ImageScreenState extends State<ImageScreen> {
         child: Container(
           color: Colors.white,
           child: Center(
-            child: Hero(
-              tag: 'imageHero',
-              child: PinchZoomImage(
-                image: CachedNetworkImage(
-                  imageUrl: widget.image,
-                ),
-                zoomedBackgroundColor: Color.fromRGBO(240, 240, 240, 1.0),
-                hideStatusBarWhileZooming: false,
-              ),
-            ),
+            child: (widget.image != null)
+                ? Hero(
+                    tag: 'imageHero',
+                    child: PinchZoomImage(
+                      image: CachedNetworkImage(
+                        imageUrl: widget.image,
+                      ),
+                      zoomedBackgroundColor: Color.fromRGBO(240, 240, 240, 1.0),
+                      hideStatusBarWhileZooming: false,
+                    ),
+                  )
+                : Hero(
+                    tag: 'imageHero',
+                    child: PinchZoomImage(
+                      image: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: FileImage(pickedImage),
+                              fit: BoxFit.contain),
+                        ),
+                      ),
+                      zoomedBackgroundColor: Color.fromRGBO(240, 240, 240, 1.0),
+                      hideStatusBarWhileZooming: false,
+                    ),
+                  ),
           ),
         ),
         onTap: () {

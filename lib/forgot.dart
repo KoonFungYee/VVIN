@@ -175,6 +175,7 @@ class _Forgot extends State<Forgot> {
   }
 
   void _onForgot() async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {

@@ -240,12 +240,11 @@ class _LoginPageState extends State<Login> {
                                             color: Colors.blue,
                                             size: ScreenUtil().setHeight(30)),
                                       ),
-                                contentPadding:
-                                    EdgeInsets.fromLTRB(
-                                        ScreenUtil().setHeight(10),
-                                        ScreenUtil().setHeight(10),
-                                        0,
-                                        ScreenUtil().setHeight(10)),
+                                contentPadding: EdgeInsets.fromLTRB(
+                                    ScreenUtil().setHeight(10),
+                                    ScreenUtil().setHeight(10),
+                                    0,
+                                    ScreenUtil().setHeight(10)),
                                 border: OutlineInputBorder(
                                     borderSide: BorderSide(color: Colors.grey)),
                               ),
@@ -287,6 +286,7 @@ class _LoginPageState extends State<Login> {
   }
 
   void _onLogin() async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     _email = _emcontroller.text.toLowerCase();
     _password = _passcontroller.text;
 
@@ -337,6 +337,7 @@ class _LoginPageState extends State<Login> {
   }
 
   Future<void> _onProceed() async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
@@ -559,12 +560,12 @@ class _Default extends State<Default> {
           scrollPhysics: AlwaysScrollableScrollPhysics(),
           topDivider: true,
           itemBuilder: (value) => Container(
-              height: ScreenUtil().setHeight(60),
-              width: MediaQuery.of(context).size.width * 0.8,
-              alignment: Alignment.centerLeft,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
-              child: Text(value, style: TextStyle(fontSize: font14)),),
+            height: ScreenUtil().setHeight(60),
+            width: MediaQuery.of(context).size.width * 0.8,
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+            child: Text(value, style: TextStyle(fontSize: font14)),
+          ),
           toggledChild: Container(
             color: Colors.white,
             child: button,
@@ -582,8 +583,7 @@ class _Default extends State<Default> {
               border: Border.all(color: Colors.grey),
               borderRadius: const BorderRadius.all(Radius.circular(3.0)),
               color: Colors.white),
-          onMenuButtonToggle: (isToggle) {
-          },
+          onMenuButtonToggle: (isToggle) {},
         ),
         SizedBox(
           height: ScreenUtil().setHeight(60),

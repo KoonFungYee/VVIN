@@ -69,6 +69,7 @@ dependencies:
   flutter_styled_toast: ^1.2.1
   new_geolocation: ^1.0.0
   map_launcher: ^0.4.3
+  flutter_masked_text: ^0.8.0
   flutter:
     sdk: flutter
 

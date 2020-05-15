@@ -38,8 +38,14 @@ class EditVProfile extends StatefulWidget {
   final List handler;
   final List vtag;
   final VDataDetails vdata;
+  final String details;
   const EditVProfile(
-      {Key key, this.vprofileData, this.handler, this.vdata, this.vtag})
+      {Key key,
+      this.vprofileData,
+      this.handler,
+      this.vdata,
+      this.vtag,
+      this.details})
       : super(key: key);
 
   @override
@@ -1743,6 +1749,7 @@ class _EditVProfileState extends State<EditVProfile> {
   }
 
   void _selectHandler() {
+    FocusScope.of(context).requestFocus(new FocusNode());
     showModalBottomSheet(
       isDismissible: false,
       context: context,
@@ -2024,6 +2031,7 @@ class _EditVProfileState extends State<EditVProfile> {
   }
 
   void _addHandler() {
+    FocusScope.of(context).requestFocus(new FocusNode());
     showModalBottomSheet(
       isDismissible: false,
       context: context,
@@ -2164,6 +2172,7 @@ class _EditVProfileState extends State<EditVProfile> {
   }
 
   void _showBottomSheet(String type) {
+    FocusScope.of(context).requestFocus(new FocusNode());
     switch (type) {
       case "gender":
         {
@@ -3070,7 +3079,54 @@ class _EditVProfileState extends State<EditVProfile> {
       _onLoading1();
       setupData();
       getTag();
-      getDetails();
+      if (widget.details == null) {
+        getDetails();
+      } else {
+        getParsingDetails();
+      }
+    }
+  }
+
+  void getParsingDetails() {
+    otherList = widget.details.split("~!");
+    otherList.insert(0, '-');
+    if (this.mounted) {
+      setState(() {
+        gotData = true;
+      });
+    }
+    for (int i = 0; i < otherList.length; i++) {
+      if (otherList[i].toLowerCase().contains('@') &&
+          otherList[i].toString().contains('.com')) {
+        if (this.mounted) {
+          setState(() {
+            _emailController.text = otherList[i];
+          });
+        }
+      }
+      if (otherList[i].toLowerCase().contains('sdn bhd') ||
+          otherList[i].toLowerCase().contains('company')) {
+        if (this.mounted) {
+          setState(() {
+            _companyController.text = otherList[i];
+          });
+        }
+      }
+      if (otherList[i].toLowerCase().contains('jalan')) {
+        if (this.mounted) {
+          setState(() {
+            _areaController.text = otherList[i];
+          });
+        }
+      }
+    }
+    if (this.mounted) {
+      setState(() {
+        nameCard = true;
+      });
+    }
+    if (allHandler == true && allTag == true && nameCard == true) {
+      Navigator.pop(context);
     }
   }
 
