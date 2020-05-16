@@ -1374,7 +1374,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                 if (this.mounted) {
                                   setState(() {
                                     _checkTextField(type).text =
-                                        _checkTextField(type).text + tempText;
+                                        _checkTextField(type).text + " " + tempText;
                                     tempText = "";
                                   });
                                 }
@@ -1567,7 +1567,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
             temPhone = temPhone + line.text[i];
           }
         }
-        if (temPhone.length / line.text.length >= 0.8) {
+        if (temPhone.length / line.text.length >= 0.75) {
           if (temPhone.substring(0, 1).toString() != "6") {
             phoneList.add("6" + temPhone);
           } else {

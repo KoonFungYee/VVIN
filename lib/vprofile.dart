@@ -7,16 +7,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_awesome_buttons/flutter_awesome_buttons.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:menu_button/menu_button.dart';
-import 'package:new_geolocation/geolocation.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pinch_zoom_image_updated/pinch_zoom_image_updated.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,6 +36,7 @@ import 'dart:math';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
+import 'package:photo_view/photo_view.dart';
 
 bool isScan;
 String full = "";
@@ -208,7 +206,7 @@ class _VProfileState extends State<VProfile>
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
       if (payload != null) {
-        debugPrint('notification payload: ' + payload);
+        // debugPrint('notification payload: ' + payload);
       }
       selectNotificationSubject.add(payload);
     });
@@ -806,7 +804,7 @@ class _VProfileState extends State<VProfile>
             break;
           case "open map":
             {
-              enableLocationServices();
+              openMapsSheet();
             }
             break;
           case "scan card":
@@ -899,31 +897,33 @@ class _VProfileState extends State<VProfile>
   }
 
   Future readText() async {
+    full = "";
     pickedImage = await FlutterNativeImage.compressImage(pickedImage.path,
         quality: 40, percentage: 30);
     base64Image = base64Encode(pickedImage.readAsBytesSync());
     String number = Random().nextInt(200).toString();
-    http.post(urlWhatsApp, body: {
-      "companyID": companyID,
-      "userID": userID,
-      "user_type": userType,
-      "level": level,
-      "phoneNo": phoneNo,
-      "name": name,
-      "companyName": "",
-      "remark": "",
-      "vtag": "",
-      "number": name + number,
-      "url": '',
-      "nameCard": base64Image,
-      "system": 'android',
-      "details": '',
-    }).then((res) {
-      print('Saved name card' + res.body);
-    }).catchError((err) {
-      _toast('Something error on save image');
-      print((err).toString());
-    });
+    http
+        .post(urlWhatsApp, body: {
+          "companyID": companyID,
+          "userID": userID,
+          "user_type": userType,
+          "level": level,
+          "phoneNo": phoneNo,
+          "name": name,
+          "companyName": "",
+          "remark": "",
+          "vtag": "",
+          "number": name + number,
+          "url": '',
+          "nameCard": base64Image,
+          "system": 'android',
+          "details": '',
+        })
+        .then((res) {})
+        .catchError((err) {
+          _toast('Something error on save image');
+          print((err).toString());
+        });
     FirebaseVisionImage image = FirebaseVisionImage.fromFile(pickedImage);
     TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
     VisionText readText = await recognizeText.processImage(image);
@@ -938,7 +938,7 @@ class _VProfileState extends State<VProfile>
             temPhone = temPhone + line.text[i];
           }
         }
-        if (temPhone.length / line.text.length <= 0.8) {
+        if (temPhone.length / line.text.length < 0.78) {
           otherList.add(line.text);
         }
       }
@@ -966,9 +966,8 @@ class _VProfileState extends State<VProfile>
       "url": '',
       "nameCard": '',
       "system": 'android',
-      "details": full,
+      "details": full.toString(),
     }).then((res) {
-      print("Saved data: " + res.body);
       Navigator.of(context).pop();
       _toast('Done');
     }).catchError((err) {
@@ -1013,12 +1012,6 @@ class _VProfileState extends State<VProfile>
         ),
       ),
     );
-  }
-
-  void enableLocationServices() async {
-    Geolocation.enableLocationServices().then((result) {
-      openMapsSheet();
-    }).catchError((e) {});
   }
 
   void openMapsSheet() async {
@@ -1177,9 +1170,9 @@ class _VProfileState extends State<VProfile>
     }
   }
 
-  String _gender(String gender) {
+  String _gender(String genderType) {
     String gender;
-    switch (gender.toLowerCase()) {
+    switch (genderType.toLowerCase()) {
       case "m":
         gender = "Male";
         break;
@@ -2719,18 +2712,20 @@ class _DetailsState extends State<Details> {
     return monthInEnglishFormat;
   }
 
-  String _gender(String gender) {
-    switch (gender.toLowerCase()) {
+  String _gender(String genderType) {
+    String gender;
+    switch (genderType.toLowerCase()) {
       case "m":
-        return "Male";
+        gender = "Male";
         break;
       case "f":
-        return "Female";
+        gender = "Female";
         break;
       case "o":
-        return "Other";
+        gender = "Other";
         break;
     }
+    return gender;
   }
 }
 
@@ -3000,26 +2995,18 @@ class _ImageScreenState extends State<ImageScreen> {
             child: (widget.image != null)
                 ? Hero(
                     tag: 'imageHero',
-                    child: PinchZoomImage(
-                      image: CachedNetworkImage(
-                        imageUrl: widget.image,
+                    child: Container(
+                      child: PhotoView(
+                        imageProvider: CachedNetworkImageProvider(widget.image),
                       ),
-                      zoomedBackgroundColor: Color.fromRGBO(240, 240, 240, 1.0),
-                      hideStatusBarWhileZooming: false,
                     ),
                   )
                 : Hero(
                     tag: 'imageHero',
-                    child: PinchZoomImage(
-                      image: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: FileImage(pickedImage),
-                              fit: BoxFit.contain),
-                        ),
+                    child: Container(
+                      child: PhotoView(
+                        imageProvider: FileImage(pickedImage),
                       ),
-                      zoomedBackgroundColor: Color.fromRGBO(240, 240, 240, 1.0),
-                      hideStatusBarWhileZooming: false,
                     ),
                   ),
           ),

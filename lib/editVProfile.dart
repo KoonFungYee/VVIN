@@ -659,6 +659,12 @@ class _EditVProfileState extends State<EditVProfile> {
                                             children: <Widget>[
                                               Expanded(
                                                 child: Container(
+                                                  padding: EdgeInsets.fromLTRB(
+                                                      ScreenUtil()
+                                                          .setHeight(10),
+                                                      0,
+                                                      0,
+                                                      0),
                                                   height: ScreenUtil()
                                                       .setHeight(60),
                                                   decoration: BoxDecoration(
@@ -746,7 +752,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                                       .setHeight(60),
                                                   padding: EdgeInsets.fromLTRB(
                                                       ScreenUtil()
-                                                          .setHeight(20),
+                                                          .setHeight(10),
                                                       0,
                                                       0,
                                                       0),
@@ -2970,12 +2976,7 @@ class _EditVProfileState extends State<EditVProfile> {
         break;
       case "area":
         {
-          int position = 0;
-          for (int i = 0; i < otherList.length; i++) {
-            if (_areaController.text == otherList[i]) {
-              position = i;
-            }
-          }
+          String tempText = '';
           showModalBottomSheet(
             isDismissible: false,
             context: context,
@@ -3027,11 +3028,13 @@ class _EditVProfileState extends State<EditVProfile> {
                                 ),
                                 onTap: () {
                                   Navigator.pop(context);
-                                  if (position != 0) {
+                                  if (tempText != "-") {
                                     if (this.mounted) {
                                       setState(() {
                                         _areaController.text =
-                                            otherList[position];
+                                            _areaController.text +
+                                                " " +
+                                                tempText;
                                       });
                                     }
                                   }
@@ -3046,16 +3049,10 @@ class _EditVProfileState extends State<EditVProfile> {
                           child: CupertinoPicker(
                             backgroundColor: Colors.white,
                             itemExtent: 28,
-                            scrollController: FixedExtentScrollController(
-                                initialItem: position),
+                            scrollController:
+                                FixedExtentScrollController(initialItem: 0),
                             onSelectedItemChanged: (int index) {
-                              if (position != index) {
-                                if (this.mounted) {
-                                  setState(() {
-                                    position = index;
-                                  });
-                                }
-                              }
+                              tempText = otherList[index];
                             },
                             children: _text('otherList'),
                           ),
