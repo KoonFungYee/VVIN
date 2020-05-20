@@ -2889,9 +2889,9 @@ class _VAnalyticsState extends State<VAnalytics>
     getVanalyticsData();
     getChartData();
     notification();
-    if (prefs.getString("reminder") == null) {
-      getReminder();
-    }
+    // if (prefs.getString("reminder") == null) {
+    //   getReminder();
+    // }
   }
 
   void getReminder() {

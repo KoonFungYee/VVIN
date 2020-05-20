@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -18,14 +18,23 @@ import 'package:vvin/data.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
+import 'package:vvin/reminderList.dart';
 
 class EditReminder extends StatefulWidget {
   final String datetime;
   final String name;
   final String phoneNo;
   final String remark;
+  final int id;
+  final int time;
   EditReminder(
-      {Key key, this.datetime, this.name, this.phoneNo, this.remark})
+      {Key key,
+      this.datetime,
+      this.name,
+      this.phoneNo,
+      this.remark,
+      this.id,
+      this.time})
       : super(key: key);
 
   @override
@@ -67,6 +76,9 @@ class _EditReminderState extends State<EditReminder> {
     _init();
     date = remark = '';
     date = widget.datetime;
+    if (widget.time != null) {
+      dateTime = new DateTime.fromMillisecondsSinceEpoch(widget.time);
+    }
     _remarkcontroller.text = widget.remark;
     active = 'active';
     invalid = nameInvalid = phoneInvalid = remarkInvalid = false;
@@ -628,7 +640,8 @@ class _EditReminderState extends State<EditReminder> {
                               DateTime.now().subtract(Duration(days: 1)),
                           mode: CupertinoDatePickerMode.dateAndTime,
                           backgroundColor: Colors.transparent,
-                          initialDateTime: DateTime.now(),
+                          initialDateTime:
+                              (widget.id == null) ? DateTime.now() : dateTime,
                           onDateTimeChanged: (startDate) {
                             setState(() {
                               dateTime = startDate;
@@ -718,39 +731,71 @@ class _EditReminderState extends State<EditReminder> {
           });
         }
         Database db = await ReminderDB.instance.database;
-        await db.rawInsert(
-            'INSERT INTO reminder (datetime, name, phone, remark, status, time) VALUES("' +
-                date +
-                '","' +
-                widget.name +
-                '","' +
-                widget.phoneNo +
-                '","' +
-                _remarkcontroller.text +
-                '","' +
-                active +
-                '","' +
-                dateTime.millisecondsSinceEpoch.toString() +
-                '")');
-        reminderList = await db.query(ReminderDB.table);
-        String details =
-            reminderList[reminderList.length - 1]['id'].toString() +
-                "~!" +
-                date +
-                "~!" +
-                widget.name +
-                "~!" +
-                widget.phoneNo +
-                "~!" +
-                _remarkcontroller.text +
-                "~!" +
-                'not active' +
-                "~!" +
-                dateTime.millisecondsSinceEpoch.toString();
-        _scheduleNotification(
-            reminderList[reminderList.length - 1]['id'], details);
-        _toast('Saved reminder');
-        Navigator.pop(context);
+        if (widget.id == null) {
+          await db.rawInsert(
+              'INSERT INTO reminder (datetime, name, phone, remark, status, time) VALUES("' +
+                  date +
+                  '","' +
+                  widget.name +
+                  '","' +
+                  widget.phoneNo +
+                  '","' +
+                  _remarkcontroller.text +
+                  '","' +
+                  active +
+                  '","' +
+                  dateTime.millisecondsSinceEpoch.toString() +
+                  '")');
+          reminderList = await db.query(ReminderDB.table);
+          String details =
+              reminderList[reminderList.length - 1]['id'].toString() +
+                  "~!" +
+                  date +
+                  "~!" +
+                  widget.name +
+                  "~!" +
+                  widget.phoneNo +
+                  "~!" +
+                  _remarkcontroller.text +
+                  "~!" +
+                  'not active' +
+                  "~!" +
+                  dateTime.millisecondsSinceEpoch.toString();
+          _scheduleNotification(
+              reminderList[reminderList.length - 1]['id'], details);
+          _toast('Saved reminder');
+          Navigator.pop(context);
+        } else {
+          await db.rawInsert('UPDATE reminder SET datetime = "' +
+              date +
+              '", name = "' +
+              widget.name +
+              '", phone = "' +
+              widget.phoneNo +
+              '", remark = "' +
+              _remarkcontroller.text +
+              '", time = "' +
+              dateTime.millisecondsSinceEpoch.toString() +
+              '" WHERE id = ' +
+              widget.id.toString());
+          String details = widget.id.toString() +
+              "~!" +
+              date +
+              "~!" +
+              widget.name +
+              "~!" +
+              widget.phoneNo +
+              "~!" +
+              _remarkcontroller.text +
+              "~!" +
+              'not active' +
+              "~!" +
+              dateTime.millisecondsSinceEpoch.toString();
+          _scheduleNotification(widget.id, details);
+          _toast('Updated reminder');
+          Navigator.pop(context);
+          Navigator.pop(context);
+        }
       }
     }
   }

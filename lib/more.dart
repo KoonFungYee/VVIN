@@ -985,6 +985,7 @@ class _MoreState extends State<More> {
               print("Reminder error: " + (err).toString());
             });
       }
+      db1.rawInsert('DELETE FROM reminder WHERE id > 0');
       final _devicePath = await getApplicationDocumentsDirectory();
       location = _devicePath.path.toString();
       try {

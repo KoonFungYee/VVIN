@@ -102,6 +102,7 @@ class _ReminderState extends State<Reminder> {
   }
 
   Future<void> _init() async {
+    db = await ReminderDB.instance.database;
     WidgetsFlutterBinding.ensureInitialized();
     notificationAppLaunchDetails =
         await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
@@ -575,6 +576,8 @@ class _ReminderState extends State<Reminder> {
           name: widget.name,
           phoneNo: widget.phone,
           remark: widget.remark,
+          id: widget.id,
+          time: widget.datetime,
         ),
         transition: DefaultTransition(),
       ),

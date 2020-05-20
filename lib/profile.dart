@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -1008,6 +1007,7 @@ class _ProfileState extends State<Profile> {
               print("Reminder error: " + (err).toString());
             });
       }
+      db1.rawInsert('DELETE FROM reminder WHERE id > 0');
       final _devicePath = await getApplicationDocumentsDirectory();
       location = _devicePath.path.toString();
       try {

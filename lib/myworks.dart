@@ -2352,9 +2352,9 @@ class _MyWorksState extends State<MyWorks> {
       getVTag();
       getHandlerList();
       notification();
-      if (prefs.getString("reminder") == null) {
-        getReminder();
-      }
+      // if (prefs.getString("reminder") == null) {
+      //   getReminder();
+      // }
     } else {
       initialize();
       _toast("No Internet, the data shown is not up to date");
