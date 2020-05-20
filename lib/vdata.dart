@@ -26,6 +26,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
+import 'package:vvin/reminder.dart';
 import 'package:vvin/more.dart';
 import 'package:vvin/myworks.dart';
 import 'package:vvin/notifications.dart';
@@ -265,14 +266,42 @@ class _VDataState extends State<VData> {
   void _configureSelectNotificationSubject() {
     selectNotificationSubject.stream.listen((String payload) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      if (prefs.getString('onMessage') != payload) {
-        Navigator.of(context).pushReplacement(PageTransition(
-          duration: Duration(milliseconds: 1),
-          type: PageTransitionType.transferUp,
-          child: Notifications(),
-        ));
+      if (payload.substring(0, 8) == 'reminder') {
+        if (prefs.getString('reminder') != payload) {
+          List list = payload.substring(8).split('~!');
+          int id = int.parse(list[0]);
+          String date = list[1].toString().substring(0, 10);
+          String time = list[1].toString().substring(11);
+          String name = list[2];
+          String phone = list[3];
+          String remark = list[4];
+          String status = list[5];
+          int datetime = int.parse(list[6]);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Reminder(
+                id: id,
+                date: date,
+                time: time,
+                name: name,
+                phone: phone,
+                remark: remark,
+                status: status,
+                datetime: datetime),
+          ));
+          prefs.setString('reminder', payload);
+        }
+      } else {
+        if (prefs.getString('onMessage') != payload) {
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
+        }
+        prefs.setString('onMessage', payload);
       }
-      prefs.setString('onMessage', payload);
     });
   }
 

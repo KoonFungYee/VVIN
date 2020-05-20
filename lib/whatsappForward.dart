@@ -8,6 +8,7 @@ import 'package:fake_whatsapp/fake_whatsapp.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vvin/reminder.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
@@ -174,14 +175,42 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   void _configureSelectNotificationSubject() {
     selectNotificationSubject.stream.listen((String payload) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      if (prefs.getString('onMessage') != payload) {
-        Navigator.of(context).pushReplacement(PageTransition(
-          duration: Duration(milliseconds: 1),
-          type: PageTransitionType.transferUp,
-          child: Notifications(),
-        ));
+      if (payload.substring(0, 8) == 'reminder') {
+        if (prefs.getString('reminder') != payload) {
+          List list = payload.substring(8).split('~!');
+          int id = int.parse(list[0]);
+          String date = list[1].toString().substring(0, 10);
+          String time = list[1].toString().substring(11);
+          String name = list[2];
+          String phone = list[3];
+          String remark = list[4];
+          String status = list[5];
+          int datetime = int.parse(list[6]);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Reminder(
+                id: id,
+                date: date,
+                time: time,
+                name: name,
+                phone: phone,
+                remark: remark,
+                status: status,
+                datetime: datetime),
+          ));
+          prefs.setString('reminder', payload);
+        }
+      } else {
+        if (prefs.getString('onMessage') != payload) {
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
+        }
+        prefs.setString('onMessage', payload);
       }
-      prefs.setString('onMessage', payload);
     });
   }
 

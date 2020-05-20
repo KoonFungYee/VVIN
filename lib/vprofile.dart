@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vvin/reminder.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:map_launcher/map_launcher.dart';
 import 'package:menu_button/menu_button.dart';
@@ -20,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/data.dart';
+import 'package:vvin/editReminder.dart';
 import 'package:vvin/editVProfile.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
@@ -37,6 +40,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:vvin/reminderList.dart';
 
 bool isScan;
 String full = "";
@@ -152,14 +156,13 @@ class _VProfileState extends State<VProfile>
     isSend = start = hasSpeech = vTagData =
         remarksData = viewsData = handlerData = isScan = vProfileData = false;
     base64Image = _addRemark.text = resultText = speechText = "";
-    WidgetsBinding.instance.addObserver(this);
+    // WidgetsBinding.instance.addObserver(this);
     // PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
     // askPermission();
     // initSpeechState();
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        prefs = await SharedPreferences.getInstance();
         _showNotification();
       },
       onResume: (Map<String, dynamic> message) async {
@@ -253,14 +256,42 @@ class _VProfileState extends State<VProfile>
   void _configureSelectNotificationSubject() {
     selectNotificationSubject.stream.listen((String payload) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      if (prefs.getString('onMessage') != payload) {
-        Navigator.of(context).pushReplacement(PageTransition(
-          duration: Duration(milliseconds: 1),
-          type: PageTransitionType.transferUp,
-          child: Notifications(),
-        ));
+      if (payload.substring(0, 8) == 'reminder') {
+        if (prefs.getString('reminder') != payload) {
+          List list = payload.substring(8).split('~!');
+          int id = int.parse(list[0]);
+          String date = list[1].toString().substring(0, 10);
+          String time = list[1].toString().substring(11);
+          String name = list[2];
+          String phone = list[3];
+          String remark = list[4];
+          String status = list[5];
+          int datetime = int.parse(list[6]);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Reminder(
+                id: id,
+                date: date,
+                time: time,
+                name: name,
+                phone: phone,
+                remark: remark,
+                status: status,
+                datetime: datetime),
+          ));
+          prefs.setString('reminder', payload);
+        }
+      } else {
+        if (prefs.getString('onMessage') != payload) {
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
+        }
+        prefs.setString('onMessage', payload);
       }
-      prefs.setString('onMessage', payload);
     });
   }
 
@@ -669,6 +700,15 @@ class _VProfileState extends State<VProfile>
           ),
         ),
         PopupMenuItem<String>(
+          value: "add reminder",
+          child: Text(
+            "Add Reminder",
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          ),
+        ),
+        PopupMenuItem<String>(
           value: "save contact",
           child: Text(
             "Save Contact",
@@ -795,6 +835,23 @@ class _VProfileState extends State<VProfile>
                   transitionDuration: Duration(milliseconds: 300),
                   context: context,
                   pageBuilder: (context, animation1, animation2) {});
+            }
+            break;
+          case "add reminder":
+            {
+              if (vProfileData == true) {
+                Navigator.push(
+                  context,
+                  AwesomePageRoute(
+                    transitionDuration: Duration(milliseconds: 600),
+                    exitPage: widget,
+                    enterPage: EditReminder(datetime: "", name: vProfileDetails[0].name, phoneNo: phoneNo, remark: "",),
+                    transition: DefaultTransition(),
+                  ),
+                );
+              } else {
+                _toast('Data is laoding, please try again later');
+              }
             }
             break;
           case "save contact":

@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:ndialog/ndialog.dart';
@@ -19,6 +18,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/VProfile.dart';
 import 'package:vvin/data.dart';
+import 'package:vvin/reminder.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -511,14 +511,42 @@ class _EditVProfileState extends State<EditVProfile> {
   void _configureSelectNotificationSubject() {
     selectNotificationSubject.stream.listen((String payload) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      if (prefs.getString('onMessage') != payload) {
-        Navigator.of(context).pushReplacement(PageTransition(
-          duration: Duration(milliseconds: 1),
-          type: PageTransitionType.transferUp,
-          child: Notifications(),
-        ));
+      if (payload.substring(0, 8) == 'reminder') {
+        if (prefs.getString('reminder') != payload) {
+          List list = payload.substring(8).split('~!');
+          int id = int.parse(list[0]);
+          String date = list[1].toString().substring(0, 10);
+          String time = list[1].toString().substring(11);
+          String name = list[2];
+          String phone = list[3];
+          String remark = list[4];
+          String status = list[5];
+          int datetime = int.parse(list[6]);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Reminder(
+                id: id,
+                date: date,
+                time: time,
+                name: name,
+                phone: phone,
+                remark: remark,
+                status: status,
+                datetime: datetime),
+          ));
+          prefs.setString('reminder', payload);
+        }
+      } else {
+        if (prefs.getString('onMessage') != payload) {
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
+        }
+        prefs.setString('onMessage', payload);
       }
-      prefs.setString('onMessage', payload);
     });
   }
 

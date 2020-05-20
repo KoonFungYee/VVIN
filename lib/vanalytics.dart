@@ -12,8 +12,8 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:intl/intl.dart';
+import 'package:vvin/reminder.dart';
 import 'package:ndialog/ndialog.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:route_transitions/route_transitions.dart';
@@ -29,6 +29,7 @@ import 'package:http/http.dart' as http;
 import 'package:vvin/more.dart';
 import 'package:vvin/myworks.dart';
 import 'package:vvin/notifications.dart';
+import 'package:vvin/reminderDB.dart';
 import 'package:vvin/topViewDB.dart';
 import 'package:vvin/vanalyticsDB.dart';
 import 'package:vvin/vdata.dart';
@@ -116,6 +117,7 @@ class _VAnalyticsState extends State<VAnalytics>
   String urlVAnalytics = "https://vvinoa.vvin.com/api/vanalytics.php";
   String urlTopViews = "https://vvinoa.vvin.com/api/topview.php";
   String urlLeads = "https://vvinoa.vvin.com/api/leads.php";
+  String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
   int load, startTime, endTime, currentTabIndex;
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
@@ -305,8 +307,7 @@ class _VAnalyticsState extends State<VAnalytics>
             CupertinoDialogAction(
               isDefaultAction: true,
               child: Text('Ok'),
-              onPressed: () async {
-              },
+              onPressed: () async {},
             )
           ],
         ),
@@ -317,13 +318,40 @@ class _VAnalyticsState extends State<VAnalytics>
   void _configureSelectNotificationSubject() {
     selectNotificationSubject.stream.listen((String payload) async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      print(prefs.getString('onMessage'));
-      if (prefs.getString('onMessage') != payload) {
-        Navigator.of(context).pushReplacement(PageTransition(
-          duration: Duration(milliseconds: 1),
-          type: PageTransitionType.transferUp,
-          child: Notifications(),
-        ));
+      if (payload.substring(0, 8) == 'reminder') {
+        if (prefs.getString('reminder') != payload) {
+          List list = payload.substring(8).split('~!');
+          int id = int.parse(list[0]);
+          String date = list[1].toString().substring(0, 10);
+          String time = list[1].toString().substring(11);
+          String name = list[2];
+          String phone = list[3];
+          String remark = list[4];
+          String status = list[5];
+          int datetime = int.parse(list[6]);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Reminder(
+                id: id,
+                date: date,
+                time: time,
+                name: name,
+                phone: phone,
+                remark: remark,
+                status: status,
+                datetime: datetime),
+          ));
+          prefs.setString('reminder', payload);
+        }
+      } else {
+        if (prefs.getString('onMessage') != payload) {
+          Navigator.of(context).pushReplacement(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: Notifications(),
+          ));
+        }
         prefs.setString('onMessage', payload);
       }
     });
@@ -2861,6 +2889,43 @@ class _VAnalyticsState extends State<VAnalytics>
     getVanalyticsData();
     getChartData();
     notification();
+    if (prefs.getString("reminder") == null) {
+      getReminder();
+    }
+  }
+
+  void getReminder() {
+    http.post(urlGetReminder, body: {
+      "companyID": companyID,
+      "userID": userID,
+      "level": level,
+      "user_type": userType,
+    }).then((res) async {
+      var jsonData = json.decode(res.body);
+      if (res.body != 'nodata') {
+        Database db = await ReminderDB.instance.database;
+        for (var data in jsonData) {
+          await db.rawInsert(
+              'INSERT INTO reminder (datetime, name, phone, remark, status, time) VALUES("' +
+                  data["datetime"] +
+                  '","' +
+                  data["name"] +
+                  '","' +
+                  data["phone"] +
+                  '","' +
+                  data["remark"] +
+                  '","' +
+                  data["status"] +
+                  '","' +
+                  data["time"] +
+                  '")');
+        }
+        prefs.setString("reminder", '1');
+      }
+    }).catchError((err) {
+      _toast("Get reminder error" + err.toString());
+      print("Get reminder error: " + (err).toString());
+    });
   }
 
   void notification() {
