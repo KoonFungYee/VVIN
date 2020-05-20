@@ -970,13 +970,13 @@ class _MoreState extends State<More> {
               "userID": userID,
               "level": level,
               "user_type": userType,
-              "id": reminders[i]['id'],
-              "datetime": reminders[i]['datetime'],
+              "id": reminders[i]['id'].toString(),
+              "datetime": reminders[i]['datetime'].toString(),
               "name": reminders[i]['name'],
-              "phone": reminders[i]['phone'],
+              "phone": reminders[i]['phone'].toString(),
               "remark": reminders[i]['remark'],
               "status": reminders[i]['status'],
-              "time": reminders[i]['time'],
+              "time": reminders[i]['time'].toString(),
               "sendtime": sendtime,
             })
             .then((res) async {})
