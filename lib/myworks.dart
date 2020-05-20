@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:badges/badges.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -2386,6 +2387,29 @@ class _MyWorksState extends State<MyWorks> {
                   '","' +
                   data["time"] +
                   '")');
+          if (data["status"] == 'active') {
+            List list = await db.query(ReminderDB.table);
+            String details = list[list.length - 1]['id'].toString() +
+                "~!" +
+                data["datetime"] +
+                "~!" +
+                data["name"] +
+                "~!" +
+                data["phone"] +
+                "~!" +
+                data["remark"] +
+                "~!" +
+                'not active' +
+                "~!" +
+                data["time"];
+            _scheduleNotification(
+                list[list.length - 1]['id'],
+                details,
+                data["name"],
+                data["phone"],
+                data["remark"],
+                DateTime.fromMillisecondsSinceEpoch(data["time"]));
+          }
         }
         prefs.setString("reminder", '1');
       }
@@ -2393,6 +2417,41 @@ class _MyWorksState extends State<MyWorks> {
       _toast("Get reminder error" + err.toString());
       print("Get reminder error: " + (err).toString());
     });
+  }
+
+  Future<void> _scheduleNotification(int id, String details, String name,
+      String phone, String remark, DateTime dateTime) async {
+    String name1 = 'Name: ' + name + ' ';
+    String phoneNo = 'Phone Number: ' + phone + ' ';
+    String decription = 'Description: ' + remark + ' ';
+    var scheduledNotificationDateTime = dateTime;
+    var vibrationPattern = Int64List(1);
+    vibrationPattern[0] = 0;
+
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your other channel id',
+      'your other channel name',
+      'your other channel description',
+      icon: 'secondary_icon',
+      largeIcon: DrawableResourceAndroidBitmap(''),
+      vibrationPattern: vibrationPattern,
+      enableLights: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+      ticker: 'ticker',
+      styleInformation: BigTextStyleInformation(''),
+    );
+    var iOSPlatformChannelSpecifics =
+        IOSNotificationDetails(sound: 'slow_spring_board.aiff');
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.schedule(
+        id,
+        'Reminder',
+        name1 + '\n' + phoneNo + '\n' + decription,
+        scheduledNotificationDateTime,
+        platformChannelSpecifics,
+        payload: 'reminder' + details);
   }
 
   void notification() {

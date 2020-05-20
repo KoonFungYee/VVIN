@@ -986,6 +986,7 @@ class _MoreState extends State<More> {
             });
       }
       db1.rawInsert('DELETE FROM reminder WHERE id > 0');
+      await flutterLocalNotificationsPlugin.cancelAll();
       final _devicePath = await getApplicationDocumentsDirectory();
       location = _devicePath.path.toString();
       try {
