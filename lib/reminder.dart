@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,7 +20,7 @@ import 'package:vvin/notifications.dart';
 import 'package:vvin/reminderDB.dart';
 
 class Reminder extends StatefulWidget {
-  final int id;
+  final int dataid;
   final String date;
   final String time;
   final String name;
@@ -29,7 +30,7 @@ class Reminder extends StatefulWidget {
   final int datetime;
   Reminder(
       {Key key,
-      this.id,
+      this.dataid,
       this.date,
       this.time,
       this.name,
@@ -120,9 +121,6 @@ class _ReminderState extends State<Reminder> {
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        // debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -170,24 +168,24 @@ class _ReminderState extends State<Reminder> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
-          await db.rawInsert('UPDATE reminder SET status = "' +
-              cancel +
-              '" WHERE id = ' +
-              widget.id.toString());
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
-          Navigator.of(context).push(PageTransition(
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
+          Navigator.of(context).pushReplacement(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -228,7 +226,6 @@ class _ReminderState extends State<Reminder> {
   }
 
   void check() async {
-    db = await ReminderDB.instance.database;
     if (_type == UniLinksType.string) {
       _sub = getLinksStream().listen((String link) {
         // FlutterWebBrowser.openWebPage(
@@ -550,17 +547,67 @@ class _ReminderState extends State<Reminder> {
   Future<void> _reactive() async {
     await db.rawInsert('UPDATE reminder SET status = "' +
         active +
-        '" WHERE id = ' +
-        widget.id.toString());
-    await flutterLocalNotificationsPlugin.cancel(widget.id);
+        '" WHERE dataid = ' +
+        widget.dataid.toString());
+    String details = widget.dataid.toString() +
+        "~!" +
+        widget.date +
+        " " +
+        widget.time +
+        "~!" +
+        widget.name +
+        "~!" +
+        widget.phone +
+        "~!" +
+        widget.remark +
+        "~!" +
+        'not active' +
+        "~!" +
+        widget.datetime.toString();
+    _scheduleNotification(widget.dataid, details);
     _toast('Re-activited');
     _onBackPressAppBar();
   }
 
+  Future<void> _scheduleNotification(int id, String details) async {
+    String name = 'Name: ' + widget.name + ' ';
+    String phoneNo = 'Phone Number: ' + widget.phone + ' ';
+    String decription = 'Remark: ' + widget.remark + ' ';
+    var scheduledNotificationDateTime =
+        DateTime.fromMillisecondsSinceEpoch(widget.datetime);
+    var vibrationPattern = Int64List(1);
+    vibrationPattern[0] = 0;
+
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your other channel id',
+      'your other channel name',
+      'your other channel description',
+      icon: 'secondary_icon',
+      largeIcon: DrawableResourceAndroidBitmap(''),
+      vibrationPattern: vibrationPattern,
+      enableLights: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+      ticker: 'ticker',
+      styleInformation: BigTextStyleInformation(''),
+    );
+    var iOSPlatformChannelSpecifics =
+        IOSNotificationDetails(sound: 'slow_spring_board.aiff');
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.schedule(
+        id,
+        'Reminder',
+        name + '\n' + phoneNo + '\n' + decription,
+        scheduledNotificationDateTime,
+        platformChannelSpecifics,
+        payload: 'reminder' + details);
+  }
+
   Future<void> _delete() async {
-    await db
-        .rawInsert('DELETE FROM reminder WHERE id = ' + widget.id.toString());
-    await flutterLocalNotificationsPlugin.cancel(widget.id);
+    await db.rawInsert(
+        'DELETE FROM reminder WHERE dataid = ' + widget.dataid.toString());
+    await flutterLocalNotificationsPlugin.cancel(widget.dataid);
     _toast('Deleted');
     _onBackPressAppBar();
   }
@@ -576,7 +623,7 @@ class _ReminderState extends State<Reminder> {
           name: widget.name,
           phoneNo: widget.phone,
           remark: widget.remark,
-          id: widget.id,
+          dataid: widget.dataid,
           time: widget.datetime,
         ),
         transition: DefaultTransition(),
@@ -587,9 +634,9 @@ class _ReminderState extends State<Reminder> {
   Future<void> _cancel() async {
     await db.rawInsert('UPDATE reminder SET status = "' +
         cancel +
-        '" WHERE id = ' +
-        widget.id.toString());
-    await flutterLocalNotificationsPlugin.cancel(widget.id);
+        '" WHERE dataid = ' +
+        widget.dataid.toString());
+    await flutterLocalNotificationsPlugin.cancel(widget.dataid);
     _toast('Reminder cancelled');
     _onBackPressAppBar();
   }

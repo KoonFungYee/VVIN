@@ -224,9 +224,6 @@ class _MyWorksState extends State<MyWorks> {
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -275,19 +272,23 @@ class _MyWorksState extends State<MyWorks> {
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
           Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -300,7 +301,7 @@ class _MyWorksState extends State<MyWorks> {
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
-          Navigator.of(context).pushReplacement(PageTransition(
+          Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Notifications(),
@@ -2389,7 +2390,7 @@ class _MyWorksState extends State<MyWorks> {
                   '")');
           if (data["status"] == 'active') {
             List list = await db.query(ReminderDB.table);
-            String details = list[list.length - 1]['id'].toString() +
+            String details = list[list.length - 1]['dataid'].toString() +
                 "~!" +
                 data["datetime"] +
                 "~!" +
@@ -2403,7 +2404,7 @@ class _MyWorksState extends State<MyWorks> {
                 "~!" +
                 data["time"];
             _scheduleNotification(
-                list[list.length - 1]['id'],
+                list[list.length - 1]['dataid'],
                 details,
                 data["name"],
                 data["phone"],

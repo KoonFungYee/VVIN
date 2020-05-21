@@ -11,6 +11,7 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:vvin/reminder.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -40,6 +41,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:vvin/reminderDB.dart';
 import 'package:vvin/reminderList.dart';
 
 bool isScan;
@@ -208,9 +210,6 @@ class _VProfileState extends State<VProfile>
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        // debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -259,19 +258,23 @@ class _VProfileState extends State<VProfile>
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
           Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -284,7 +287,7 @@ class _VProfileState extends State<VProfile>
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
-          Navigator.of(context).pushReplacement(PageTransition(
+          Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Notifications(),

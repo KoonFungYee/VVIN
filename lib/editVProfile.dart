@@ -15,6 +15,7 @@ import 'package:geocoder/geocoder.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/VProfile.dart';
 import 'package:vvin/data.dart';
@@ -23,6 +24,7 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/notifications.dart';
+import 'package:vvin/reminderDB.dart';
 
 final ScrollController controller = ScrollController();
 final TextEditingController _nameController = TextEditingController();
@@ -463,9 +465,6 @@ class _EditVProfileState extends State<EditVProfile> {
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -514,19 +513,23 @@ class _EditVProfileState extends State<EditVProfile> {
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
           Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -539,7 +542,7 @@ class _EditVProfileState extends State<EditVProfile> {
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
-          Navigator.of(context).pushReplacement(PageTransition(
+          Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Notifications(),
@@ -2177,7 +2180,6 @@ class _EditVProfileState extends State<EditVProfile> {
       addresses =
           await Geocoder.local.findAddressesFromCoordinates(coordinates);
       first = addresses.first;
-      print(first.addressLine);
       showDialog(
         barrierDismissible: false,
         context: context,

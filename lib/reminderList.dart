@@ -18,7 +18,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
-import 'package:vvin/more.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
@@ -100,9 +99,6 @@ class _ReminderListState extends State<ReminderList> {
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        // debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -151,19 +147,23 @@ class _ReminderListState extends State<ReminderList> {
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
           Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -176,7 +176,7 @@ class _ReminderListState extends State<ReminderList> {
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
-          Navigator.of(context).pushReplacement(PageTransition(
+          Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Notifications(),
@@ -206,6 +206,8 @@ class _ReminderListState extends State<ReminderList> {
   @override
   void dispose() {
     if (_sub != null) _sub.cancel();
+    didReceiveLocalNotificationSubject.close();
+    selectNotificationSubject.close();
     super.dispose();
   }
 
@@ -407,20 +409,20 @@ class _ReminderListState extends State<ReminderList> {
   }
 
   Future<void> _reminderPage(int index) async {
-    int id = reminderList[index]['id'];
+    int dataid = int.parse(reminderList[index]['dataid']);
     Database db = await ReminderDB.instance.database;
     try {
       List reminderList1 = await db.rawQuery(
-          "SELECT * FROM reminder where id = '" + id.toString() + "'");
+          "SELECT * FROM reminder where dataid = '" + dataid.toString() + "'");
       Navigator.push(
         context,
         AwesomePageRoute(
           transitionDuration: Duration(milliseconds: 600),
           exitPage: widget,
           enterPage: Reminder(
-            id: reminderList1[0]['id'],
+            dataid: int.parse(reminderList1[0]['dataid']),
             date: reminderList1[0]['datetime'].toString().substring(0, 10),
-            time: reminderList1[0]['datetime'].toString().substring(11),
+            time: reminderList1[0]['datetime'].toString().substring(12),
             name: reminderList1[0]['name'],
             phone: reminderList1[0]['phone'],
             remark: reminderList1[0]['remark'],

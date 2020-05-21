@@ -271,9 +271,6 @@ class _VAnalyticsState extends State<VAnalytics>
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -322,19 +319,23 @@ class _VAnalyticsState extends State<VAnalytics>
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
           Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -347,7 +348,7 @@ class _VAnalyticsState extends State<VAnalytics>
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
-          Navigator.of(context).pushReplacement(PageTransition(
+          Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Notifications(),
@@ -2890,9 +2891,9 @@ class _VAnalyticsState extends State<VAnalytics>
     getVanalyticsData();
     getChartData();
     notification();
-    // if (prefs.getString("reminder") == null) {
-    //   getReminder();
-    // }
+    if (prefs.getString("getreminder") == null) {
+      getReminder();
+    }
   }
 
   void getReminder() {
@@ -2902,49 +2903,54 @@ class _VAnalyticsState extends State<VAnalytics>
       "level": level,
       "user_type": userType,
     }).then((res) async {
-      var jsonData = json.decode(res.body);
       if (res.body != 'nodata') {
+        var jsonData = json.decode(res.body);
         Database db = await ReminderDB.instance.database;
         for (var data in jsonData) {
           await db.rawInsert(
-              'INSERT INTO reminder (datetime, name, phone, remark, status, time) VALUES("' +
-                  data["datetime"] +
+              'INSERT INTO reminder (dataid, datetime, name, phone, remark, status, time) VALUES(' +
+                  data["data_id"].toString() +
+                  ',"' +
+                  data["datetime"].toString() +
                   '","' +
                   data["name"] +
                   '","' +
-                  data["phone"] +
+                  data["phone_number"].toString() +
                   '","' +
-                  data["remark"] +
+                  data["remark"].toString() +
                   '","' +
                   data["status"] +
                   '","' +
-                  data["time"] +
+                  data["time"].toString() +
                   '")');
           if (data["status"] == 'active') {
             List list = await db.query(ReminderDB.table);
-            String details = list[list.length - 1]['id'].toString() +
+            String details = list[list.length - 1]['dataid'].toString() +
                 "~!" +
                 data["datetime"] +
                 "~!" +
                 data["name"] +
                 "~!" +
-                data["phone"] +
+                data["phone_number"].toString() +
                 "~!" +
                 data["remark"] +
                 "~!" +
                 'not active' +
                 "~!" +
-                data["time"];
-            _scheduleNotification(
-                list[list.length - 1]['id'],
-                details,
-                data["name"],
-                data["phone"],
-                data["remark"],
-                DateTime.fromMillisecondsSinceEpoch(data["time"]));
+                data["time"].toString();
+            if (int.parse(data["time"]) >
+                DateTime.now().millisecondsSinceEpoch) {
+              _scheduleNotification(
+                  int.parse(list[list.length - 1]['dataid']),
+                  details,
+                  data["name"],
+                  data["phone_number"].toString(),
+                  data["remark"].toString(),
+                  DateTime.fromMillisecondsSinceEpoch(int.parse(data["time"])));
+            }
           }
         }
-        prefs.setString("reminder", '1');
+        prefs.setString("getreminder", "1");
       }
     }).catchError((err) {
       _toast("Get reminder error" + err.toString());

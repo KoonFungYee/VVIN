@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,14 +17,13 @@ import 'package:vvin/data.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
-import 'package:vvin/reminderList.dart';
 
 class EditReminder extends StatefulWidget {
   final String datetime;
   final String name;
   final String phoneNo;
   final String remark;
-  final int id;
+  final int dataid;
   final int time;
   EditReminder(
       {Key key,
@@ -33,7 +31,7 @@ class EditReminder extends StatefulWidget {
       this.name,
       this.phoneNo,
       this.remark,
-      this.id,
+      this.dataid,
       this.time})
       : super(key: key);
 
@@ -77,7 +75,7 @@ class _EditReminderState extends State<EditReminder> {
     date = remark = '';
     date = widget.datetime;
     if (widget.time != null) {
-      dateTime = new DateTime.fromMillisecondsSinceEpoch(widget.time);
+      dateTime = DateTime.fromMillisecondsSinceEpoch(widget.time);
     }
     _remarkcontroller.text = widget.remark;
     active = 'active';
@@ -131,9 +129,6 @@ class _EditReminderState extends State<EditReminder> {
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        // debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -182,19 +177,23 @@ class _EditReminderState extends State<EditReminder> {
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
           Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -207,7 +206,7 @@ class _EditReminderState extends State<EditReminder> {
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
-          Navigator.of(context).pushReplacement(PageTransition(
+          Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Notifications(),
@@ -640,8 +639,9 @@ class _EditReminderState extends State<EditReminder> {
                               DateTime.now().subtract(Duration(days: 1)),
                           mode: CupertinoDatePickerMode.dateAndTime,
                           backgroundColor: Colors.transparent,
-                          initialDateTime:
-                              (widget.id == null) ? DateTime.now() : dateTime,
+                          initialDateTime: (widget.dataid == null)
+                              ? DateTime.now()
+                              : dateTime,
                           onDateTimeChanged: (startDate) {
                             setState(() {
                               dateTime = startDate;
@@ -731,9 +731,11 @@ class _EditReminderState extends State<EditReminder> {
           });
         }
         Database db = await ReminderDB.instance.database;
-        if (widget.id == null) {
+        if (widget.dataid == null) {
           await db.rawInsert(
-              'INSERT INTO reminder (datetime, name, phone, remark, status, time) VALUES("' +
+              'INSERT INTO reminder (dataid, datetime, name, phone, remark, status, time) VALUES("' +
+                  DateTime.now().millisecondsSinceEpoch.toString().substring(6) +
+                  '","' +
                   date +
                   '","' +
                   widget.name +
@@ -746,23 +748,21 @@ class _EditReminderState extends State<EditReminder> {
                   '","' +
                   dateTime.millisecondsSinceEpoch.toString() +
                   '")');
-          reminderList = await db.query(ReminderDB.table);
-          String details =
-              reminderList[reminderList.length - 1]['id'].toString() +
-                  "~!" +
-                  date +
-                  "~!" +
-                  widget.name +
-                  "~!" +
-                  widget.phoneNo +
-                  "~!" +
-                  _remarkcontroller.text +
-                  "~!" +
-                  'not active' +
-                  "~!" +
-                  dateTime.millisecondsSinceEpoch.toString();
-          _scheduleNotification(
-              reminderList[reminderList.length - 1]['id'], details);
+          String details = DateTime.now().millisecondsSinceEpoch.toString() +
+              "~!" +
+              date +
+              "~!" +
+              widget.name +
+              "~!" +
+              widget.phoneNo +
+              "~!" +
+              _remarkcontroller.text +
+              "~!" +
+              'not active' +
+              "~!" +
+              dateTime.millisecondsSinceEpoch.toString();
+          int id = int.parse(DateTime.now().millisecondsSinceEpoch.toString().substring(6));
+          _scheduleNotification(id, details);
           _toast('Saved reminder');
           Navigator.pop(context);
         } else {
@@ -776,9 +776,9 @@ class _EditReminderState extends State<EditReminder> {
               _remarkcontroller.text +
               '", time = "' +
               dateTime.millisecondsSinceEpoch.toString() +
-              '" WHERE id = ' +
-              widget.id.toString());
-          String details = widget.id.toString() +
+              '" WHERE dataid = ' +
+              widget.dataid.toString());
+          String details = widget.dataid.toString() +
               "~!" +
               date +
               "~!" +
@@ -791,7 +791,7 @@ class _EditReminderState extends State<EditReminder> {
               'not active' +
               "~!" +
               dateTime.millisecondsSinceEpoch.toString();
-          _scheduleNotification(widget.id, details);
+          _scheduleNotification(widget.dataid, details);
           _toast('Updated reminder');
           Navigator.pop(context);
           Navigator.pop(context);
@@ -803,7 +803,7 @@ class _EditReminderState extends State<EditReminder> {
   Future<void> _scheduleNotification(int id, String details) async {
     String name = 'Name: ' + widget.name + ' ';
     String phoneNo = 'Phone Number: ' + widget.phoneNo + ' ';
-    String decription = 'Description: ' + _remarkcontroller.text + ' ';
+    String decription = 'Remark: ' + _remarkcontroller.text + ' ';
     var scheduledNotificationDateTime = dateTime;
     // var scheduledNotificationDateTime =
     //     DateTime.now().add(Duration(seconds: 1));

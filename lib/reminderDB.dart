@@ -8,6 +8,7 @@ class ReminderDB {
   static final _databaseVersion = 1;
   static final table = 'reminder';
   static final id = 'id';
+  static final dataid = 'dataid';
   static final datetime = 'datetime';
   static final name = 'name';
   static final phone = 'phone';
@@ -35,6 +36,7 @@ class ReminderDB {
     await db.execute('''
           CREATE TABLE $table (
             $id INTEGER PRIMARY KEY,
+            $dataid TEXT,
             $datetime TEXT,
             $name TEXT,
             $phone TEXT,

@@ -150,9 +150,6 @@ class _MoreState extends State<More> {
         initializationSettingsAndroid, initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (String payload) async {
-      if (payload != null) {
-        debugPrint('notification payload: ' + payload);
-      }
       selectNotificationSubject.add(payload);
     });
     _requestIOSPermissions();
@@ -201,19 +198,23 @@ class _MoreState extends State<More> {
       if (payload.substring(0, 8) == 'reminder') {
         if (prefs.getString('reminder') != payload) {
           List list = payload.substring(8).split('~!');
-          int id = int.parse(list[0]);
+          int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(11);
+          String time = list[1].toString().substring(12);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
           String status = list[5];
           int datetime = int.parse(list[6]);
+          Database db = await ReminderDB.instance.database;
+          await db.rawInsert(
+              'UPDATE reminder SET status = "cancel" WHERE dataid = ' +
+                  dataid.toString());
           Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Reminder(
-                id: id,
+                dataid: dataid,
                 date: date,
                 time: time,
                 name: name,
@@ -226,7 +227,7 @@ class _MoreState extends State<More> {
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
-          Navigator.of(context).pushReplacement(PageTransition(
+          Navigator.of(context).push(PageTransition(
             duration: Duration(milliseconds: 1),
             type: PageTransitionType.transferUp,
             child: Notifications(),
@@ -964,26 +965,24 @@ class _MoreState extends State<More> {
       List reminders = await db1.query(ReminderDB.table);
       String sendtime = DateTime.now().millisecondsSinceEpoch.toString();
       for (int i = 0; i < reminders.length; i++) {
-        http
-            .post(urlReminder, body: {
-              "companyID": companyID,
-              "userID": userID,
-              "level": level,
-              "user_type": userType,
-              "id": reminders[i]['id'].toString(),
-              "datetime": reminders[i]['datetime'].toString(),
-              "name": reminders[i]['name'],
-              "phone": reminders[i]['phone'].toString(),
-              "remark": reminders[i]['remark'],
-              "status": reminders[i]['status'],
-              "time": reminders[i]['time'].toString(),
-              "sendtime": sendtime,
-            })
-            .then((res) async {})
-            .catchError((err) {
-              _toast("Something wrong on save reminder");
-              print("Reminder error: " + (err).toString());
-            });
+        http.post(urlReminder, body: {
+          "companyID": companyID,
+          "userID": userID,
+          "level": level,
+          "user_type": userType,
+          "id": reminders[i]['dataid'].toString(),
+          "datetime": reminders[i]['datetime'].toString(),
+          "name": reminders[i]['name'],
+          "phone": reminders[i]['phone'].toString(),
+          "remark": reminders[i]['remark'],
+          "status": reminders[i]['status'],
+          "time": reminders[i]['time'].toString(),
+          "sendtime": sendtime,
+        }).then((res) async {
+        }).catchError((err) {
+          _toast("Something wrong on save reminder");
+          print("Reminder error: " + (err).toString());
+        });
       }
       db1.rawInsert('DELETE FROM reminder WHERE id > 0');
       await flutterLocalNotificationsPlugin.cancelAll();
@@ -1024,7 +1023,7 @@ class _MoreState extends State<More> {
       prefs.setString('totalLink', null);
       prefs.setString('noti', null);
       prefs.setString('newNoti', null);
-      prefs.setString('reminder', null);
+      prefs.setString("getreminder", null);
 
       _clearToken();
 
