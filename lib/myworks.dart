@@ -2354,9 +2354,9 @@ class _MyWorksState extends State<MyWorks> {
       getVTag();
       getHandlerList();
       notification();
-      // if (prefs.getString("reminder") == null) {
-      //   getReminder();
-      // }
+      if (prefs.getString("reminder") == null) {
+        getReminder();
+      }
     } else {
       initialize();
       _toast("No Internet, the data shown is not up to date");
@@ -2370,23 +2370,25 @@ class _MyWorksState extends State<MyWorks> {
       "level": level,
       "user_type": userType,
     }).then((res) async {
-      var jsonData = json.decode(res.body);
       if (res.body != 'nodata') {
+        var jsonData = json.decode(res.body);
         Database db = await ReminderDB.instance.database;
         for (var data in jsonData) {
           await db.rawInsert(
-              'INSERT INTO reminder (datetime, name, phone, remark, status, time) VALUES("' +
-                  data["datetime"] +
+              'INSERT INTO reminder (dataid, datetime, name, phone, remark, status, time) VALUES(' +
+                  data["data_id"].toString() +
+                  ',"' +
+                  data["datetime"].toString() +
                   '","' +
                   data["name"] +
                   '","' +
-                  data["phone"] +
+                  data["phone_number"].toString() +
                   '","' +
-                  data["remark"] +
+                  data["remark"].toString() +
                   '","' +
                   data["status"] +
                   '","' +
-                  data["time"] +
+                  data["time"].toString() +
                   '")');
           if (data["status"] == 'active') {
             List list = await db.query(ReminderDB.table);
@@ -2396,23 +2398,26 @@ class _MyWorksState extends State<MyWorks> {
                 "~!" +
                 data["name"] +
                 "~!" +
-                data["phone"] +
+                data["phone_number"].toString() +
                 "~!" +
                 data["remark"] +
                 "~!" +
                 'not active' +
                 "~!" +
-                data["time"];
-            _scheduleNotification(
-                list[list.length - 1]['dataid'],
-                details,
-                data["name"],
-                data["phone"],
-                data["remark"],
-                DateTime.fromMillisecondsSinceEpoch(data["time"]));
+                data["time"].toString();
+            if (int.parse(data["time"]) >
+                DateTime.now().millisecondsSinceEpoch) {
+              _scheduleNotification(
+                  int.parse(list[list.length - 1]['dataid']),
+                  details,
+                  data["name"],
+                  data["phone_number"].toString(),
+                  data["remark"].toString(),
+                  DateTime.fromMillisecondsSinceEpoch(int.parse(data["time"])));
+            }
           }
         }
-        prefs.setString("reminder", '1');
+        prefs.setString("getreminder", "1");
       }
     }).catchError((err) {
       _toast("Get reminder error" + err.toString());
