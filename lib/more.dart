@@ -21,6 +21,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/companyDB.dart';
@@ -64,10 +65,12 @@ class _MoreState extends State<More> {
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
   final ScrollController controller = ScrollController();
+  final GlobalKey _reminders = GlobalKey();
+  BuildContext myContext;
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  bool start, connection, ready;
+  bool start, connection, ready, isFirst;
   int currentTabIndex;
   SharedPreferences prefs;
   String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
@@ -98,9 +101,13 @@ class _MoreState extends State<More> {
     _init();
     totalNotification = "0";
     currentTabIndex = 4;
-    connection = false;
+    isFirst = connection = false;
     checkConnection();
     initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration(milliseconds: 200),
+          () => ShowCaseWidget.of(myContext).startShowCase([_reminders]));
+    });
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         prefs = await SharedPreferences.getInstance();
@@ -123,6 +130,15 @@ class _MoreState extends State<More> {
   }
 
   void check() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('reminders') == null) {
+      if (this.mounted) {
+        setState(() {
+          isFirst = true;
+        });
+      }
+      prefs.setString('reminders', '1');
+    }
     if (_type == UniLinksType.string) {
       _sub = getLinksStream().listen((String link) {
         // FlutterWebBrowser.openWebPage(
@@ -301,493 +317,602 @@ class _MoreState extends State<More> {
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
     YYDialog.init(context);
-    return WillPopScope(
-      onWillPop: _onBackPressAppBar,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          onTap: onTapped,
-          currentIndex: currentTabIndex,
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.trending_up,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "VAnalytics",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.insert_chart,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "VData",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.assignment,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "My Works",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: (totalNotification != "0")
-                  ? Badge(
-                      position: BadgePosition.topRight(top: -8, right: -5),
-                      animationDuration: Duration(milliseconds: 300),
-                      animationType: BadgeAnimationType.slide,
-                      badgeContent: Text(
-                        '$totalNotification',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: ScreenUtil()
-                              .setSp(20, allowFontScalingSelf: false),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      child: Icon(
-                        Icons.notifications,
-                        size: ScreenUtil().setHeight(40),
-                      ),
-                    )
-                  : Icon(
-                      Icons.notifications,
+    return ShowCaseWidget(
+      builder: Builder(
+        builder: (context) {
+          myContext = context;
+          return WillPopScope(
+            onWillPop: _onBackPressAppBar,
+            child: Scaffold(
+              backgroundColor: Colors.white,
+              bottomNavigationBar: BottomNavigationBar(
+                backgroundColor: Colors.white,
+                onTap: onTapped,
+                currentIndex: currentTabIndex,
+                type: BottomNavigationBarType.fixed,
+                items: [
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      Icons.trending_up,
                       size: ScreenUtil().setHeight(40),
                     ),
-              title: Text(
-                "Notifications",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                    title: Text(
+                      "VAnalytics",
+                      style: TextStyle(
+                        fontSize:
+                            ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                      ),
+                    ),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      Icons.insert_chart,
+                      size: ScreenUtil().setHeight(40),
+                    ),
+                    title: Text(
+                      "VData",
+                      style: TextStyle(
+                        fontSize:
+                            ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                      ),
+                    ),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      Icons.assignment,
+                      size: ScreenUtil().setHeight(40),
+                    ),
+                    title: Text(
+                      "My Works",
+                      style: TextStyle(
+                        fontSize:
+                            ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                      ),
+                    ),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: (totalNotification != "0")
+                        ? Badge(
+                            position:
+                                BadgePosition.topRight(top: -8, right: -5),
+                            animationDuration: Duration(milliseconds: 300),
+                            animationType: BadgeAnimationType.slide,
+                            badgeContent: Text(
+                              '$totalNotification',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: ScreenUtil()
+                                    .setSp(20, allowFontScalingSelf: false),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            child: Icon(
+                              Icons.notifications,
+                              size: ScreenUtil().setHeight(40),
+                            ),
+                          )
+                        : Icon(
+                            Icons.notifications,
+                            size: ScreenUtil().setHeight(40),
+                          ),
+                    title: Text(
+                      "Notifications",
+                      style: TextStyle(
+                        fontSize:
+                            ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                      ),
+                    ),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      Icons.menu,
+                      size: ScreenUtil().setHeight(40),
+                    ),
+                    title: Text(
+                      "More",
+                      style: TextStyle(
+                        fontSize:
+                            ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              appBar: PreferredSize(
+                preferredSize: Size.fromHeight(
+                  ScreenUtil().setHeight(85),
                 ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.menu,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "More",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            )
-          ],
-        ),
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(
-            ScreenUtil().setHeight(85),
-          ),
-          child: AppBar(
-            brightness: Brightness.light,
-            backgroundColor: Colors.white,
-            elevation: 1,
-            centerTitle: true,
-            title: Text(
-              "More",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: font18,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        body: SingleChildScrollView(
-          controller: controller,
-          child: Column(
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.fromLTRB(
-                    ScreenUtil().setWidth(20), ScreenUtil().setWidth(20), 0, 0),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                        width: ScreenUtil().setHeight(2),
-                        color: Colors.grey.shade300),
+                child: AppBar(
+                  brightness: Brightness.light,
+                  backgroundColor: Colors.white,
+                  elevation: 1,
+                  centerTitle: true,
+                  title: Text(
+                    "More",
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: font18,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
+              ),
+              body: SingleChildScrollView(
+                controller: controller,
                 child: Column(
                   children: <Widget>[
-                    Stack(
-                      children: <Widget>[
-                        Stack(
-                          children: <Widget>[
-                            Container(
-                              width: ScreenUtil().setWidth(200),
-                              height: ScreenUtil().setHeight(200),
-                              decoration: BoxDecoration(
-                                color: Color.fromARGB(100, 220, 220, 220),
-                                shape: BoxShape.rectangle,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(10.0)),
-                              ),
-                            ),
-                            (connection == true)
-                                ? Positioned(
-                                    top: ScreenUtil().setHeight(20),
-                                    left: ScreenUtil().setWidth(20),
-                                    child: Container(
-                                      padding: EdgeInsets.all(160.0),
-                                      width: ScreenUtil().setWidth(160),
-                                      height: ScreenUtil().setHeight(160),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.rectangle,
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(10.0)),
-                                        image: DecorationImage(
-                                          fit: BoxFit.fill,
-                                          image:
-                                              CachedNetworkImageProvider(image),
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : Positioned(
-                                    top: ScreenUtil().setHeight(20),
-                                    left: ScreenUtil().setWidth(20),
-                                    child: Container(
-                                      width: ScreenUtil().setWidth(160),
-                                      height: ScreenUtil().setHeight(160),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.rectangle,
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(10.0)),
-                                      ),
-                                      child: Image.file(
-                                        File((location == null)
-                                            ? "/data/user/0/com.my.jtapps.vvin/app_flutter/company/profile.jpg"
-                                            : location +
-                                                "/company/profile.jpg"),
-                                      ),
-                                    ),
-                                  ),
-                          ],
+                    Container(
+                      padding: EdgeInsets.fromLTRB(ScreenUtil().setWidth(20),
+                          ScreenUtil().setWidth(20), 0, 0),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                              width: ScreenUtil().setHeight(2),
+                              color: Colors.grey.shade300),
                         ),
-                        Container(
-                          margin: EdgeInsets.fromLTRB(
-                              ScreenUtil().setHeight(220),
-                              ScreenUtil().setHeight(50),
-                              0,
-                              0),
-                          child: Column(
+                      ),
+                      child: Column(
+                        children: <Widget>[
+                          Stack(
                             children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                              Stack(
                                 children: <Widget>[
-                                  Flexible(
-                                    child: (connection == true)
-                                        ? (nameLocal != null)
-                                            ? Text(
-                                                nameLocal,
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: font14,
-                                                ),
-                                              )
-                                            : (name == null)
-                                                ? Text("")
-                                                : Text(
-                                                    "$name",
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: font14,
-                                                    ),
-                                                  )
-                                        : (nameLocal != null)
-                                            ? Text(
-                                                nameLocal,
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: font14,
-                                                ),
-                                              )
-                                            : Text(""),
+                                  Container(
+                                    width: ScreenUtil().setWidth(200),
+                                    height: ScreenUtil().setHeight(200),
+                                    decoration: BoxDecoration(
+                                      color: Color.fromARGB(100, 220, 220, 220),
+                                      shape: BoxShape.rectangle,
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: ScreenUtil().setHeight(20),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  InkWell(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          AwesomePageRoute(
-                                            transitionDuration:
-                                                Duration(milliseconds: 600),
-                                            exitPage: widget,
-                                            enterPage: Profile(),
-                                            transition: CubeTransition(),
+                                  (connection == true)
+                                      ? Positioned(
+                                          top: ScreenUtil().setHeight(20),
+                                          left: ScreenUtil().setWidth(20),
+                                          child: Container(
+                                            padding: EdgeInsets.all(160.0),
+                                            width: ScreenUtil().setWidth(160),
+                                            height: ScreenUtil().setHeight(160),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.rectangle,
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10.0)),
+                                              image: DecorationImage(
+                                                fit: BoxFit.fill,
+                                                image:
+                                                    CachedNetworkImageProvider(
+                                                        image),
+                                              ),
+                                            ),
                                           ),
-                                        );
-                                      },
-                                      child: Text(
-                                        "View Profile",
-                                        style: TextStyle(
-                                            color: Colors.blue,
-                                            fontSize: font14),
-                                      )),
+                                        )
+                                      : Positioned(
+                                          top: ScreenUtil().setHeight(20),
+                                          left: ScreenUtil().setWidth(20),
+                                          child: Container(
+                                            width: ScreenUtil().setWidth(160),
+                                            height: ScreenUtil().setHeight(160),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.rectangle,
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(10.0)),
+                                            ),
+                                            child: Image.file(
+                                              File((location == null)
+                                                  ? "/data/user/0/com.my.jtapps.vvin/app_flutter/company/profile.jpg"
+                                                  : location +
+                                                      "/company/profile.jpg"),
+                                            ),
+                                          ),
+                                        ),
                                 ],
                               ),
+                              Container(
+                                margin: EdgeInsets.fromLTRB(
+                                    ScreenUtil().setHeight(220),
+                                    ScreenUtil().setHeight(50),
+                                    0,
+                                    0),
+                                child: Column(
+                                  children: <Widget>[
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        Flexible(
+                                          child: (connection == true)
+                                              ? (nameLocal != null)
+                                                  ? Text(
+                                                      nameLocal,
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: font14,
+                                                      ),
+                                                    )
+                                                  : (name == null)
+                                                      ? Text("")
+                                                      : Text(
+                                                          "$name",
+                                                          style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: font14,
+                                                          ),
+                                                        )
+                                              : (nameLocal != null)
+                                                  ? Text(
+                                                      nameLocal,
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: font14,
+                                                      ),
+                                                    )
+                                                  : Text(""),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: ScreenUtil().setHeight(20),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        InkWell(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                AwesomePageRoute(
+                                                  transitionDuration: Duration(
+                                                      milliseconds: 600),
+                                                  exitPage: widget,
+                                                  enterPage: Profile(),
+                                                  transition: CubeTransition(),
+                                                ),
+                                              );
+                                            },
+                                            child: Text(
+                                              "View Profile",
+                                              style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontSize: font14),
+                                            )),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )
                             ],
                           ),
-                        )
-                      ],
+                          SizedBox(
+                            height: ScreenUtil().setWidth(20),
+                          )
+                        ],
+                      ),
                     ),
-                    SizedBox(
-                      height: ScreenUtil().setWidth(20),
-                    )
+                    (isFirst == true)
+                        ? Showcase(
+                            key: _reminders,
+                            description: 'Click to view reminder listing',
+                            disposeOnTap: true,
+                            onTargetClick: () {
+                              Navigator.push(
+                                context,
+                                AwesomePageRoute(
+                                  transitionDuration:
+                                      Duration(milliseconds: 600),
+                                  exitPage: widget,
+                                  enterPage: ReminderList(),
+                                  transition: ParallaxTransition(),
+                                ),
+                              );
+                            },
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  AwesomePageRoute(
+                                    transitionDuration:
+                                        Duration(milliseconds: 600),
+                                    exitPage: widget,
+                                    enterPage: ReminderList(),
+                                    transition: ParallaxTransition(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding:
+                                    EdgeInsets.all(ScreenUtil().setWidth(30)),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                        width: ScreenUtil().setHeight(2),
+                                        color: Colors.grey.shade300),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: <Widget>[
+                                    Row(
+                                      children: <Widget>[
+                                        Container(
+                                          width: ScreenUtil().setWidth(40),
+                                          child: Icon(
+                                            Icons.notifications_active,
+                                            color: Colors.grey,
+                                            size: ScreenUtil().setWidth(40),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: ScreenUtil().setWidth(20),
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            "Reminders",
+                                            style: TextStyle(
+                                                fontSize: font14,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        SizedBox(
+                                          width: ScreenUtil().setWidth(60),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            "View all your reminders here",
+                                            style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                              fontSize: font14,
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        : InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                AwesomePageRoute(
+                                  transitionDuration:
+                                      Duration(milliseconds: 600),
+                                  exitPage: widget,
+                                  enterPage: ReminderList(),
+                                  transition: ParallaxTransition(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding:
+                                  EdgeInsets.all(ScreenUtil().setWidth(30)),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                      width: ScreenUtil().setHeight(2),
+                                      color: Colors.grey.shade300),
+                                ),
+                              ),
+                              child: Column(
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Container(
+                                        width: ScreenUtil().setWidth(40),
+                                        child: Icon(
+                                          Icons.notifications_active,
+                                          color: Colors.grey,
+                                          size: ScreenUtil().setWidth(40),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: ScreenUtil().setWidth(20),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          "Reminders",
+                                          style: TextStyle(
+                                              fontSize: font14,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      SizedBox(
+                                        width: ScreenUtil().setWidth(60),
+                                      ),
+                                      Flexible(
+                                        child: Text(
+                                          "View all your reminders here",
+                                          style: TextStyle(
+                                            color: Colors.grey.shade600,
+                                            fontSize: font14,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                    InkWell(
+                      onTap: () {
+                        setting();
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                                width: ScreenUtil().setHeight(2),
+                                color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Container(
+                                  width: ScreenUtil().setWidth(40),
+                                  child: Icon(
+                                    Icons.settings,
+                                    color: Colors.grey,
+                                    size: ScreenUtil().setWidth(40),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: ScreenUtil().setWidth(20),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    "Settings",
+                                    style: TextStyle(
+                                        fontSize: font14,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  width: ScreenUtil().setWidth(60),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    "View all settings for notifications here",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: _vbusiness,
+                      child: Container(
+                        padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                                width: ScreenUtil().setHeight(2),
+                                color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Container(
+                                  width: ScreenUtil().setWidth(40),
+                                  child: Icon(
+                                    FontAwesomeIcons.graduationCap,
+                                    color: Colors.grey,
+                                    size: ScreenUtil().setWidth(35),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: ScreenUtil().setWidth(20),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    "VBusiness Academy",
+                                    style: TextStyle(
+                                        fontSize: font14,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  width: ScreenUtil().setWidth(60),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    "Learn more on how you can improve your business",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: _logout,
+                      child: Container(
+                        padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                                width: ScreenUtil().setHeight(2),
+                                color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            Container(
+                              width: ScreenUtil().setWidth(40),
+                              child: Icon(
+                                FontAwesomeIcons.signOutAlt,
+                                color: Colors.grey,
+                                size: ScreenUtil().setWidth(35),
+                              ),
+                            ),
+                            SizedBox(
+                              width: ScreenUtil().setWidth(20),
+                            ),
+                            Expanded(
+                              child: Text(
+                                "Log Out",
+                                style: TextStyle(
+                                    fontSize: font14,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    AwesomePageRoute(
-                      transitionDuration: Duration(milliseconds: 600),
-                      exitPage: widget,
-                      enterPage: ReminderList(),
-                      transition: ParallaxTransition(),
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                          width: ScreenUtil().setHeight(2),
-                          color: Colors.grey.shade300),
-                    ),
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            width: ScreenUtil().setWidth(40),
-                            child: Icon(
-                              Icons.notifications_active,
-                              color: Colors.grey,
-                              size: ScreenUtil().setWidth(40),
-                            ),
-                          ),
-                          SizedBox(
-                            width: ScreenUtil().setWidth(20),
-                          ),
-                          Expanded(
-                            child: Text(
-                              "Reminders",
-                              style: TextStyle(
-                                  fontSize: font14,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          SizedBox(
-                            width: ScreenUtil().setWidth(60),
-                          ),
-                          Flexible(
-                            child: Text(
-                              "View all your reminders here",
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: font14,
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  setting();
-                },
-                child: Container(
-                  padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                          width: ScreenUtil().setHeight(2),
-                          color: Colors.grey.shade300),
-                    ),
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            width: ScreenUtil().setWidth(40),
-                            child: Icon(
-                              Icons.settings,
-                              color: Colors.grey,
-                              size: ScreenUtil().setWidth(40),
-                            ),
-                          ),
-                          SizedBox(
-                            width: ScreenUtil().setWidth(20),
-                          ),
-                          Expanded(
-                            child: Text(
-                              "Settings",
-                              style: TextStyle(
-                                  fontSize: font14,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          SizedBox(
-                            width: ScreenUtil().setWidth(60),
-                          ),
-                          Flexible(
-                            child: Text(
-                              "View all settings for notifications here",
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: font14,
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: _vbusiness,
-                child: Container(
-                  padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                          width: ScreenUtil().setHeight(2),
-                          color: Colors.grey.shade300),
-                    ),
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            width: ScreenUtil().setWidth(40),
-                            child: Icon(
-                              FontAwesomeIcons.graduationCap,
-                              color: Colors.grey,
-                              size: ScreenUtil().setWidth(35),
-                            ),
-                          ),
-                          SizedBox(
-                            width: ScreenUtil().setWidth(20),
-                          ),
-                          Expanded(
-                            child: Text(
-                              "VBusiness Academy",
-                              style: TextStyle(
-                                  fontSize: font14,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          SizedBox(
-                            width: ScreenUtil().setWidth(60),
-                          ),
-                          Flexible(
-                            child: Text(
-                              "Learn more on how you can improve your business",
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: font14,
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                onTap: _logout,
-                child: Container(
-                  padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                          width: ScreenUtil().setHeight(2),
-                          color: Colors.grey.shade300),
-                    ),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Container(
-                        width: ScreenUtil().setWidth(40),
-                        child: Icon(
-                          FontAwesomeIcons.signOutAlt,
-                          color: Colors.grey,
-                          size: ScreenUtil().setWidth(35),
-                        ),
-                      ),
-                      SizedBox(
-                        width: ScreenUtil().setWidth(20),
-                      ),
-                      Expanded(
-                        child: Text(
-                          "Log Out",
-                          style: TextStyle(
-                              fontSize: font14, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -965,24 +1090,26 @@ class _MoreState extends State<More> {
       List reminders = await db1.query(ReminderDB.table);
       String sendtime = DateTime.now().millisecondsSinceEpoch.toString();
       for (int i = 0; i < reminders.length; i++) {
-        http.post(urlReminder, body: {
-          "companyID": companyID,
-          "userID": userID,
-          "level": level,
-          "user_type": userType,
-          "id": reminders[i]['dataid'].toString(),
-          "datetime": reminders[i]['datetime'].toString(),
-          "name": reminders[i]['name'],
-          "phone": reminders[i]['phone'].toString(),
-          "remark": reminders[i]['remark'],
-          "status": reminders[i]['status'],
-          "time": reminders[i]['time'].toString(),
-          "sendtime": sendtime,
-        }).then((res) async {
-        }).catchError((err) {
-          _toast("Something wrong on save reminder");
-          print("Reminder error: " + (err).toString());
-        });
+        http
+            .post(urlReminder, body: {
+              "companyID": companyID,
+              "userID": userID,
+              "level": level,
+              "user_type": userType,
+              "id": reminders[i]['dataid'].toString(),
+              "datetime": reminders[i]['datetime'].toString(),
+              "name": reminders[i]['name'],
+              "phone": reminders[i]['phone'].toString(),
+              "remark": reminders[i]['remark'],
+              "status": reminders[i]['status'],
+              "time": reminders[i]['time'].toString(),
+              "sendtime": sendtime,
+            })
+            .then((res) async {})
+            .catchError((err) {
+              _toast("Something wrong on save reminder");
+              print("Reminder error: " + (err).toString());
+            });
       }
       db1.rawInsert('DELETE FROM reminder WHERE id > 0');
       await flutterLocalNotificationsPlugin.cancelAll();

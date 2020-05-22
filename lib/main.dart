@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/myworks.dart';
+import 'package:vvin/onBoarding.dart';
 import 'package:vvin/vanalytics.dart';
 import 'login.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -82,29 +83,34 @@ class _CheckingState extends State<Checking> {
   Future<void> mainScreen() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString('userID') != null) {
-      if (_type == UniLinksType.string) {
-        String initialLink;
-        try {
-          initialLink = await getInitialLink();
-          if (initialLink != null) {
-            prefs.setString('url', '1');
-            Future.delayed(const Duration(seconds: 1), () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => VAnalytics(),
-                ),
-              );
-            });
-          } else {
-            Future.delayed(const Duration(seconds: 1), () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => MyWorks(),
-                ),
-              );
-            });
-          }
-        } catch (e) {}
+      if (prefs.getString('first') != null) {
+        if (_type == UniLinksType.string) {
+          String initialLink;
+          try {
+            initialLink = await getInitialLink();
+            if (initialLink != null) {
+              prefs.setString('url', '1');
+              Future.delayed(const Duration(seconds: 1), () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => VAnalytics(),
+                  ),
+                );
+              });
+            } else {
+              Future.delayed(const Duration(seconds: 1), () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => MyWorks(),
+                  ),
+                );
+              });
+            }
+          } catch (e) {}
+        }
+      } else {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => OnBoarding()));
       }
     } else {
       if (_type == UniLinksType.string) {

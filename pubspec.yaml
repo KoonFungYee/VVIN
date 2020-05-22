@@ -70,6 +70,8 @@ dependencies:
   photo_view: ^0.9.2
   contacts_service: ^0.4.6
   slide_countdown_clock: ^1.0.3
+  showcaseview: ^0.1.5
+  sk_onboarding_screen: ^1.0.1
   flutter:
     sdk: flutter
 

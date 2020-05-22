@@ -15,6 +15,7 @@ import 'package:vvin/forgot.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:vvin/onBoarding.dart';
 import 'package:vvin/vanalytics.dart';
 import 'package:menu_button/menu_button.dart';
 
@@ -360,10 +361,15 @@ class _LoginPageState extends State<Login> {
           await prefs.setString('level', data[2]);
           await prefs.setString('user_type', data[4]);
           Navigator.pop(context);
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => VAnalytics(name: data[3])));
+          if (prefs.getString('first') != null) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => VAnalytics(name: data[3])));
+          } else {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => OnBoarding()));
+          }
         } else {
           Navigator.pop(context);
           _toast("Please contact VVIN IT desk");
@@ -644,10 +650,15 @@ class _Default extends State<Default> {
           await prefs.setString('level', data[2]);
           await prefs.setString('user_type', data[4]);
           Navigator.pop(context);
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => VAnalytics(name: data[3])));
+          if (prefs.getString('first') != null) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => VAnalytics(name: data[3])));
+          } else {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => OnBoarding()));
+          }
         } else {
           Navigator.pop(context);
           _toast("Please contact VVIN IT desk");

@@ -11,7 +11,6 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:showcaseview/showcaseview.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vvin/reminder.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -83,8 +82,6 @@ class _VProfileState extends State<VProfile>
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
-  final GlobalKey _one = GlobalKey();
-  BuildContext myContext;
   SharedPreferences prefs;
   double _scaleFactor = 1.0;
   StreamSubscription _sub;
@@ -123,7 +120,6 @@ class _VProfileState extends State<VProfile>
       vTagData,
       hasSpeech,
       start,
-      isFirst,
       isSend;
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
@@ -155,7 +151,6 @@ class _VProfileState extends State<VProfile>
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     check();
     _init();
-    isFirst = false;
     name = widget.vdata.name;
     phoneNo = widget.vdata.phoneNo;
     status = widget.vdata.status;
@@ -171,13 +166,6 @@ class _VProfileState extends State<VProfile>
     // askPermission();
     // initSpeechState();
     checkConnection();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(
-          Duration(milliseconds: 200),
-          () => ShowCaseWidget.of(myContext).startShowCase([
-                _one,
-              ]));
-    });
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         _showNotification();
@@ -198,15 +186,6 @@ class _VProfileState extends State<VProfile>
   }
 
   void check() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getString('vprofile') == null) {
-      if (this.mounted) {
-        setState(() {
-          isFirst = true;
-        });
-      }
-      prefs.setString('vprofile', '1');
-    }
     if (_type == UniLinksType.string) {
       _sub = getLinksStream().listen((String link) {
         // FlutterWebBrowser.openWebPage(
@@ -429,313 +408,284 @@ class _VProfileState extends State<VProfile>
         ),
       ),
     );
-    return ShowCaseWidget(
-      builder: Builder(
-        builder: (context) {
-          myContext = context;
-          return WillPopScope(
-            onWillPop: _onBackPressAppBar,
-            child: Scaffold(
-              backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-              appBar: PreferredSize(
-                preferredSize: Size.fromHeight(ScreenUtil().setHeight(85)),
-                child: AppBar(
-                  brightness: Brightness.light,
-                  leading: IconButton(
-                    onPressed: _onBackPressAppBar,
-                    icon: Icon(
-                      Icons.arrow_back_ios,
-                      size: ScreenUtil().setWidth(30),
-                      color: Colors.grey,
-                    ),
-                  ),
-                  backgroundColor: Colors.white,
-                  elevation: 1,
-                  centerTitle: true,
-                  title: Text(
-                    "VProfile",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: font18,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  actions: <Widget>[popupMenuButton()],
-                ),
+    return WillPopScope(
+      onWillPop: _onBackPressAppBar,
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(ScreenUtil().setHeight(85)),
+          child: AppBar(
+            brightness: Brightness.light,
+            leading: IconButton(
+              onPressed: _onBackPressAppBar,
+              icon: Icon(
+                Icons.arrow_back_ios,
+                size: ScreenUtil().setWidth(30),
+                color: Colors.grey,
               ),
-              body: Column(
+            ),
+            backgroundColor: Colors.white,
+            elevation: 1,
+            centerTitle: true,
+            title: Text(
+              "VProfile",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: font18,
+                  fontWeight: FontWeight.bold),
+            ),
+            actions: <Widget>[popupMenuButton()],
+          ),
+        ),
+        body: Column(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(15), 0, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.fromLTRB(
-                        0, ScreenUtil().setHeight(15), 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: font18,
-                          ),
-                        )
-                      ],
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: font18,
                     ),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(
+              height: ScreenUtil().setHeight(15),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                BouncingWidget(
+                  scaleFactor: _scaleFactor,
+                  onPressed: () async {
+                    var connectivityResult =
+                        await (Connectivity().checkConnectivity());
+                    if (connectivityResult == ConnectivityResult.wifi ||
+                        connectivityResult == ConnectivityResult.mobile) {
+                      FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
+                    } else {
+                      _toast("This feature need Internet connection");
+                    }
+                  },
+                  child: ButttonWithIcon(
+                    icon: FontAwesomeIcons.whatsapp,
+                    title: "WhatsApp",
+                    buttonColor: Color.fromRGBO(37, 211, 102, 1),
+                    onPressed: () async {
+                      var connectivityResult =
+                          await (Connectivity().checkConnectivity());
+                      if (connectivityResult == ConnectivityResult.wifi ||
+                          connectivityResult == ConnectivityResult.mobile) {
+                        FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
+                      } else {
+                        _toast("This feature need Internet connection");
+                      }
+                    },
                   ),
-                  SizedBox(
-                    height: ScreenUtil().setHeight(15),
-                  ),
-                  Row(
+                ),
+              ],
+            ),
+            SizedBox(
+              height: ScreenUtil().setHeight(20),
+            ),
+            (status == '')
+                ? Container()
+                : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      BouncingWidget(
-                        scaleFactor: _scaleFactor,
-                        onPressed: () async {
-                          var connectivityResult =
-                              await (Connectivity().checkConnectivity());
-                          if (connectivityResult == ConnectivityResult.wifi ||
-                              connectivityResult == ConnectivityResult.mobile) {
-                            FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
-                          } else {
-                            _toast("This feature need Internet connection");
-                          }
+                      MenuButton(
+                        child: button,
+                        items: data,
+                        scrollPhysics: AlwaysScrollableScrollPhysics(),
+                        topDivider: true,
+                        itemBuilder: (value) => Container(
+                          height: ScreenUtil().setHeight(60),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 0.0, horizontal: 10),
+                          child:
+                              Text(value, style: TextStyle(fontSize: font14)),
+                        ),
+                        toggledChild: Container(
+                          color: Colors.white,
+                          child: button,
+                        ),
+                        divider: Container(
+                          height: 1,
+                          color: Colors.grey[300],
+                        ),
+                        onItemSelected: (value) {
+                          setState(() {
+                            status = value;
+                            setStatus(value);
+                          });
                         },
-                        child: ButttonWithIcon(
-                          icon: FontAwesomeIcons.whatsapp,
-                          title: "WhatsApp",
-                          buttonColor: Color.fromRGBO(37, 211, 102, 1),
-                          onPressed: () async {
-                            var connectivityResult =
-                                await (Connectivity().checkConnectivity());
-                            if (connectivityResult == ConnectivityResult.wifi ||
-                                connectivityResult ==
-                                    ConnectivityResult.mobile) {
-                              FlutterOpenWhatsapp.sendSingleMessage(
-                                  phoneNo, "");
-                            } else {
-                              _toast("This feature need Internet connection");
-                            }
-                          },
+                        decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(3.0)),
+                            color: Colors.white),
+                        onMenuButtonToggle: (isToggle) {},
+                      ),
+                    ],
+                  ),
+            SizedBox(
+              height: ScreenUtil().setHeight(20),
+            ),
+            Expanded(
+              child: Scaffold(
+                backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+                appBar: PreferredSize(
+                  preferredSize: Size.fromHeight(
+                    ScreenUtil().setHeight(70),
+                  ),
+                  child: TabBar(
+                    controller: controller,
+                    indicator: BoxDecoration(color: Colors.white),
+                    unselectedLabelColor: Colors.grey,
+                    labelColor: Colors.blue,
+                    labelStyle: TextStyle(
+                      fontSize: font18,
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: font18,
+                    ),
+                    tabs: <Widget>[
+                      Tab(
+                        child: Text(
+                          'Details',
+                          style: TextStyle(
+                            fontSize: font18,
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          'Views',
+                          style: TextStyle(
+                            fontSize: font18,
+                          ),
+                        ),
+                      ),
+                      Tab(
+                        child: Text(
+                          'Remarks',
+                          style: TextStyle(
+                            fontSize: font18,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(
-                    height: ScreenUtil().setHeight(20),
-                  ),
-                  (status == '')
-                      ? Container()
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            MenuButton(
-                              child: button,
-                              items: data,
-                              scrollPhysics: AlwaysScrollableScrollPhysics(),
-                              topDivider: true,
-                              itemBuilder: (value) => Container(
-                                height: ScreenUtil().setHeight(60),
-                                alignment: Alignment.centerLeft,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 0.0, horizontal: 10),
-                                child: Text(value,
-                                    style: TextStyle(fontSize: font14)),
+                ),
+                body: TabBarView(
+                  controller: controller,
+                  children: <Widget>[
+                    (vProfileData == true &&
+                            handlerData == true &&
+                            vTagData == true)
+                        ? Details(
+                            vProfileDetails: vProfileDetails,
+                            handler: handler,
+                            vdata: widget.vdata,
+                            vtag: vTag,
+                          )
+                        : Container(
+                            color: Colors.white,
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  JumpingText('Loading...'),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.02),
+                                  SpinKitRing(
+                                    lineWidth: 3,
+                                    color: Colors.blue,
+                                    size: 30.0,
+                                    duration: Duration(milliseconds: 600),
+                                  ),
+                                ],
                               ),
-                              toggledChild: Container(
-                                color: Colors.white,
-                                child: button,
-                              ),
-                              divider: Container(
-                                height: 1,
-                                color: Colors.grey[300],
-                              ),
-                              onItemSelected: (value) {
-                                setState(() {
-                                  status = value;
-                                  setStatus(value);
-                                });
-                              },
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(3.0)),
-                                  color: Colors.white),
-                              onMenuButtonToggle: (isToggle) {},
                             ),
-                          ],
-                        ),
-                  SizedBox(
-                    height: ScreenUtil().setHeight(20),
-                  ),
-                  Expanded(
-                    child: Scaffold(
-                      backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-                      appBar: PreferredSize(
-                        preferredSize: Size.fromHeight(
-                          ScreenUtil().setHeight(70),
-                        ),
-                        child: TabBar(
-                          controller: controller,
-                          indicator: BoxDecoration(color: Colors.white),
-                          unselectedLabelColor: Colors.grey,
-                          labelColor: Colors.blue,
-                          labelStyle: TextStyle(
-                            fontSize: font18,
                           ),
-                          unselectedLabelStyle: TextStyle(
-                            fontSize: font18,
+                    (viewsData == true)
+                        ? Views(
+                            vProfileViews: vProfileViews,
+                          )
+                        : Container(
+                            color: Colors.white,
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  JumpingText('Loading...'),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.02),
+                                  SpinKitRing(
+                                    lineWidth: 3,
+                                    color: Colors.blue,
+                                    size: 30.0,
+                                    duration: Duration(milliseconds: 600),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          tabs: <Widget>[
-                            Tab(
-                              child: Text(
-                                'Details',
-                                style: TextStyle(
-                                  fontSize: font18,
-                                ),
+                    (remarksData == true)
+                        ? Remark(
+                            vProfileRemarks: vProfileRemarks,
+                          )
+                        : Container(
+                            color: Colors.white,
+                            height: MediaQuery.of(context).size.height * 0.5,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  JumpingText('Loading...'),
+                                  SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.02),
+                                  SpinKitRing(
+                                    lineWidth: 3,
+                                    color: Colors.blue,
+                                    size: 30.0,
+                                    duration: Duration(milliseconds: 600),
+                                  ),
+                                ],
                               ),
                             ),
-                            Tab(
-                              child: Text(
-                                'Views',
-                                style: TextStyle(
-                                  fontSize: font18,
-                                ),
-                              ),
-                            ),
-                            Tab(
-                              child: Text(
-                                'Remarks',
-                                style: TextStyle(
-                                  fontSize: font18,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      body: TabBarView(
-                        controller: controller,
-                        children: <Widget>[
-                          (vProfileData == true &&
-                                  handlerData == true &&
-                                  vTagData == true)
-                              ? Details(
-                                  vProfileDetails: vProfileDetails,
-                                  handler: handler,
-                                  vdata: widget.vdata,
-                                  vtag: vTag,
-                                )
-                              : Container(
-                                  color: Colors.white,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.5,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        JumpingText('Loading...'),
-                                        SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.02),
-                                        SpinKitRing(
-                                          lineWidth: 3,
-                                          color: Colors.blue,
-                                          size: 30.0,
-                                          duration: Duration(milliseconds: 600),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                          (viewsData == true)
-                              ? Views(
-                                  vProfileViews: vProfileViews,
-                                )
-                              : Container(
-                                  color: Colors.white,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.5,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        JumpingText('Loading...'),
-                                        SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.02),
-                                        SpinKitRing(
-                                          lineWidth: 3,
-                                          color: Colors.blue,
-                                          size: 30.0,
-                                          duration: Duration(milliseconds: 600),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                          (remarksData == true)
-                              ? Remark(
-                                  vProfileRemarks: vProfileRemarks,
-                                )
-                              : Container(
-                                  color: Colors.white,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.5,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: <Widget>[
-                                        JumpingText('Loading...'),
-                                        SizedBox(
-                                            height: MediaQuery.of(context)
-                                                    .size
-                                                    .height *
-                                                0.02),
-                                        SpinKitRing(
-                                          lineWidth: 3,
-                                          color: Colors.blue,
-                                          size: 30.0,
-                                          duration: Duration(milliseconds: 600),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                          ),
+                  ],
+                ),
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 
   Widget popupMenuButton() {
     return PopupMenuButton<String>(
-      icon: (isFirst == true)
-          ? Showcase(
-              key: _one,
-              description: 'Click to view new features',
-              child: Icon(
-                Icons.more_vert,
-                size: ScreenUtil().setWidth(40),
-                color: Colors.grey,
-              ),
-            )
-          : Icon(
-              Icons.more_vert,
-              size: ScreenUtil().setWidth(40),
-              color: Colors.grey,
-            ),
+      icon: Icon(
+        Icons.more_vert,
+        size: ScreenUtil().setWidth(40),
+        color: Colors.grey,
+      ),
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
         PopupMenuItem<String>(
           value: "edit",
