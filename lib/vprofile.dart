@@ -27,7 +27,6 @@ import 'package:vvin/editReminder.dart';
 import 'package:vvin/editVProfile.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
-// import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:async';
 // import 'package:speech_to_text/speech_to_text.dart';
@@ -42,7 +41,6 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:vvin/reminderDB.dart';
-import 'package:vvin/reminderList.dart';
 
 bool isScan;
 String full = "";
@@ -58,7 +56,8 @@ class Item1 {
 
 class VProfile extends StatefulWidget {
   final VDataDetails vdata;
-  const VProfile({Key key, this.vdata}) : super(key: key);
+  final String notification;
+  const VProfile({Key key, this.vdata, this.notification}) : super(key: key);
 
   @override
   _VProfileState createState() {
@@ -143,7 +142,11 @@ class _VProfileState extends State<VProfile>
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    controller = TabController(vsync: this, length: 3, initialIndex: 0);
+    if (widget.notification == null) {
+      controller = TabController(vsync: this, length: 3, initialIndex: 0);
+    } else {
+      controller = TabController(vsync: this, length: 3, initialIndex: 2);
+    }
     list.clear();
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     check();
@@ -848,7 +851,12 @@ class _VProfileState extends State<VProfile>
                   AwesomePageRoute(
                     transitionDuration: Duration(milliseconds: 600),
                     exitPage: widget,
-                    enterPage: EditReminder(datetime: "", name: vProfileDetails[0].name, phoneNo: phoneNo, remark: "",),
+                    enterPage: EditReminder(
+                      datetime: "",
+                      name: vProfileDetails[0].name,
+                      phoneNo: phoneNo,
+                      remark: "",
+                    ),
                     transition: DefaultTransition(),
                   ),
                 );

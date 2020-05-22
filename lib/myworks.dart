@@ -60,7 +60,6 @@ class _MyWorksState extends State<MyWorks> {
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
-  bool more = true;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
   double _scaleFactor = 1.0;
@@ -92,7 +91,7 @@ class _MyWorksState extends State<MyWorks> {
       totalQR,
       totalLink,
       currentTabIndex;
-  bool isOffline, status, vtagStatus, connection, nodata, link, image;
+  bool isOffline, status, vtagStatus, connection, nodata, link, image, more;
   String search,
       companyID,
       userID,
@@ -164,13 +163,8 @@ class _MyWorksState extends State<MyWorks> {
     );
     totalNotification = "0";
     currentTabIndex = 2;
-    isOffline = false;
-    status = false;
-    vtagStatus = false;
-    connection = false;
-    nodata = false;
-    link = false;
-    isImageLoaded = false;
+    isImageLoaded = link = nodata = connection = vtagStatus = status = isOffline = false;
+    more = true;
     base64Image = "";
     _phonecontroller.text = "";
     _namecontroller.text = "";
@@ -505,9 +499,11 @@ class _MyWorksState extends State<MyWorks> {
           ),
         ),
         body: Container(
-          padding: EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(20), 0, 0),
           child: Column(
             children: <Widget>[
+              SizedBox(
+                height: ScreenUtil().setHeight(20),
+              ),
               Row(
                 children: <Widget>[
                   Expanded(

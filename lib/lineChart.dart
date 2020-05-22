@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/data.dart';

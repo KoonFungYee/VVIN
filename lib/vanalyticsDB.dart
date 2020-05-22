@@ -13,7 +13,6 @@ class VAnalyticsDB {
   static final totalLeads = 'total_leads';
   static final totalLeadsPercentage = 'total_leads_percentage';
   static final unassignedLeads = 'unassigned_leads';
-  // static final unassignedLeadsPercentage = 'unassigned_leads_percentage';
   static final newLeads = 'new_leads';
   static final contactingLeads = 'contacting_leads';
   static final contactedLeads = 'contacted_leads';
