@@ -2350,7 +2350,7 @@ class _MyWorksState extends State<MyWorks> {
       getVTag();
       getHandlerList();
       notification();
-      if (prefs.getString("reminder") == null) {
+      if (prefs.getString("getreminder") == null) {
         getReminder();
       }
     } else {

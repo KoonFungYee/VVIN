@@ -850,69 +850,70 @@ class _NotificationsState extends State<Notifications> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
-      if (notifications[index].subtitle.toString().substring(0, 4) != 'Dear') {
-        List names =
-            notifications[index].subtitle.toString().split("Contact Number:");
-        List phones = names[1].toString().split(' Make');
-        VDataDetails vdata = new VDataDetails(
-          companyID: companyID,
-          userID: userID,
-          level: level,
-          userType: userType,
-          name: names[0].toString().substring(14),
-          phoneNo: phones[0].toString().substring(1),
-          status: '',
-        );
-        Navigator.of(context).push(PageRouteTransition(
-            animationType: AnimationType.scale,
-            builder: (context) => VProfile(
-                  vdata: vdata,
-                  notification: 'yes',
-                )));
+      // if (notifications[index].subtitle.toString().substring(0, 4) != 'Dear') {
+      //   List names =
+      //       notifications[index].subtitle.toString().split("Contact Number:");
+      //   List phones = names[1].toString().split(' Make');
+      //   VDataDetails vdata = new VDataDetails(
+      //     companyID: companyID,
+      //     userID: userID,
+      //     level: level,
+      //     userType: userType,
+      //     name: names[0].toString().substring(14),
+      //     phoneNo: phones[0].toString().substring(1),
+      //     status: '',
+      //   );
+      //   Navigator.of(context).push(PageRouteTransition(
+      //       animationType: AnimationType.scale,
+      //       builder: (context) => VProfile(
+      //             vdata: vdata,
+      //             notification: 'yes',
+      //           )));
+      // } else {
+
+      // }
+      String subtitle1, subtitle2;
+      List subtitleDetail;
+      if (connection == true) {
+        subtitleDetail = notifications[index].subtitle.toString().split(",");
       } else {
-        String subtitle1, subtitle2;
-        List subtitleDetail;
-        if (connection == true) {
-          subtitleDetail = notifications[index].subtitle.toString().split(",");
-        } else {
-          subtitleDetail = offlineNoti[index]['subtitle'].toString().split(",");
-        }
-
-        if (subtitleDetail.length == 1) {
-          subtitle1 = subtitleDetail[0];
-          subtitle2 = "";
-        } else {
-          subtitle1 = subtitleDetail[0];
-          subtitle2 = subtitleDetail[1];
-        }
-
-        String titleNoti;
-        if (connection == true) {
-          titleNoti = notifications[index].title;
-        } else {
-          titleNoti = offlineNoti[index]['title'];
-        }
-        NotificationDetail notification = new NotificationDetail(
-          title: titleNoti,
-          subtitle1: subtitle1,
-          subtitle2: subtitle2,
-        );
-        Navigator.push(
-          context,
-          AwesomePageRoute(
-            transitionDuration: Duration(milliseconds: 600),
-            exitPage: widget,
-            enterPage: NotiDetail(
-              notification: notification,
-              companyID: companyID,
-              level: level,
-              userID: userID,
-              userType: userType,
-            ),
-            transition: StackTransition(),
-          ),
-        );
+        subtitleDetail = offlineNoti[index]['subtitle'].toString().split(",");
       }
+
+      if (subtitleDetail.length == 1) {
+        subtitle1 = subtitleDetail[0];
+        subtitle2 = "";
+      } else {
+        subtitle1 = subtitleDetail[0];
+        subtitle2 = subtitleDetail[1];
+      }
+
+      String titleNoti;
+      if (connection == true) {
+        titleNoti = notifications[index].title;
+      } else {
+        titleNoti = offlineNoti[index]['title'];
+      }
+      NotificationDetail notification = new NotificationDetail(
+        title: titleNoti,
+        subtitle1: subtitle1,
+        subtitle2: subtitle2,
+      );
+      Navigator.push(
+        context,
+        AwesomePageRoute(
+          transitionDuration: Duration(milliseconds: 600),
+          exitPage: widget,
+          enterPage: NotiDetail(
+            notification: notification,
+            companyID: companyID,
+            level: level,
+            userID: userID,
+            userType: userType,
+          ),
+          transition: StackTransition(),
+        ),
+      );
 
       if (notifications[index].status == "0" && connection == true) {
         http

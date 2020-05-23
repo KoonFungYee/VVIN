@@ -54,7 +54,7 @@ class _NotiDetailState extends State<NotiDetail> {
       BehaviorSubject<ReceivedNotification>();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
-      NotificationAppLaunchDetails notificationAppLaunchDetails;
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   UniLinksType _type = UniLinksType.string;
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
@@ -291,8 +291,8 @@ class _NotiDetailState extends State<NotiDetail> {
                       child: Text(
                         widget.notification.title,
                         style: TextStyle(
-                            decoration: TextDecoration.underline,
-                            color: Colors.blue,
+                            // decoration: TextDecoration.underline,
+                            color: Colors.black,
                             fontSize: font14,
                             fontWeight: FontWeight.bold),
                       ),
@@ -363,11 +363,9 @@ class _NotiDetailState extends State<NotiDetail> {
                                 ),
                               ),
                               InkWell(
-                                onTap: () {
-                                  (level == '0') ? _assign() : _view();
-                                },
+                                onTap: _view,
                                 child: Text(
-                                  (level == '0') ? ' Assign Now' : ' View Now',
+                                  ' View Now',
                                   style: TextStyle(
                                     color: Colors.blue,
                                     fontSize: font12,
@@ -375,6 +373,24 @@ class _NotiDetailState extends State<NotiDetail> {
                                 ),
                               )
                             ],
+                          ),
+                        ),
+                        InkWell(
+                          onTap: _assign,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Assign handler for this lead",
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    fontSize: font12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -482,14 +498,14 @@ class _NotiDetailState extends State<NotiDetail> {
 
   void _view() {
     VDataDetails vdata = new VDataDetails(
-        companyID: companyID,
-        userID: userID,
-        level: level,
-        userType: userType,
-        name: name[0].toString().substring(13),
-        phoneNo: phoneNo,
-        status: '',
-      );
+      companyID: companyID,
+      userID: userID,
+      level: level,
+      userType: userType,
+      name: name[0].toString().substring(13),
+      phoneNo: phoneNo,
+      status: '',
+    );
     Navigator.of(context).push(PageRouteTransition(
         animationType: AnimationType.scale,
         builder: (context) => VProfile(vdata: vdata)));
