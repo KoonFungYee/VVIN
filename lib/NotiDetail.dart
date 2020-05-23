@@ -880,7 +880,7 @@ class _NotiDetailState extends State<NotiDetail> {
           _toast("Handler updated");
         } else {
           Navigator.of(context).pop();
-          _toast("Something's wrong");
+          _toast("At least one handler needed");
         }
       }).catchError((err) {
         Navigator.of(context).pop();
