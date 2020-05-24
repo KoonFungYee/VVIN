@@ -409,30 +409,30 @@ class _ReminderListState extends State<ReminderList> {
   }
 
   Future<void> _reminderPage(int index) async {
-    int dataid = int.parse(reminderList[index]['dataid']);
     Database db = await ReminderDB.instance.database;
-    try {
-      List reminderList1 = await db.rawQuery(
-          "SELECT * FROM reminder where dataid = '" + dataid.toString() + "'");
+    List reminderList1 = await db.rawQuery(
+        "SELECT * FROM reminder where dataid = " +
+            reminderList[index]['dataid']);
+    if (reminderList1.length > 0) {
       Navigator.push(
         context,
         AwesomePageRoute(
           transitionDuration: Duration(milliseconds: 600),
           exitPage: widget,
           enterPage: Reminder(
-            dataid: int.parse(reminderList1[0]['dataid']),
-            date: reminderList1[0]['datetime'].toString().substring(0, 10),
-            time: reminderList1[0]['datetime'].toString().substring(12),
-            name: reminderList1[0]['name'],
-            phone: reminderList1[0]['phone'],
-            remark: reminderList1[0]['remark'],
-            status: reminderList1[0]['status'],
-            datetime: int.parse(reminderList1[0]['time']),
+            dataid: int.parse(reminderList[index]['dataid']),
+            date: reminderList[index]['datetime'].toString().substring(0, 10),
+            time: reminderList[index]['datetime'].toString().substring(12),
+            name: reminderList[index]['name'],
+            phone: reminderList[index]['phone'],
+            remark: reminderList[index]['remark'],
+            status: reminderList[index]['status'],
+            datetime: int.parse(reminderList[index]['time']),
           ),
           transition: DepthTransition(),
         ),
       );
-    } catch (e) {
+    } else {
       _toast('This reminder has been deleted, please refresh list');
     }
   }
