@@ -33,7 +33,6 @@ import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
 import 'package:vvin/vanalytics.dart';
 import 'package:vvin/vdata.dart';
-import 'package:vvin/vprofile.dart';
 
 class Notifications extends StatefulWidget {
   const Notifications({Key key}) : super(key: key);
@@ -508,22 +507,7 @@ class _NotificationsState extends State<Notifications> {
                                   Row(
                                     children: <Widget>[
                                       Expanded(
-                                        child: Text(
-                                          (connection == false)
-                                              ? checkTitle(offlineNoti[index]
-                                                      ['title']
-                                                  .toString()
-                                                  .substring(7))
-                                              : checkTitle(notifications[index]
-                                                  .title
-                                                  .toString()
-                                                  .substring(7)),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: font14,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        child: _title(index),
                                       ),
                                       SizedBox(
                                         width: ScreenUtil().setWidth(10),
@@ -546,25 +530,7 @@ class _NotificationsState extends State<Notifications> {
                                   SizedBox(
                                     height: ScreenUtil().setHeight(10),
                                   ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Flexible(
-                                        child: Text(
-                                          (connection == false)
-                                              ? checkSubtitle(offlineNoti[index]
-                                                  ['subtitle'])
-                                              : checkSubtitle(
-                                                  notifications[index]
-                                                      .subtitle),
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                            fontSize: font14,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  )
+                                  _subtitle(index),
                                 ],
                               ),
                             ),
@@ -595,6 +561,137 @@ class _NotificationsState extends State<Notifications> {
         ),
       ),
     );
+  }
+
+  Widget _title(int index) {
+    Widget title;
+    title = Text(
+      (connection == false)
+          ? (offlineNoti[index]['title'].toString().substring(0, 3) == 'You')
+              ? notifications[index].title.toString().substring(
+                  0, notifications[index].title.toString().indexOf('from'))
+              : checkTitle(offlineNoti[index]['title'].toString().substring(7))
+          : (notifications[index].title.toString().substring(0, 3) == 'You')
+              ? notifications[index].title.toString().substring(
+                  0, notifications[index].title.toString().indexOf('from'))
+              : checkTitle(notifications[index].title.toString().substring(7)),
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: font14,
+      ),
+      overflow: TextOverflow.ellipsis,
+    );
+    return title;
+  }
+
+  Widget _subtitle(int index) {
+    Widget widget;
+    String sourceStart, nameStart, nameEnd, phoneStart, phoneEnd;
+    sourceStart = 'from ';
+    nameStart = 'Name: ';
+    nameEnd = 'Contact';
+    phoneStart = 'Number: ';
+    phoneEnd = 'Make';
+    if (connection == true) {
+      String title = notifications[index].title;
+      String subtitle = notifications[index].subtitle;
+      if (subtitle.substring(0, 7) == 'Details') {
+        widget = Column(
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Source: ' +
+                      title.substring(
+                          title.indexOf(sourceStart) + sourceStart.length),
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: font14,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: ScreenUtil().setHeight(5),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Name: ' +
+                      subtitle.substring(
+                          subtitle.indexOf(nameStart) + nameStart.length,
+                          subtitle.indexOf(nameEnd,
+                              subtitle.indexOf(nameStart) + nameStart.length)),
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: font14,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: ScreenUtil().setHeight(5),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Contact Number: ' +
+                      subtitle.substring(
+                          subtitle.indexOf(phoneStart) + phoneStart.length,
+                          subtitle.indexOf(
+                              phoneEnd,
+                              subtitle.indexOf(phoneStart) +
+                                  phoneStart.length)),
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: font14,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      } else {
+        widget = Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                checkSubtitle(notifications[index].subtitle),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: font14,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+    } else {
+      String subtitle = offlineNoti[index]['subtitle'];
+      if (subtitle.substring(0, 7) == 'Details') {
+        widget = Column();
+      } else {
+        widget = Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Flexible(
+              child: Text(
+                checkSubtitle(offlineNoti[index]['subtitle']),
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: font14,
+                ),
+              ),
+            ),
+          ],
+        );
+      }
+    }
+    return widget;
   }
 
   void _onRefresh() {
@@ -1099,6 +1196,8 @@ class _NotificationsState extends State<Notifications> {
           } else {
             subtitle = jsonData[i]['subtitle'];
           }
+          print('title: ' + jsonData[i]['title']);
+          print('subtitle: ' + subtitle);
           Noti notification = Noti(
               title: jsonData[i]['title'],
               subtitle: subtitle,

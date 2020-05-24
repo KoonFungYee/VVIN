@@ -731,10 +731,12 @@ class _EditReminderState extends State<EditReminder> {
           });
         }
         Database db = await ReminderDB.instance.database;
+        int id = int.parse(
+              DateTime.now().millisecondsSinceEpoch.toString().substring(6));
         if (widget.dataid == null) {
           await db.rawInsert(
               'INSERT INTO reminder (dataid, datetime, name, phone, remark, status, time) VALUES("' +
-                  DateTime.now().millisecondsSinceEpoch.toString().substring(6) +
+                  id.toString() +
                   '","' +
                   date +
                   '","' +
@@ -761,11 +763,11 @@ class _EditReminderState extends State<EditReminder> {
               'not active' +
               "~!" +
               dateTime.millisecondsSinceEpoch.toString();
-          int id = int.parse(DateTime.now().millisecondsSinceEpoch.toString().substring(6));
           _scheduleNotification(id, details);
           _toast('Saved reminder');
           Navigator.pop(context);
         } else {
+          await flutterLocalNotificationsPlugin.cancel(widget.dataid);
           await db.rawInsert('UPDATE reminder SET datetime = "' +
               date +
               '", name = "' +
