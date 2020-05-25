@@ -1051,13 +1051,46 @@ class _VProfileState extends State<VProfile>
     for (TextBlock block in readText.blocks) {
       for (TextLine line in block.lines) {
         String temPhone = "";
+        String number = '';
+        int startIndex = 0;
+        int endIndex = 0;
+        bool save = true;
         for (int i = 0; i < line.text.length; i++) {
           if (regExp.hasMatch(line.text[i])) {
-            temPhone = temPhone + line.text[i];
+            endIndex = i + 1;
+            if (number != 'string') {
+              number = 'num';
+              temPhone = temPhone + line.text[i];
+            } else if (temPhone.length == 0) {
+              number = 'num';
+              temPhone = temPhone + line.text[i];
+            } else {
+              temPhone = '';
+              endIndex = 0;
+            }
+          } else {
+            if (number == 'num') {
+              number = 'notNum';
+            } else if (number == 'notNum') {
+              number = 'string';
+            }
           }
-        }
-        if (temPhone.length / line.text.length < 0.78) {
-          otherList.add(line.text);
+          if (temPhone.length > 9 && number == 'string') {
+            String text =
+                line.text.substring(startIndex, endIndex - temPhone.length - 2);
+            otherList.add(text);
+            temPhone = '';
+            number = '';
+            startIndex = endIndex;
+            endIndex = 0;
+          } else if (temPhone.length > 9 && i == line.text.length - 1) {
+            save = false;
+          }
+          if (i == line.text.length - 1) {
+            if (startIndex != line.text.length - 1 && save == true) {
+              otherList.add(line.text.substring(startIndex));
+            }
+          }
         }
       }
     }
