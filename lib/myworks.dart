@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
-import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -388,7 +387,6 @@ class _MyWorksState extends State<MyWorks> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
-    YYDialog.init(context);
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
@@ -1461,7 +1459,31 @@ class _MyWorksState extends State<MyWorks> {
   }
 
   Future<bool> _onBackPressAppBar() async {
-    YYAlertDialogWithScaleIn();
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+              title: Text(
+                "Are you sure you want to close application?",
+                style: TextStyle(
+                  fontSize: font14,
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("NO"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                FlatButton(
+                  child: Text("YES"),
+                  onPressed: () {
+                    SystemNavigator.pop();
+                  },
+                )
+              ],
+            ));
     return Future.value(false);
   }
 

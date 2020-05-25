@@ -10,12 +10,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
-import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:http/http.dart' as http;
 import 'package:progress_indicators/progress_indicators.dart';
-import 'package:route_transitions/route_transitions.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -298,7 +296,6 @@ class _NotificationsState extends State<Notifications> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
-    YYDialog.init(context);
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
@@ -1061,7 +1058,31 @@ class _NotificationsState extends State<Notifications> {
   }
 
   Future<bool> _onBackPressAppBar() async {
-    YYAlertDialogWithScaleIn();
+    showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+              title: Text(
+                "Are you sure you want to close application?",
+                style: TextStyle(
+                  fontSize: font14,
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text("NO"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                FlatButton(
+                  child: Text("YES"),
+                  onPressed: () {
+                    SystemNavigator.pop();
+                  },
+                )
+              ],
+            ));
     return Future.value(false);
   }
 
