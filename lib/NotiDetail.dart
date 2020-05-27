@@ -375,7 +375,8 @@ class _NotiDetailState extends State<NotiDetail> {
                             ],
                           ),
                         ),
-                        InkWell(
+                        (level == '0')
+                        ? InkWell(
                           onTap: _assign,
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
@@ -392,7 +393,8 @@ class _NotiDetailState extends State<NotiDetail> {
                               ],
                             ),
                           ),
-                        ),
+                        )
+                        : null,
                       ],
                     )
                   : Padding(

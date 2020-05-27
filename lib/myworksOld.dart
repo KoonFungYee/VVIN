@@ -162,8 +162,7 @@ class _MyWorksState extends State<MyWorks> {
     );
     totalNotification = "0";
     currentTabIndex = 2;
-    isImageLoaded =
-        link = nodata = connection = vtagStatus = status = isOffline = false;
+    isImageLoaded = link = nodata = connection = vtagStatus = status = isOffline = false;
     more = true;
     base64Image = "";
     _phonecontroller.text = "";
@@ -635,7 +634,7 @@ class _MyWorksState extends State<MyWorks> {
                                   if (more == true) {
                                     body = SpinKitRing(
                                       lineWidth: 2,
-                                      color: Color.fromRGBO(0, 174, 239, 1),
+                                      color: Colors.blue,
                                       size: 20.0,
                                       duration: Duration(milliseconds: 600),
                                     );
@@ -671,50 +670,55 @@ class _MyWorksState extends State<MyWorks> {
                                               ScreenUtil().setHeight(20),
                                               ScreenUtil().setHeight(20),
                                               ScreenUtil().setHeight(20),
-                                              ScreenUtil().setHeight(0)),
+                                              ScreenUtil().setHeight(10)),
                                           child: Column(
                                             children: <Widget>[
+                                              Container(
+                                                height:
+                                                    ScreenUtil().setHeight(40),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: <Widget>[
+                                                    Text(
+                                                      (connection == false)
+                                                          ? offlineLink[index]
+                                                              ['date']
+                                                          : myWorks[index].date,
+                                                      style: TextStyle(
+                                                        fontSize: font12,
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                    (level != "0")
+                                                        ? Container()
+                                                        : (myWorks[index]
+                                                                        .category !=
+                                                                    "VForm" &&
+                                                                myWorks[index]
+                                                                        .category !=
+                                                                    "VBrochure")
+                                                            ? popupMenuButton(
+                                                                index)
+                                                            : Container(),
+                                                  ],
+                                                ),
+                                              ),
                                               Row(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                                    MainAxisAlignment.start,
                                                 children: <Widget>[
                                                   Text(
                                                     (connection == false)
                                                         ? offlineLink[index]
-                                                            ['date']
-                                                        : myWorks[index].date,
+                                                            ['type']
+                                                        : myWorks[index]
+                                                            .category,
                                                     style: TextStyle(
                                                       fontSize: font12,
-                                                      color: Color.fromRGBO(
-                                                          165, 165, 165, 1),
                                                     ),
                                                   ),
-                                                  (level != "0")
-                                                      ? Container()
-                                                      : (myWorks[index]
-                                                                      .category !=
-                                                                  "VForm" &&
-                                                              myWorks[index]
-                                                                      .category !=
-                                                                  "VBrochure")
-                                                          ? popupMenuButton(
-                                                              index)
-                                                          : Container(),
-                                                  // (level != "0")
-                                                  //     ? Container()
-                                                  //     :
-                                                  //     (myWorks[index]
-                                                  //                     .category !=
-                                                  //                 "VForm" &&
-                                                  //             myWorks[index]
-                                                  //                     .category !=
-                                                  //                 "VBrochure")
-
-                                                  //         ? popupMenuButton(
-                                                  //             index)
-                                                  //         : popupMenuButton1(
-                                                  //             index),
                                                 ],
                                               ),
                                               SizedBox(
@@ -723,104 +727,119 @@ class _MyWorksState extends State<MyWorks> {
                                               ),
                                               Row(
                                                 mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
+                                                    MainAxisAlignment.start,
                                                 children: <Widget>[
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: <Widget>[
-                                                      Text(
-                                                        (connection == false)
-                                                            ? offlineLink[index]
-                                                                ['type']
-                                                            : myWorks[index]
-                                                                .category,
-                                                        style: TextStyle(
-                                                          fontSize: font12,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  (connection == true)
-                                                      ? Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          children: <Widget>[
-                                                            Text(
-                                                              "Available Offline",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      font12,
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          153,
-                                                                          153,
-                                                                          153,
-                                                                          1)),
-                                                            )
-                                                          ],
-                                                        )
-                                                      : Container(),
-                                                ],
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Flexible(
-                                                    child: InkWell(
-                                                      onTap: () {
-                                                        if (connection !=
-                                                            false) {
-                                                          _visitURL(index);
-                                                        }
-                                                      },
-                                                      child: Text(
-                                                        (connection == false)
-                                                            ? offlineLink[index]
-                                                                ['title']
-                                                            : myWorks[index]
-                                                                .title,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .underline,
-                                                            fontSize: font15,
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    0,
-                                                                    174,
-                                                                    239,
-                                                                    1),
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      if (connection != false) {
+                                                        _visitURL(index);
+                                                      }
+                                                    },
+                                                    child: Text(
+                                                      (connection == false)
+                                                          ? offlineLink[index]
+                                                              ['title']
+                                                          : myWorks[index]
+                                                              .title,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                          decoration:
+                                                              TextDecoration
+                                                                  .underline,
+                                                          fontSize: font15,
+                                                          color: Colors.blue,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                   ),
-                                                  _switch(index),
                                                 ],
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                        Divider(),
-                                        SizedBox(
-                                          height: ScreenUtil().setHeight(5),
-                                        ),
-                                        Container(
-                                          child: Column(
-                                            children: <Widget>[
+                                              SizedBox(
+                                                height:
+                                                    ScreenUtil().setHeight(10),
+                                              ),
                                               Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
                                                 children: <Widget>[
+                                                  Expanded(
+                                                    child: Column(
+                                                      children: <Widget>[
+                                                        (connection == true)
+                                                            ? Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .start,
+                                                                children: <
+                                                                    Widget>[
+                                                                  Text(
+                                                                    "Available Offline",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            font12),
+                                                                  )
+                                                                ],
+                                                              )
+                                                            : Container(),
+                                                        (connection == true)
+                                                            ? Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .start,
+                                                                children: <
+                                                                    Widget>[
+                                                                  Transform
+                                                                      .scale(
+                                                                    alignment:
+                                                                        Alignment
+                                                                            .centerLeft,
+                                                                    scale: ScreenUtil()
+                                                                        .setWidth(
+                                                                            1.5),
+                                                                    child:
+                                                                        CupertinoSwitch(
+                                                                      activeColor:
+                                                                          Colors
+                                                                              .blue,
+                                                                      value: myWorks[
+                                                                              index]
+                                                                          .offLine,
+                                                                      onChanged:
+                                                                          (bool
+                                                                              value) {
+                                                                        if (this
+                                                                            .mounted) {
+                                                                          setState(
+                                                                              () {
+                                                                            myWorks[index].offLine =
+                                                                                value;
+                                                                          });
+                                                                        }
+                                                                      },
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              )
+                                                            : Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .start,
+                                                                children: <
+                                                                    Widget>[
+                                                                  Text(
+                                                                    "Offline Mode",
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      fontSize:
+                                                                          font12,
+                                                                    ),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                      ],
+                                                    ),
+                                                  ),
                                                   BouncingWidget(
                                                     scaleFactor: _scaleFactor,
                                                     onPressed: () {
@@ -835,12 +854,12 @@ class _MyWorksState extends State<MyWorks> {
                                                     },
                                                     child: Container(
                                                       height: ScreenUtil()
-                                                          .setHeight(65),
+                                                          .setHeight(70),
                                                       width:
                                                           MediaQuery.of(context)
                                                                   .size
                                                                   .width *
-                                                              0.22,
+                                                              0.25,
                                                       decoration: BoxDecoration(
                                                         borderRadius:
                                                             BorderRadius
@@ -849,36 +868,20 @@ class _MyWorksState extends State<MyWorks> {
                                                         border: Border(
                                                           bottom: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                           top: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                           left: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                           right: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                         ),
                                                       ),
                                                       child: Center(
@@ -886,18 +889,18 @@ class _MyWorksState extends State<MyWorks> {
                                                           'Forward',
                                                           style: TextStyle(
                                                               fontSize: font12,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
+                                                              color:
+                                                                  Colors.blue,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold),
                                                         ),
                                                       ),
                                                     ),
+                                                  ),
+                                                  SizedBox(
+                                                    width: ScreenUtil()
+                                                        .setWidth(20),
                                                   ),
                                                   BouncingWidget(
                                                     scaleFactor: _scaleFactor,
@@ -906,12 +909,12 @@ class _MyWorksState extends State<MyWorks> {
                                                     },
                                                     child: Container(
                                                       height: ScreenUtil()
-                                                          .setHeight(65),
+                                                          .setHeight(70),
                                                       width:
                                                           MediaQuery.of(context)
                                                                   .size
                                                                   .width *
-                                                              0.22,
+                                                              0.25,
                                                       decoration: BoxDecoration(
                                                         borderRadius:
                                                             BorderRadius
@@ -920,127 +923,29 @@ class _MyWorksState extends State<MyWorks> {
                                                         border: Border(
                                                           bottom: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                           top: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                           left: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                           right: BorderSide(
                                                               width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
+                                                              color:
+                                                                  Colors.blue),
                                                         ),
                                                       ),
                                                       child: Center(
                                                         child: Text(
                                                           'QR Code',
                                                           style: TextStyle(
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
+                                                              color:
+                                                                  Colors.blue,
                                                               fontSize: font12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  BouncingWidget(
-                                                    scaleFactor: _scaleFactor,
-                                                    onPressed: () {
-                                                      if (connection == true) {
-                                                        _whatsappForward(
-                                                            myWorks[index]
-                                                                .link);
-                                                      } else {
-                                                        _toast(
-                                                            "Offline mode can not WhatsApp Forward");
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      height: ScreenUtil()
-                                                          .setHeight(65),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.22,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                        color: Colors.white,
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          top: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          left: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          right: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                        ),
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          'Visit URL',
-                                                          style: TextStyle(
-                                                              fontSize: font12,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold),
@@ -1088,44 +993,6 @@ class _MyWorksState extends State<MyWorks> {
     );
   }
 
-  Widget _switch(int index) {
-    Widget widget;
-    (connection == true)
-        ? widget = Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Transform.scale(
-                alignment: Alignment.centerRight,
-                scale: ScreenUtil().setWidth(1.5),
-                child: CupertinoSwitch(
-                  activeColor: Color.fromRGBO(0, 174, 239, 1),
-                  value: myWorks[index].offLine,
-                  onChanged: (bool value) {
-                    if (this.mounted) {
-                      setState(() {
-                        myWorks[index].offLine = value;
-                      });
-                    }
-                  },
-                ),
-              )
-            ],
-          )
-        : widget = Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                "Offline Mode",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: font12,
-                ),
-              )
-            ],
-          );
-    return widget;
-  }
-
   Widget popupMenuButton(int index) {
     return PopupMenuButton<String>(
         padding: EdgeInsets.all(0.1),
@@ -1144,7 +1011,7 @@ class _MyWorksState extends State<MyWorks> {
                 child: Text(
                   "Assign",
                   style: TextStyle(
-                    fontSize: font12,
+                    fontSize: font14,
                   ),
                 ),
               ),
@@ -1156,38 +1023,6 @@ class _MyWorksState extends State<MyWorks> {
                 _assign(myWorks[index].handlers,
                     myWorks[index].category + "-" + myWorks[index].id);
               }
-              break;
-          }
-        });
-  }
-
-  Widget popupMenuButton1(int index) {
-    return PopupMenuButton<String>(
-        padding: EdgeInsets.all(0.1),
-        child: Container(
-          height: ScreenUtil().setHeight(40),
-          width: ScreenUtil().setHeight(30),
-          child: Icon(
-            Icons.more_vert,
-            size: ScreenUtil().setHeight(38),
-            color: Colors.grey,
-          ),
-        ),
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: "response",
-                child: Text(
-                  "View Response",
-                  style: TextStyle(
-                    fontSize: font12,
-                  ),
-                ),
-              ),
-            ],
-        onSelected: (selectedItem) async {
-          switch (selectedItem) {
-            case "response":
-              {}
               break;
           }
         });

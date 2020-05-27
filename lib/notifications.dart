@@ -14,6 +14,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:http/http.dart' as http;
 import 'package:progress_indicators/progress_indicators.dart';
+import 'package:route_transitions/route_transitions.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -31,6 +32,7 @@ import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
 import 'package:vvin/vanalytics.dart';
 import 'package:vvin/vdata.dart';
+import 'package:vvin/vprofile.dart';
 
 class Notifications extends StatefulWidget {
   const Notifications({Key key}) : super(key: key);
@@ -944,70 +946,69 @@ class _NotificationsState extends State<Notifications> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
-      // if (notifications[index].subtitle.toString().substring(0, 4) != 'Dear') {
-      //   List names =
-      //       notifications[index].subtitle.toString().split("Contact Number:");
-      //   List phones = names[1].toString().split(' Make');
-      //   VDataDetails vdata = new VDataDetails(
-      //     companyID: companyID,
-      //     userID: userID,
-      //     level: level,
-      //     userType: userType,
-      //     name: names[0].toString().substring(14),
-      //     phoneNo: phones[0].toString().substring(1),
-      //     status: '',
-      //   );
-      //   Navigator.of(context).push(PageRouteTransition(
-      //       animationType: AnimationType.scale,
-      //       builder: (context) => VProfile(
-      //             vdata: vdata,
-      //             notification: 'yes',
-      //           )));
-      // } else {
-
-      // }
-      String subtitle1, subtitle2;
-      List subtitleDetail;
-      if (connection == true) {
-        subtitleDetail = notifications[index].subtitle.toString().split(",");
+      if (notifications[index].subtitle.toString().substring(0, 4) != 'Dear') {
+        List names =
+            notifications[index].subtitle.toString().split("Contact Number:");
+        List phones = names[1].toString().split(' Make');
+        VDataDetails vdata = new VDataDetails(
+          companyID: companyID,
+          userID: userID,
+          level: level,
+          userType: userType,
+          name: names[0].toString().substring(14),
+          phoneNo: phones[0].toString().substring(1),
+          status: '',
+        );
+        Navigator.of(context).push(PageRouteTransition(
+            animationType: AnimationType.scale,
+            builder: (context) => VProfile(
+                  vdata: vdata,
+                  notification: 'yes',
+                )));
       } else {
-        subtitleDetail = offlineNoti[index]['subtitle'].toString().split(",");
-      }
+        String subtitle1, subtitle2;
+        List subtitleDetail;
+        if (connection == true) {
+          subtitleDetail = notifications[index].subtitle.toString().split(",");
+        } else {
+          subtitleDetail = offlineNoti[index]['subtitle'].toString().split(",");
+        }
 
-      if (subtitleDetail.length == 1) {
-        subtitle1 = subtitleDetail[0];
-        subtitle2 = "";
-      } else {
-        subtitle1 = subtitleDetail[0];
-        subtitle2 = subtitleDetail[1];
-      }
+        if (subtitleDetail.length == 1) {
+          subtitle1 = subtitleDetail[0];
+          subtitle2 = "";
+        } else {
+          subtitle1 = subtitleDetail[0];
+          subtitle2 = subtitleDetail[1];
+        }
 
-      String titleNoti;
-      if (connection == true) {
-        titleNoti = notifications[index].title;
-      } else {
-        titleNoti = offlineNoti[index]['title'];
-      }
-      NotificationDetail notification = new NotificationDetail(
-        title: titleNoti,
-        subtitle1: subtitle1,
-        subtitle2: subtitle2,
-      );
-      Navigator.push(
-        context,
-        AwesomePageRoute(
-          transitionDuration: Duration(milliseconds: 600),
-          exitPage: widget,
-          enterPage: NotiDetail(
-            notification: notification,
-            companyID: companyID,
-            level: level,
-            userID: userID,
-            userType: userType,
+        String titleNoti;
+        if (connection == true) {
+          titleNoti = notifications[index].title;
+        } else {
+          titleNoti = offlineNoti[index]['title'];
+        }
+        NotificationDetail notification = new NotificationDetail(
+          title: titleNoti,
+          subtitle1: subtitle1,
+          subtitle2: subtitle2,
+        );
+        Navigator.push(
+          context,
+          AwesomePageRoute(
+            transitionDuration: Duration(milliseconds: 600),
+            exitPage: widget,
+            enterPage: NotiDetail(
+              notification: notification,
+              companyID: companyID,
+              level: level,
+              userID: userID,
+              userType: userType,
+            ),
+            transition: StackTransition(),
           ),
-          transition: StackTransition(),
-        ),
-      );
+        );
+      }
 
       if (notifications[index].status == "0" && connection == true) {
         http
@@ -1217,8 +1218,6 @@ class _NotificationsState extends State<Notifications> {
           } else {
             subtitle = jsonData[i]['subtitle'];
           }
-          print('title: ' + jsonData[i]['title']);
-          print('subtitle: ' + subtitle);
           Noti notification = Noti(
               title: jsonData[i]['title'],
               subtitle: subtitle,

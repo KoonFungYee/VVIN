@@ -97,6 +97,7 @@ class _VProfileState extends State<VProfile>
   List<VProfileData> vProfileDetails = [];
   List<View> vProfileViews = [];
   List<Remarks> vProfileRemarks = [];
+  List<Handler> allHandler = [];
   String name,
       phoneNo,
       status,
@@ -116,6 +117,8 @@ class _VProfileState extends State<VProfile>
   String urlChangeStatus = "https://vvinoa.vvin.com/api/vdataChangeStatus.php";
   String urlSaveRemark = "https://vvinoa.vvin.com/api/saveRemark.php";
   String urlWhatsApp = "https://vvinoa.vvin.com/api/whatsappForward.php";
+  String assignURL = "https://vvinoa.vvin.com/api/assign.php";
+  String handlers = "https://vvinoa.vvin.com/api/getHandler.php";
   bool vProfileData,
       handlerData,
       viewsData,
@@ -124,8 +127,13 @@ class _VProfileState extends State<VProfile>
       hasSpeech,
       start,
       isFirst,
+      click,
+      hListStatus,
+      assignDone,
+      noHandler,
       isSend;
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
+  double font13 = ScreenUtil().setSp(29.9, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
@@ -155,7 +163,6 @@ class _VProfileState extends State<VProfile>
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     check();
     _init();
-    isFirst = false;
     name = widget.vdata.name;
     phoneNo = widget.vdata.phoneNo;
     status = widget.vdata.status;
@@ -163,8 +170,9 @@ class _VProfileState extends State<VProfile>
     userID = widget.vdata.userID;
     level = widget.vdata.level;
     userType = widget.vdata.userType;
-    isSend = start = hasSpeech = vTagData =
-        remarksData = viewsData = handlerData = isScan = vProfileData = false;
+    noHandler = assignDone = handlerData = hListStatus = click = isFirst =
+        isSend = start = hasSpeech =
+            vTagData = remarksData = viewsData = isScan = vProfileData = false;
     base64Image = _addRemark.text = resultText = speechText = "";
     // WidgetsBinding.instance.addObserver(this);
     // PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
@@ -464,6 +472,66 @@ class _VProfileState extends State<VProfile>
               ),
               body: Column(
                 children: <Widget>[
+                  (assignDone == false)
+                      ? Container()
+                      : Container(
+                          height: ScreenUtil().setHeight(60),
+                          margin: EdgeInsets.all(ScreenUtil().setHeight(10)),
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Color.fromRGBO(158, 232, 168, 1)),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(3.0)),
+                              color: Color.fromRGBO(230, 249, 241, 1)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                height: ScreenUtil().setHeight(50),
+                                width: ScreenUtil().setHeight(50),
+                                margin:
+                                    EdgeInsets.all(ScreenUtil().setHeight(10)),
+                                decoration: BoxDecoration(
+                                  color: Color.fromRGBO(8, 195, 20, 1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.check,
+                                    color: Colors.white,
+                                    size: ScreenUtil().setHeight(30)),
+                              ),
+                              Expanded(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'VProfiled has been assigned to a handler',
+                                      style: TextStyle(
+                                          color: Color.fromRGBO(8, 195, 20, 1),
+                                          fontSize: font12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              InkWell(
+                                onTap: () {
+                                  if (this.mounted) {
+                                    setState(() {
+                                      assignDone = false;
+                                    });
+                                  }
+                                },
+                                child: Icon(
+                                  Icons.close,
+                                  color: Color.fromRGBO(8, 195, 20, 1),
+                                  size: font18,
+                                ),
+                              ),
+                              SizedBox(
+                                width: ScreenUtil().setWidth(10),
+                              ),
+                            ],
+                          ),
+                        ),
                   Container(
                     margin: EdgeInsets.fromLTRB(
                         0, ScreenUtil().setHeight(15), 0, 0),
@@ -481,7 +549,7 @@ class _VProfileState extends State<VProfile>
                     ),
                   ),
                   SizedBox(
-                    height: ScreenUtil().setHeight(15),
+                    height: ScreenUtil().setHeight(10),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -519,7 +587,7 @@ class _VProfileState extends State<VProfile>
                     ],
                   ),
                   SizedBox(
-                    height: ScreenUtil().setHeight(20),
+                    height: ScreenUtil().setHeight(10),
                   ),
                   (status == '')
                       ? Container()
@@ -562,6 +630,30 @@ class _VProfileState extends State<VProfile>
                             ),
                           ],
                         ),
+                  SizedBox(
+                    height: ScreenUtil().setHeight(20),
+                  ),
+                  (handlerData == true && noHandler == true && level == '0')
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              'This VData has no handler. ',
+                              style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: font12),
+                            ),
+                            InkWell(
+                              onTap: _assign,
+                              child: Text(
+                                'Assign now',
+                                style: TextStyle(
+                                    color: Colors.blue, fontSize: font12),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Container(),
                   SizedBox(
                     height: ScreenUtil().setHeight(20),
                   ),
@@ -1148,7 +1240,7 @@ class _VProfileState extends State<VProfile>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  JumpingText('Scanning and saving data...'),
+                  JumpingText('Loading...'),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                   SpinKitRing(
                     lineWidth: 3,
@@ -1163,6 +1255,400 @@ class _VProfileState extends State<VProfile>
         ),
       ),
     );
+  }
+
+  void _assign() async {
+    if (handlerData == false || hListStatus == false) {
+      if (click == false) {
+        if (this.mounted) {
+          setState(() {
+            click = true;
+          });
+        }
+        _assignCheck();
+      }
+    } else {
+      _assignCheck();
+    }
+  }
+
+  void _assignCheck() {
+    if (handlerData == false || hListStatus == false) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _assignCheck();
+      });
+    } else {
+      showModalBottomSheet(
+          isDismissible: false,
+          context: context,
+          builder: (context) {
+            return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setModalState) {
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom:
+                              BorderSide(width: 1, color: Colors.grey.shade300),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.all(
+                              ScreenUtil().setHeight(10),
+                            ),
+                            child: Text(
+                              "Assign",
+                              style: TextStyle(
+                                  fontSize: font14,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Container(
+                            child: Row(
+                              children: <Widget>[
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    padding: EdgeInsets.all(
+                                      ScreenUtil().setHeight(20),
+                                    ),
+                                    child: Text(
+                                      "Done",
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        fontSize: font14,
+                                      ),
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    _assignDone();
+                                  },
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.all(ScreenUtil().setHeight(10)),
+                      child: Column(
+                        children: <Widget>[
+                          SizedBox(
+                            height: ScreenUtil().setHeight(10),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Flexible(
+                                child: Text("Assign handler for this lead",
+                                    style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: font13)),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: ScreenUtil().setHeight(5),
+                          ),
+                          Container(
+                            padding: EdgeInsets.all(0.5),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                  color: Colors.grey.shade400,
+                                  style: BorderStyle.solid),
+                            ),
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Container(
+                                    margin: EdgeInsets.fromLTRB(
+                                        ScreenUtil().setHeight(10), 0, 0, 0),
+                                    child: (handler.length == 0)
+                                        ? Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(
+                                                "Handler",
+                                                style: TextStyle(
+                                                    fontSize: font13,
+                                                    color: Colors.grey),
+                                              )
+                                            ],
+                                          )
+                                        : Wrap(
+                                            direction: Axis.horizontal,
+                                            alignment: WrapAlignment.start,
+                                            children: _handler(
+                                                setModalState, handler),
+                                          ),
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () {
+                                    _selectHandler();
+                                  },
+                                  child: Container(
+                                    height: ScreenUtil().setHeight(60),
+                                    width: ScreenUtil().setHeight(60),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.arrow_drop_down,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            });
+          });
+    }
+  }
+
+  void _selectHandler() {
+    String handlerSelected = "";
+    Navigator.of(context).pop();
+    showModalBottomSheet(
+      isDismissible: false,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom:
+                            BorderSide(width: 1, color: Colors.grey.shade300),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.all(
+                            ScreenUtil().setHeight(20),
+                          ),
+                          child: Text(
+                            "Select",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: font14,
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: EdgeInsets.all(
+                              ScreenUtil().setHeight(20),
+                            ),
+                            child: Text(
+                              "Done",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            bool add = true;
+                            if (handlerSelected == "-" ||
+                                handlerSelected == "") {
+                            } else {
+                              if (handler.length != 0) {
+                                for (var each in handler) {
+                                  if (handlerSelected == each.toString()) {
+                                    add = false;
+                                    break;
+                                  }
+                                }
+                                if (add == true) {
+                                  if (this.mounted) {
+                                    setState(() {
+                                      handler.add(handlerSelected);
+                                    });
+                                  }
+                                }
+                              } else {
+                                if (this.mounted) {
+                                  setState(() {
+                                    handler.add(handlerSelected);
+                                  });
+                                }
+                              }
+                            }
+                            Navigator.pop(context);
+                            _assign();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                      child: Container(
+                    color: Colors.white,
+                    child: CupertinoPicker(
+                      backgroundColor: Colors.white,
+                      itemExtent: 28,
+                      scrollController:
+                          FixedExtentScrollController(initialItem: 0),
+                      onSelectedItemChanged: (int index) {
+                        handlerSelected = allHandler[index].handler;
+                      },
+                      children: _allHandlers(allHandler),
+                    ),
+                  ))
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  List<Widget> _allHandlers(List<Handler> allHandler) {
+    List widgetList = <Widget>[];
+    for (int i = 0; i < allHandler.length; i++) {
+      Widget widget1 = Text(
+        allHandler[i].handler,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  void _assignDone() async {
+    String handlerIDs = '';
+    for (int j = 0; j < handler.length; j++) {
+      for (int i = 0; i < allHandler.length; i++) {
+        if (handler[j] == allHandler[i].handler) {
+          if (handlerIDs == "") {
+            handlerIDs = allHandler[i].handlerID;
+          } else {
+            handlerIDs = handlerIDs + "," + allHandler[i].handlerID;
+          }
+        }
+      }
+    }
+    Navigator.of(context).pop();
+    _onLoading1();
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      http.post(assignURL, body: {
+        "companyID": companyID,
+        "userID": userID,
+        "level": level,
+        "user_type": userType,
+        "id": phoneNo,
+        "handler": handlerIDs,
+        "type": 'phone',
+      }).then((res) async {
+        if (res.body == "success") {
+          if (this.mounted) {
+            setState(() {
+              assignDone = true;
+              noHandler = false;
+            });
+          }
+          Future.delayed(const Duration(seconds: 3), () {
+            if (this.mounted) {
+              setState(() {
+                assignDone = false;
+              });
+            }
+          });
+          Navigator.of(context).pop();
+          _toast("Handler updated");
+        } else {
+          Navigator.of(context).pop();
+          _toast("At least one handler needed");
+        }
+      }).catchError((err) {
+        Navigator.of(context).pop();
+        print("Assign error: " + (err).toString());
+      });
+    } else {
+      Navigator.of(context).pop();
+      _toast("No Internet, data can't update");
+    }
+  }
+
+  List<Widget> _handler(StateSetter setModalState, List handlerList) {
+    List widgetList = <Widget>[];
+    for (int i = 0; i < handlerList.length; i++) {
+      Widget widget1 = InkWell(
+        onTap: () {
+          setModalState(() {
+            handlerList.removeAt(i);
+          });
+        },
+        child: Container(
+          width: ScreenUtil().setWidth((handlerList[i].length * 18) + 62.8),
+          margin: EdgeInsets.all(ScreenUtil().setHeight(5)),
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(235, 235, 255, 1),
+            borderRadius: BorderRadius.circular(100),
+          ),
+          padding: EdgeInsets.all(
+            ScreenUtil().setHeight(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                handlerList[i],
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: font13,
+                ),
+              ),
+              SizedBox(
+                width: ScreenUtil().setHeight(5),
+              ),
+              Icon(
+                FontAwesomeIcons.timesCircle,
+                size: ScreenUtil().setHeight(30),
+                color: Colors.grey,
+              )
+            ],
+          ),
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
   void openMapsSheet() async {
@@ -1405,14 +1891,48 @@ class _VProfileState extends State<VProfile>
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
-      getVProfileData();
+      setupData();
       getHandler();
+      getVProfileData();
       getViews();
       getRemarks();
       getVTag();
     } else {
       _toast("No Internet connection! Can't show");
     }
+  }
+
+  void setupData() {
+    companyID = companyID;
+    userID = userID;
+    level = level;
+    userType = userType;
+    http.post(handlers, body: {
+      "companyID": companyID,
+      "userID": userID,
+      "user_type": userType,
+      "level": level,
+    }).then((res) {
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          Handler handler = Handler(
+            handler: data["handler"],
+            position: data["position"],
+            handlerID: data["handlerID"],
+          );
+          allHandler.add(handler);
+        }
+      }
+      if (this.mounted) {
+        setState(() {
+          hListStatus = true;
+        });
+      }
+    }).catchError((err) {
+      _toast("No Internet Connection");
+      print("Setup Data error: " + (err).toString());
+    });
   }
 
   void getVTag() {
@@ -1533,6 +2053,14 @@ class _VProfileState extends State<VProfile>
           handlerData = true;
         });
       }
+      if (handler.length == 0) {
+        if (this.mounted) {
+          setState(() {
+            noHandler = true;
+          });
+        }
+      }
+      print(noHandler);
     }).catchError((err) {
       _toast(err.toString());
       print("Get handler error: " + (err).toString());
