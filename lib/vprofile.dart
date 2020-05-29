@@ -1718,7 +1718,7 @@ class _VProfileState extends State<VProfile>
   void _saveContact() {
     if (vProfileData == true) {
       contact.givenName = vProfileDetails[0].name;
-      contact.phones = [Item(label: "mobile", value: widget.vdata.phoneNo)];
+      contact.phones = [Item(label: "mobile", value: "+" + widget.vdata.phoneNo.substring(0, 2) + ' ' + widget.vdata.phoneNo.substring(2))];
       if (vProfileDetails[0].company != '') {
         contact.company = vProfileDetails[0].company;
       }

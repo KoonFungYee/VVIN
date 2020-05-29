@@ -23,6 +23,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
+import 'package:vvin/vform.dart';
 import 'package:http/http.dart' as http;
 import 'package:vvin/more.dart';
 import 'package:vvin/reminder.dart';
@@ -66,7 +67,6 @@ class _MyWorksState extends State<MyWorks> {
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font13 = ScreenUtil().setSp(30, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   final TextEditingController _phonecontroller = TextEditingController();
   final TextEditingController _namecontroller = TextEditingController();
@@ -617,7 +617,7 @@ class _MyWorksState extends State<MyWorks> {
                       : Flexible(
                           child: SmartRefresher(
                             enablePullDown: true,
-                            enablePullUp: true,
+                            enablePullUp: false,
                             header: MaterialClassicHeader(),
                             footer: CustomFooter(
                               builder: (BuildContext context, LoadStatus mode) {
@@ -700,21 +700,8 @@ class _MyWorksState extends State<MyWorks> {
                                                                   "VBrochure")
                                                           ? popupMenuButton(
                                                               index)
-                                                          : Container(),
-                                                  // (level != "0")
-                                                  //     ? Container()
-                                                  //     :
-                                                  //     (myWorks[index]
-                                                  //                     .category !=
-                                                  //                 "VForm" &&
-                                                  //             myWorks[index]
-                                                  //                     .category !=
-                                                  //                 "VBrochure")
-
-                                                  //         ? popupMenuButton(
-                                                  //             index)
-                                                  //         : popupMenuButton1(
-                                                  //             index),
+                                                          : popupMenuButton1(
+                                                              index),
                                                 ],
                                               ),
                                               SizedBox(
@@ -738,6 +725,8 @@ class _MyWorksState extends State<MyWorks> {
                                                                 .category,
                                                         style: TextStyle(
                                                           fontSize: font12,
+                                                          color: Color.fromRGBO(
+                                                              0, 174, 239, 1),
                                                         ),
                                                       ),
                                                     ],
@@ -773,10 +762,10 @@ class _MyWorksState extends State<MyWorks> {
                                                   Flexible(
                                                     child: InkWell(
                                                       onTap: () {
-                                                        if (connection !=
-                                                            false) {
-                                                          _visitURL(index);
-                                                        }
+                                                        // if (connection !=
+                                                        //     false) {
+                                                        //   _visitURL(index);
+                                                        // }
                                                       },
                                                       child: Text(
                                                         (connection == false)
@@ -789,13 +778,13 @@ class _MyWorksState extends State<MyWorks> {
                                                         style: TextStyle(
                                                             decoration:
                                                                 TextDecoration
-                                                                    .underline,
-                                                            fontSize: font15,
+                                                                    .none,
+                                                            fontSize: font14,
                                                             color:
                                                                 Color.fromRGBO(
-                                                                    0,
-                                                                    174,
-                                                                    239,
+                                                                    20,
+                                                                    23,
+                                                                    32,
                                                                     1),
                                                             fontWeight:
                                                                 FontWeight
@@ -973,13 +962,12 @@ class _MyWorksState extends State<MyWorks> {
                                                   BouncingWidget(
                                                     scaleFactor: _scaleFactor,
                                                     onPressed: () {
-                                                      if (connection == true) {
-                                                        _whatsappForward(
-                                                            myWorks[index]
-                                                                .link);
-                                                      } else {
+                                                      if (connection !=
+                                                            false) {
+                                                          _visitURL(index);
+                                                        } else {
                                                         _toast(
-                                                            "Offline mode can not WhatsApp Forward");
+                                                            "Please check your Internet Connection");
                                                       }
                                                     },
                                                     child: Container(
@@ -1187,7 +1175,24 @@ class _MyWorksState extends State<MyWorks> {
         onSelected: (selectedItem) async {
           switch (selectedItem) {
             case "response":
-              {}
+              {
+                Navigator.push(
+                  context,
+                  AwesomePageRoute(
+                    transitionDuration: Duration(milliseconds: 600),
+                    exitPage: widget,
+                    enterPage: VForm(
+                      companyID: companyID,
+                      userID: userID,
+                      level: level,
+                      userType: userType,
+                      title: myWorks[index].title,
+                      id: myWorks[index].id,
+                    ),
+                    transition: StackTransition(),
+                  ),
+                );
+              }
               break;
           }
         });

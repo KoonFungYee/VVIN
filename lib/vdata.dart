@@ -67,7 +67,7 @@ class _VDataState extends State<VData> {
       RefreshController(initialRefresh: false);
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  bool connection, nodata, link, vData, executive, more;
+  bool connection, nodata, link, vData, executive, more, vtagStatus;
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
   List<VDataDetails> vDataDetails1 = [];
@@ -76,10 +76,12 @@ class _VDataState extends State<VData> {
   List<Handler> handlerList = [];
   List<String> executiveList = [];
   List<String> links = [];
+  List vtagList = [];
   Database vdataDB;
   String companyID,
       userID,
       _byLink,
+      _byVTag,
       _byStatus,
       _byExecutive,
       link_id,
@@ -109,6 +111,7 @@ class _VDataState extends State<VData> {
   String urlChangeStatus = "https://vvinoa.vvin.com/api/vdataChangeStatus.php";
   String urlLinks = "https://vvinoa.vvin.com/api/links.php";
   String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
+  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
   List<String> data = [
     "New",
     "Contacting",
@@ -152,13 +155,10 @@ class _VDataState extends State<VData> {
     totalNotification = "0";
     currentTabIndex = 1;
     more = true;
-    connection = false;
-    nodata = false;
-    vData = false;
-    link = false;
-    executive = false;
+    executive = link = vData = nodata = connection = vtagStatus = false;
     checkConnection();
     _byLink = "All Links";
+    _byVTag = "All VTags";
     _byStatus = "All Status";
     _byExecutive = "All Executives";
     link_id = "All Links";
@@ -250,8 +250,7 @@ class _VDataState extends State<VData> {
             CupertinoDialogAction(
               isDefaultAction: true,
               child: Text('Ok'),
-              onPressed: () async {
-              },
+              onPressed: () async {},
             )
           ],
         ),
@@ -2177,6 +2176,83 @@ class _VDataState extends State<VData> {
                               SizedBox(
                                 height: ScreenUtil().setHeight(20),
                               ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    "By VTag",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(5),
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () {
+                                        _showBottomSheet("byVTag");
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.fromLTRB(
+                                          0,
+                                          0,
+                                          0,
+                                          ScreenUtil().setHeight(20),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          border: Border.all(
+                                              color: Colors.grey.shade400,
+                                              style: BorderStyle.solid),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Expanded(
+                                              child: Container(
+                                                height:
+                                                    ScreenUtil().setHeight(60),
+                                                padding: EdgeInsets.fromLTRB(
+                                                    ScreenUtil().setHeight(10),
+                                                    ScreenUtil().setHeight(16),
+                                                    0,
+                                                    0),
+                                                child: Text(
+                                                  _byVTag,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: font14,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.arrow_drop_down,
+                                              color: Colors.black,
+                                            ),
+                                            SizedBox(
+                                              width: ScreenUtil().setWidth(10),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(20),
+                              ),
                               Container(
                                 child: (level == "0")
                                     ? Column(
@@ -2367,6 +2443,117 @@ class _VDataState extends State<VData> {
 
   void _showBottomSheet(String type) {
     switch (type) {
+      case "byVTag":
+        {
+          if (vtagList.length != 0) {
+            int position;
+            if (_byVTag == "All VTags") {
+              position = 0;
+            } else {
+              for (int i = 0; i < vtagList.length; i++) {
+                if (_byVTag == vtagList[i]) {
+                  position = i;
+                }
+              }
+            }
+            showModalBottomSheet(
+              isDismissible: false,
+              context: context,
+              builder: (context) {
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setModalState) {
+                    return Container(
+                      height: MediaQuery.of(context).size.height * 0.3,
+                      child: Column(
+                        children: <Widget>[
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                    width: 1, color: Colors.grey.shade300),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Container(
+                                  padding: EdgeInsets.all(
+                                    ScreenUtil().setHeight(20),
+                                  ),
+                                  child: Text(
+                                    "Select",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    padding: EdgeInsets.all(
+                                      ScreenUtil().setHeight(20),
+                                    ),
+                                    child: Text(
+                                      "Done",
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        fontSize: font14,
+                                      ),
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context, true);
+                                    Navigator.of(context).pop();
+                                    _filter();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          Flexible(
+                            child: Container(
+                              color: Colors.white,
+                              child: CupertinoPicker(
+                                backgroundColor: Colors.white,
+                                itemExtent: 28,
+                                scrollController: FixedExtentScrollController(
+                                    initialItem: position),
+                                onSelectedItemChanged: (int index) {
+                                  if (index != 0) {
+                                    if (this.mounted) {
+                                      setState(() {
+                                        _byVTag = vtagList[index];
+                                      });
+                                    }
+                                  } else {
+                                    if (this.mounted) {
+                                      setState(() {
+                                        _byVTag = 'All VTags';
+                                      });
+                                    }
+                                  }
+                                },
+                                children: _list(vtagList),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          } else {
+            _toast('No VTag');
+          }
+        }
+        break;
+
       case "byLink":
         {
           int position;
@@ -2816,6 +3003,7 @@ class _VDataState extends State<VData> {
     getData();
     getLinks();
     getExecutive();
+    getVTag();
     notification();
   }
 
@@ -2943,11 +3131,14 @@ class _VDataState extends State<VData> {
           });
         }
       }
-      if (link == true && vData == true && executive == true) {
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
         getOfflineData();
-        endTime = DateTime.now().millisecondsSinceEpoch;
-        int result = endTime - startTime;
-        print("VData loading Time: " + result.toString());
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       print("Get data error: " + (err).toString());
@@ -3035,11 +3226,14 @@ class _VDataState extends State<VData> {
           link = true;
         });
       }
-      if (link == true && vData == true && executive == true) {
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
         getOfflineData();
-        endTime = DateTime.now().millisecondsSinceEpoch;
-        int result = endTime - startTime;
-        print("VData loading Time: " + result.toString());
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       print("Get link error: " + (err).toString());
@@ -3074,15 +3268,51 @@ class _VDataState extends State<VData> {
           executive = true;
         });
       }
-      if (link == true && vData == true && executive == true) {
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
         getOfflineData();
-        endTime = DateTime.now().millisecondsSinceEpoch;
-        int result = endTime - startTime;
-        print("VData loading Time: " + result.toString());
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       _toast(err.toString());
       print("Get Executive error: " + (err).toString());
+    });
+  }
+
+  void getVTag() {
+    http.post(urlVTag, body: {
+      "companyID": companyID,
+      "userID": userID,
+      "level": level,
+      "user_type": userType,
+      "phone_number": "all",
+    }).then((res) {
+      // print("VTag body: " + res.body);
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        vtagList = jsonData;
+        vtagList.insert(0, "-");
+      }
+      if (this.mounted) {
+        setState(() {
+          vtagStatus = true;
+        });
+      }
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
+        getOfflineData();
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
+      }
+    }).catchError((err) {
+      print("Get Link error: " + (err).toString());
     });
   }
 
