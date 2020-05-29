@@ -279,7 +279,7 @@ class _VFormState extends State<VForm> {
         ),
         body: Container(
           margin: EdgeInsets.fromLTRB(
-              ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), 0, 0),
+              ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), 0),
           child: Column(
             children: <Widget>[
               Card(
