@@ -67,7 +67,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-  bool connection, nodata, link, vData, executive, more;
+  bool connection, nodata, link, vData, executive, more, vtagStatus;
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
   List<VDataDetails> vDataDetails1 = [];
@@ -75,11 +75,13 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   List<Handler> handlerList = [];
   List<String> executiveList = [];
   List<String> links = [];
+  List vtagList = [];
   Database vdataDB;
   int currentTabIndex;
   String _byLink,
       _byStatus,
       _byExecutive,
+      _byVTag,
       type,
       channel,
       apps,
@@ -109,6 +111,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   String urlChangeStatus = "https://vvinoa.vvin.com/api/vdataChangeStatus.php";
   String urlLinks = "https://vvinoa.vvin.com/api/links.php";
   String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
+  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
   List<String> data = [
     "New",
     "Contacting",
@@ -150,17 +153,14 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     currentTabIndex = 1;
     totalNotification = "0";
     more = true;
-    connection = false;
-    nodata = false;
-    vData = false;
-    link = false;
-    executive = false;
+    executive = link = vData = nodata = connection = vtagStatus = false;
     _startDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.startDate);
     _endDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.endDate);
     checkConnection();
     _byLink = "All Links";
     _byStatus = widget.vDataFilter.status;
     _byExecutive = "All Executives";
+    _byVTag = "All VTags";
     link_id = "All Links";
     type = widget.vDataFilter.type;
     channel = widget.vDataFilter.channel;
@@ -567,7 +567,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                           Text(
                               (connection == true)
                                   ? (total == null) ? "" : total.toString()
-                                  : (link == true && vData == true)
+                                  : (link == true && vData == true && vtagStatus == true)
                                       ? (offlineVData.length != 0)
                                           ? offlineVData[0]['total']
                                           : "0"
@@ -579,7 +579,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
               SizedBox(
                 height: ScreenUtil().setHeight(5),
               ),
-              (link == true && vData == true)
+              (link == true && vData == true && vtagStatus == true)
                   ? (nodata == true)
                       ? Center(
                           child: Container(
@@ -1947,6 +1947,83 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                               SizedBox(
                                 height: ScreenUtil().setHeight(20),
                               ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    "By VTag",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(5),
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: InkWell(
+                                      onTap: () {
+                                        _showBottomSheet("byVTag");
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.fromLTRB(
+                                          0,
+                                          0,
+                                          0,
+                                          ScreenUtil().setHeight(20),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          border: Border.all(
+                                              color: Colors.grey.shade400,
+                                              style: BorderStyle.solid),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Expanded(
+                                              child: Container(
+                                                height:
+                                                    ScreenUtil().setHeight(60),
+                                                padding: EdgeInsets.fromLTRB(
+                                                    ScreenUtil().setHeight(10),
+                                                    ScreenUtil().setHeight(16),
+                                                    0,
+                                                    0),
+                                                child: Text(
+                                                  _byVTag,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: font14,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Icon(
+                                              Icons.arrow_drop_down,
+                                              color: Colors.black,
+                                            ),
+                                            SizedBox(
+                                              width: ScreenUtil().setWidth(10),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(20),
+                              ),
                               Container(
                                 child: (level == "0")
                                     ? Column(
@@ -2137,6 +2214,117 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
 
   void _showBottomSheet(String type) {
     switch (type) {
+      case "byVTag":
+        {
+          if (vtagList.length != 0) {
+            int position;
+            if (_byVTag == "All VTags") {
+              position = 0;
+            } else {
+              for (int i = 0; i < vtagList.length; i++) {
+                if (_byVTag == vtagList[i]) {
+                  position = i;
+                }
+              }
+            }
+            showModalBottomSheet(
+              isDismissible: false,
+              context: context,
+              builder: (context) {
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setModalState) {
+                    return Container(
+                      height: MediaQuery.of(context).size.height * 0.3,
+                      child: Column(
+                        children: <Widget>[
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                    width: 1, color: Colors.grey.shade300),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Container(
+                                  padding: EdgeInsets.all(
+                                    ScreenUtil().setHeight(20),
+                                  ),
+                                  child: Text(
+                                    "Select",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                ),
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    padding: EdgeInsets.all(
+                                      ScreenUtil().setHeight(20),
+                                    ),
+                                    child: Text(
+                                      "Done",
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        fontSize: font14,
+                                      ),
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    Navigator.pop(context, true);
+                                    Navigator.of(context).pop();
+                                    _filter();
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          Flexible(
+                            child: Container(
+                              color: Colors.white,
+                              child: CupertinoPicker(
+                                backgroundColor: Colors.white,
+                                itemExtent: 28,
+                                scrollController: FixedExtentScrollController(
+                                    initialItem: position),
+                                onSelectedItemChanged: (int index) {
+                                  if (index != 0) {
+                                    if (this.mounted) {
+                                      setState(() {
+                                        _byVTag = vtagList[index];
+                                      });
+                                    }
+                                  } else {
+                                    if (this.mounted) {
+                                      setState(() {
+                                        _byVTag = 'All VTags';
+                                      });
+                                    }
+                                  }
+                                },
+                                children: _list(vtagList),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          } else {
+            _toast('No VTag');
+          }
+        }
+        break;
+
       case "byLink":
         {
           int position;
@@ -2635,8 +2823,33 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     userType = prefs.getString('user_type');
     notification();
     getData();
+    getVTag();
     getLinks();
     getExecutive();
+  }
+
+  void getVTag() {
+    http.post(urlVTag, body: {
+      "companyID": companyID,
+      "userID": userID,
+      "level": level,
+      "user_type": userType,
+      "phone_number": "all",
+    }).then((res) {
+      // print("VTag body: " + res.body);
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        vtagList = jsonData;
+        vtagList.insert(0, "-");
+      }
+      if (this.mounted) {
+        setState(() {
+          vtagStatus = true;
+        });
+      }
+    }).catchError((err) {
+      print("Get Link error: " + (err).toString());
+    });
   }
 
   void getData() {
@@ -2651,6 +2864,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "link_id": link_id,
       "status": _byStatus,
       "executive": _byExecutive,
+      "vtag": _byVTag,
       "search": search,
       "start_date": widget.vDataFilter.startDate,
       "end_date": widget.vDataFilter.endDate,
@@ -2711,6 +2925,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "link_id": link_id,
       "status": _byStatus,
       "executive": _byExecutive,
+      "vtag": _byVTag,
       "search": search,
       "start_date": _startDate.toString().substring(0, 10),
       "end_date": _endDate.toString().substring(0, 10),
@@ -2920,6 +3135,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         "link_id": linkID,
         "status": _byStatus,
         "executive": _byExecutive,
+        "vtag": _byVTag,
         "search": search,
         "count": "0",
       }).then((res) {
@@ -2997,6 +3213,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           "link_id": link_id.toString(),
           "status": _byStatus,
           "executive": _byExecutive,
+          "vtag": _byVTag,
           "search": search,
           "count": "0",
         }).then((res) {
@@ -3101,6 +3318,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         "link_id": link_id,
         "status": _byStatus,
         "executive": _byExecutive,
+        "vtag": _byVTag,
         "search": search,
         "start_date": widget.vDataFilter.startDate,
         "end_date": widget.vDataFilter.endDate,
