@@ -80,6 +80,9 @@ class _VFormResponseState extends State<VFormResponse> {
     _init();
     List list = widget.data.toString().split(':');
     length = int.parse(list[0].toString().substring(1));
+    // for (var i = 1; i <= length; i++) {
+    //   print(widget.data[length.toString()][i.toString()]);
+    // }
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         _showNotification();
@@ -313,18 +316,20 @@ class _VFormResponseState extends State<VFormResponse> {
     List widgetList = <Widget>[];
     for (var i = 1; i <= length; i++) {
       String type = 'text';
-      if (widget.data[length.toString()][i.toString()]['answer'].length > 5) {
-        if (widget.data[length.toString()][i.toString()]['answer']
+      if (widget.data[length.toString()][i.toString()]['answer'] != null) {
+        if (widget.data[length.toString()][i.toString()]['answer'].length > 5) {
+          if (widget.data[length.toString()][i.toString()]['answer']
+                  .toString()
+                  .substring(0, 5) ==
+              'https') {
+            List list = widget.data[length.toString()][i.toString()]['answer']
                 .toString()
-                .substring(0, 5) ==
-            'https') {
-          List list = widget.data[length.toString()][i.toString()]['answer']
-              .toString()
-              .split('.');
-          if (list[list.length - 1] == 'pdf') {
-            type = 'pdf';
-          } else {
-            type = 'image';
+                .split('.');
+            if (list[list.length - 1] == 'pdf') {
+              type = 'pdf';
+            } else {
+              type = 'image';
+            }
           }
         }
       }
@@ -427,8 +432,11 @@ class _VFormResponseState extends State<VFormResponse> {
                             Flexible(
                               child: Text(
                                 (widget.data[length.toString()][i.toString()]
-                                            ['answer'] ==
-                                        '')
+                                                ['answer'] ==
+                                            '' ||
+                                        widget.data[length.toString()]
+                                                [i.toString()]['answer'] ==
+                                            null)
                                     ? ' -'
                                     : widget.data[length.toString()]
                                         [i.toString()]['answer'],
@@ -444,45 +452,121 @@ class _VFormResponseState extends State<VFormResponse> {
                 ],
               ),
             )
-          : widget1 = Column(
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        widget.data[length.toString()][i.toString()]['title'],
-                        style: TextStyle(
-                          color: Color.fromRGBO(120, 120, 120, 1),
-                          fontSize: font16,
+          : widget1 = Container(
+              padding: EdgeInsets.only(
+                top: ScreenUtil().setWidth(10),
+              ),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          widget.data[length.toString()][i.toString()]['title'],
+                          style: TextStyle(
+                            color: Color.fromRGBO(120, 120, 120, 1),
+                            fontSize: font16,
+                          ),
                         ),
-                      ),
-                    )
-                  ],
-                ),
-                SizedBox(
-                  height: ScreenUtil().setHeight(5),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        (widget.data[length.toString()][i.toString()]
-                                    ['answer'] ==
-                                '')
-                            ? ' -'
-                            : widget.data[length.toString()][i.toString()]
-                                ['answer'],
-                        style: TextStyle(
-                          color: Color.fromRGBO(20, 23, 32, 1),
-                          fontSize: font16,
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: ScreenUtil().setHeight(5),
+                  ),
+                  (type != 'text')
+                      ? (type == 'image')
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Center(
+                                  child: InkWell(
+                                    onTap: () {
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (_) {
+                                        return ImageScreen(
+                                          title: widget.data[length.toString()]
+                                              [i.toString()]['title'],
+                                          image: widget.data[length.toString()]
+                                              [i.toString()]['answer'],
+                                        );
+                                      }));
+                                    },
+                                    child: Hero(
+                                      tag: 'imageHero',
+                                      child: Container(
+                                        height: 250,
+                                        width: 250,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                              image: CachedNetworkImageProvider(
+                                                  widget.data[length.toString()]
+                                                      [i.toString()]['answer']),
+                                              fit: BoxFit.contain),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(context,
+                                        MaterialPageRoute(builder: (_) {
+                                      return ViewPDF(
+                                        url: widget.data[length.toString()]
+                                            [i.toString()]['answer'],
+                                      );
+                                    }));
+                                  },
+                                  child: Column(
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.picture_as_pdf,
+                                        size: ScreenUtil().setHeight(80),
+                                        color: Colors.red,
+                                      ),
+                                      Text(
+                                        'Click to view PDF',
+                                        style: TextStyle(
+                                          color: Color.fromRGBO(20, 23, 32, 1),
+                                          fontSize: font16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Flexible(
+                              child: Text(
+                                (widget.data[length.toString()][i.toString()]
+                                                ['answer'] ==
+                                            '' ||
+                                        widget.data[length.toString()]
+                                                [i.toString()]['answer'] ==
+                                            null)
+                                    ? ' -'
+                                    : widget.data[length.toString()]
+                                        [i.toString()]['answer'],
+                                style: TextStyle(
+                                  color: Color.fromRGBO(20, 23, 32, 1),
+                                  fontSize: font16,
+                                ),
+                              ),
+                            )
+                          ],
                         ),
-                      ),
-                    )
-                  ],
-                ),
-              ],
+                ],
+              ),
             );
       widgetList.add(widget1);
     }

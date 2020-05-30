@@ -278,8 +278,8 @@ class _VFormState extends State<VForm> {
           ),
         ),
         body: Container(
-          margin: EdgeInsets.fromLTRB(
-              ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), 0),
+          margin: EdgeInsets.fromLTRB(ScreenUtil().setHeight(10),
+              ScreenUtil().setHeight(10), ScreenUtil().setHeight(10), 0),
           child: Column(
             children: <Widget>[
               Card(
@@ -633,7 +633,9 @@ class _VFormState extends State<VForm> {
                 Flexible(
                   child: Text(
                     (vform[index][length]['1']['answer'].length < 6)
-                        ? ''
+                        ? (vform[index][length]['1']['answer'] == '')
+                            ? '-'
+                            : vform[index][length]['1']['answer']
                         : (vform[index][length]['1']['answer']
                                     .toString()
                                     .substring(0, 5) ==
@@ -676,7 +678,9 @@ class _VFormState extends State<VForm> {
                 Flexible(
                   child: Text(
                     (vform[index][length]['2']['answer'].length < 6)
-                        ? ''
+                        ? (vform[index][length]['2']['answer'] == '')
+                            ? '-'
+                            : vform[index][length]['2']['answer']
                         : (vform[index][length]['2']['answer']
                                     .toString()
                                     .substring(0, 5) ==
@@ -726,7 +730,9 @@ class _VFormState extends State<VForm> {
                   Flexible(
                     child: Text(
                       (vform[index][length]['1']['answer'].length < 6)
-                          ? vform[index][length]['1']['answer']
+                          ? (vform[index][length]['1']['answer'] == '')
+                              ? '-'
+                              : vform[index][length]['1']['answer']
                           : (vform[index][length]['1']['answer']
                                       .toString()
                                       .substring(0, 5) ==
