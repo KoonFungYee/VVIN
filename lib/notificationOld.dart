@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:route_transitions/route_transitions.dart';
@@ -61,6 +62,7 @@ class _NotificationsState extends State<Notifications> {
       RefreshController(initialRefresh: false);
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
+  double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
   String urlNotification = "https://vvinoa.vvin.com/api/notification.php";
@@ -80,7 +82,6 @@ class _NotificationsState extends State<Notifications> {
   List<Map> offlineNoti;
   int total, startTime, endTime, currentTabIndex;
   SharedPreferences prefs;
-  final _itemExtent = ScreenUtil().setHeight(245);
 
   @override
   void initState() {
@@ -470,72 +471,11 @@ class _NotificationsState extends State<Notifications> {
                   ),
                 )
               : (nodata == false)
-                  ? ListView.builder(
-                      itemExtent: _itemExtent,
-                      itemCount: (connection == false)
-                          ? offlineNoti.length
-                          : notifications.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return WidgetANimator(
-                          InkWell(
-                            onTap: () {
-                              changeStatus(index);
-                            },
-                            child: Container(
-                              padding: EdgeInsets.fromLTRB(
-                                ScreenUtil().setHeight(25),
-                                ScreenUtil().setHeight(20),
-                                ScreenUtil().setHeight(25),
-                                ScreenUtil().setHeight(20),
-                              ),
-                              decoration: BoxDecoration(
-                                color: (connection == false)
-                                    ? (offlineNoti[index]['status'] == "1")
-                                        ? Colors.white
-                                        : Color.fromRGBO(232, 244, 248, 1)
-                                    : (notifications[index].status == "1")
-                                        ? Colors.white
-                                        : Color.fromRGBO(232, 244, 248, 1),
-                                border: Border(
-                                  bottom: BorderSide(
-                                      width: 1, color: Colors.grey.shade300),
-                                ),
-                              ),
-                              child: Column(
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Expanded(
-                                        child: _title(index),
-                                      ),
-                                      SizedBox(
-                                        width: ScreenUtil().setWidth(10),
-                                      ),
-                                      Text(
-                                          (connection == false)
-                                              ? offlineNoti[index]['date']
-                                                  .toString()
-                                                  .substring(0, 10)
-                                              : notifications[index]
-                                                  .date
-                                                  .toString()
-                                                  .substring(0, 10),
-                                          style: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: font12,
-                                          )),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: ScreenUtil().setHeight(10),
-                                  ),
-                                  _subtitle(index),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                  ? SingleChildScrollView(
+                      physics: ScrollPhysics(),
+                      child: Column(
+                        children: _list(),
+                      ),
                     )
                   : Center(
                       child: Container(
@@ -562,228 +502,521 @@ class _NotificationsState extends State<Notifications> {
     );
   }
 
-  Widget _title(int index) {
-    Widget title;
-    title = Text(
-      (connection == false)
-          ? (offlineNoti[index]['title'].toString().substring(0, 3) == 'You')
-              ? notifications[index].title.toString().substring(
-                  0, notifications[index].title.toString().indexOf('from'))
-              : checkTitle(offlineNoti[index]['title'].toString().substring(7))
-          : (notifications[index].title.toString().substring(0, 3) == 'You')
-              ? notifications[index].title.toString().substring(
-                  0, notifications[index].title.toString().indexOf('from'))
-              : checkTitle(notifications[index].title.toString().substring(7)),
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: font14,
-      ),
-      overflow: TextOverflow.ellipsis,
-    );
-    return title;
+  List<Widget> _list() {
+    List widgetList = <Widget>[];
+    int length;
+    if (connection == true) {
+      length = notifications.length;
+    } else {
+      length = offlineNoti.length;
+    }
+    for (var i = 0; i < length; i++) {
+      List list;
+      String nameStart, nameEnd, type, title, subtitle;
+      nameStart = 'Name: ';
+      nameEnd = 'Contact';
+
+      if (connection == true) {
+        title = notifications[i].title;
+      } else {
+        title = offlineNoti[i]['title'];
+      }
+      if (title.substring(0, 3) == 'You') {
+        type = 'new';
+        list = title.split('- ');
+      } else if (title.substring(0, 3) == 'VVI') {
+        if (title.substring(title.length - 7, title.length) == 'branch.') {
+          type = 'link';
+        } else {
+          type = 'user';
+        }
+      } else {
+        type = 'assign';
+        list = title.split(' has');
+      }
+      if (connection == true) {
+        subtitle = notifications[i].subtitle;
+      } else {
+        subtitle = offlineNoti[i]['subtitle'];
+      }
+      Widget widget1;
+      double cwidth = MediaQuery.of(context).size.width * 0.8;
+      widget1 = Container(
+        padding: EdgeInsets.all(ScreenUtil().setHeight(10)),
+        decoration: BoxDecoration(
+          color: (connection == false)
+              ? (offlineNoti[i]['status'] == "1")
+                  ? Colors.white
+                  : Color.fromRGBO(234, 244, 251, 1)
+              : (notifications[i].status == "1")
+                  ? Colors.white
+                  : Color.fromRGBO(234, 244, 251, 1),
+          border: Border(
+            bottom: BorderSide(width: 1, color: Colors.grey.shade300),
+          ),
+        ),
+        child: Column(
+          children: <Widget>[
+            WidgetANimator(
+              InkWell(
+                onTap: () {
+                  changeStatus(i);
+                },
+                child: (connection == true)
+                    ? Row(
+                        children: <Widget>[
+                          Container(
+                            margin: EdgeInsets.all(10.0),
+                            width: ScreenUtil().setWidth(80),
+                            height: ScreenUtil().setHeight(80),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: _icon(type),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                    width: cwidth,
+                                    child: (type == 'new')
+                                        ? RichText(
+                                            text: TextSpan(children: [
+                                              TextSpan(
+                                                text: 'A New VData ',
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: subtitle.substring(
+                                                    subtitle.indexOf(
+                                                            nameStart) +
+                                                        nameStart.length,
+                                                    subtitle.indexOf(
+                                                        nameEnd,
+                                                        subtitle.indexOf(
+                                                                nameStart) +
+                                                            nameStart.length)),
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text:
+                                                    ' has been obtained through ',
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: list[1],
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                            ]),
+                                          )
+                                        : (type == 'user')
+                                            ? Text(
+                                                title.substring(7),
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontSize: font14,
+                                                ),
+                                              )
+                                            : RichText(
+                                                text: TextSpan(children: [
+                                                  TextSpan(
+                                                    text: 'VData ',
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: subtitle.substring(
+                                                        subtitle.indexOf(
+                                                                nameStart) +
+                                                            nameStart.length,
+                                                        subtitle.indexOf(
+                                                            nameEnd,
+                                                            subtitle.indexOf(
+                                                                    nameStart) +
+                                                                nameStart
+                                                                    .length)),
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text:
+                                                        ' has been assigned to you by ',
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: list[0],
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                ]),
+                                              ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(10),
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text(
+                                    (connection == false)
+                                        ? offlineNoti[i]['date']
+                                            .toString()
+                                            .substring(0, 10)
+                                        : notifications[i]
+                                            .date
+                                            .toString()
+                                            .substring(0, 10),
+                                    style: TextStyle(
+                                      color: Color.fromRGBO(165, 165, 165, 1),
+                                      fontSize: font12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: <Widget>[
+                          Container(
+                            margin: EdgeInsets.all(10.0),
+                            width: ScreenUtil().setWidth(80),
+                            height: ScreenUtil().setHeight(80),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: (type == 'new')
+                                ? Icon(Icons.insert_chart,
+                                    size: ScreenUtil().setHeight(40),
+                                    color: Color.fromRGBO(31, 127, 194, 1))
+                                : (type == 'assign')
+                                    ? Icon(FontAwesomeIcons.userPlus,
+                                        size: ScreenUtil().setHeight(40),
+                                        color: Color.fromRGBO(31, 127, 194, 1))
+                                    : Icon(FontAwesomeIcons.user,
+                                        size: ScreenUtil().setHeight(40),
+                                        color: Color.fromRGBO(31, 127, 194, 1)),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                    width: cwidth,
+                                    child: (type == 'new')
+                                        ? RichText(
+                                            text: TextSpan(children: [
+                                              TextSpan(
+                                                text: 'A New VData ',
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: subtitle.substring(
+                                                    subtitle.indexOf(
+                                                            nameStart) +
+                                                        nameStart.length,
+                                                    subtitle.indexOf(
+                                                        nameEnd,
+                                                        subtitle.indexOf(
+                                                                nameStart) +
+                                                            nameStart.length)),
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text:
+                                                    ' has been obtained through ',
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: list[1],
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: font16,
+                                                ),
+                                              ),
+                                            ]),
+                                          )
+                                        : (type == 'user')
+                                            ? Text(
+                                                title.substring(7),
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      20, 23, 32, 1),
+                                                  fontSize: font14,
+                                                ),
+                                              )
+                                            : RichText(
+                                                text: TextSpan(children: [
+                                                  TextSpan(
+                                                    text: 'VData ',
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: subtitle.substring(
+                                                        subtitle.indexOf(
+                                                                nameStart) +
+                                                            nameStart.length,
+                                                        subtitle.indexOf(
+                                                            nameEnd,
+                                                            subtitle.indexOf(
+                                                                    nameStart) +
+                                                                nameStart
+                                                                    .length)),
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text:
+                                                        ' has been assigned to you by ',
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: list[0],
+                                                    style: TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          20, 23, 32, 1),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: font16,
+                                                    ),
+                                                  ),
+                                                ]),
+                                              ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(10),
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text(
+                                    (connection == false)
+                                        ? offlineNoti[i]['date']
+                                            .toString()
+                                            .substring(0, 10)
+                                        : notifications[i]
+                                            .date
+                                            .toString()
+                                            .substring(0, 10),
+                                    style: TextStyle(
+                                      color: Color.fromRGBO(165, 165, 165, 1),
+                                      fontSize: font12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
   }
 
-  Widget _subtitle(int index) {
+  Widget _icon(String type) {
     Widget widget;
-    String sourceStart, nameStart, nameEnd, phoneStart, phoneEnd;
-    sourceStart = 'from ';
-    nameStart = 'Name: ';
-    nameEnd = 'Contact';
-    phoneStart = 'Number: ';
-    phoneEnd = 'Make';
-    if (connection == true) {
-      String title = notifications[index].title;
-      String subtitle = notifications[index].subtitle;
-      if (subtitle.substring(0, 7) == 'Details') {
-        widget = Column(
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Source: ' +
-                      title.substring(
-                          title.indexOf(sourceStart) + sourceStart.length),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: font14,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: ScreenUtil().setHeight(5),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Name: ' +
-                      subtitle.substring(
-                          subtitle.indexOf(nameStart) + nameStart.length,
-                          subtitle.indexOf(nameEnd,
-                              subtitle.indexOf(nameStart) + nameStart.length)),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: font14,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: ScreenUtil().setHeight(5),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Contact Number: ' +
-                      subtitle.substring(
-                          subtitle.indexOf(phoneStart) + phoneStart.length,
-                          subtitle.indexOf(
-                              phoneEnd,
-                              subtitle.indexOf(phoneStart) +
-                                  phoneStart.length)),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: font14,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      } else {
-        widget = Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Flexible(
-              child: Text(
-                checkSubtitle(notifications[index].subtitle),
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: font14,
-                ),
-              ),
-            ),
-          ],
-        );
-      }
-    } else {
-      String subtitle = offlineNoti[index]['subtitle'];
-      if (subtitle.substring(0, 7) == 'Details') {
-        widget = Column();
-      } else {
-        widget = Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Flexible(
-              child: Text(
-                checkSubtitle(offlineNoti[index]['subtitle']),
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: font14,
-                ),
-              ),
-            ),
-          ],
-        );
-      }
+    switch (type) {
+      case 'new':
+        widget = Icon(Icons.insert_chart,
+            size: ScreenUtil().setHeight(40),
+            color: Color.fromRGBO(31, 127, 194, 1));
+        break;
+      case 'assign':
+        widget = Icon(FontAwesomeIcons.userPlus,
+            size: ScreenUtil().setHeight(40),
+            color: Color.fromRGBO(31, 127, 194, 1));
+        break;
+      case 'user':
+        widget = Icon(FontAwesomeIcons.user,
+            size: ScreenUtil().setHeight(40),
+            color: Color.fromRGBO(31, 127, 194, 1));
+        break;
+      case 'link':
+        widget = Icon(FontAwesomeIcons.user,
+            size: ScreenUtil().setHeight(40),
+            color: Color.fromRGBO(31, 127, 194, 1));
+        break;
+      default:
     }
     return widget;
   }
 
   void _onRefresh() {
-    notifications.clear();
-    http.post(urlNotification, body: {
-      "userID": userID,
-      "companyID": companyID,
-      "level": level,
-      "user_type": userType,
-      "count": "0",
-    }).then((res) {
+    if (connection == true) {
       notifications.clear();
-      if (res.body == "nodata") {
-        _toast("No Data");
-      } else {
-        var jsonData = json.decode(res.body);
-        total = jsonData[0]['total'];
-
-        String subtitle, subtitle1;
-        String subtitle2 = "";
-        for (int i = 0; i < jsonData.length; i++) {
-          if (jsonData[i]['subtitle'].toString().contains(",")) {
-            List subtitleList = jsonData[i]['subtitle'].toString().split(",");
-            subtitle1 = subtitleList[0] + ", ";
-            List secondSubtitle = subtitleList[1].toString().split(".");
-            if (secondSubtitle.length < 3) {
-              int match = 0;
-              for (int k = 0; k < secondSubtitle[0].length; k++) {
-                if (secondSubtitle[0]
-                        .toString()
-                        .substring(k, k + 1)
-                        .contains(new RegExp(r'[A-Z]')) ||
-                    secondSubtitle[0]
-                        .toString()
-                        .substring(k, k + 1)
-                        .contains(new RegExp(r'[a-z]'))) {
-                  if (match == 0) {
-                    subtitle2 = secondSubtitle[0].toString().substring(k) + ".";
-                    match++;
-                  }
-                }
-              }
-            } else {
-              int match = 0;
-              for (int j = 0; j < secondSubtitle.length - 4; j++) {
-                if (j == 0) {
-                  for (int k = 0; k < secondSubtitle[0].length; k++) {
-                    if (secondSubtitle[0]
-                            .toString()
-                            .substring(k, k + 1)
-                            .contains(new RegExp(r'[A-Z]')) ||
-                        secondSubtitle[0]
-                            .toString()
-                            .substring(k, k + 1)
-                            .contains(new RegExp(r'[a-z]'))) {
-                      if (match == 0) {
-                        subtitle2 =
-                            secondSubtitle[0].toString().substring(k) + ".";
-                        match++;
-                      }
+      http.post(urlNotification, body: {
+        "userID": userID,
+        "companyID": companyID,
+        "level": level,
+        "user_type": userType,
+        "count": "0",
+      }).then((res) {
+        notifications.clear();
+        if (res.body == "nodata") {
+          _toast("No Data");
+        } else {
+          var jsonData = json.decode(res.body);
+          total = jsonData[0]['total'];
+          String subtitle, subtitle1;
+          String subtitle2 = "";
+          for (int i = 0; i < jsonData.length; i++) {
+            if (jsonData[i]['subtitle'].toString().contains(",")) {
+              List subtitleList = jsonData[i]['subtitle'].toString().split(",");
+              subtitle1 = subtitleList[0] + ", ";
+              List secondSubtitle = subtitleList[1].toString().split(".");
+              if (secondSubtitle.length < 3) {
+                int match = 0;
+                for (int k = 0; k < secondSubtitle[0].length; k++) {
+                  if (secondSubtitle[0]
+                          .toString()
+                          .substring(k, k + 1)
+                          .contains(new RegExp(r'[A-Z]')) ||
+                      secondSubtitle[0]
+                          .toString()
+                          .substring(k, k + 1)
+                          .contains(new RegExp(r'[a-z]'))) {
+                    if (match == 0) {
+                      subtitle2 =
+                          secondSubtitle[0].toString().substring(k) + ".";
+                      match++;
                     }
                   }
-                } else {
-                  subtitle2 += secondSubtitle[j] + ".";
+                }
+              } else {
+                int match = 0;
+                for (int j = 0; j < secondSubtitle.length - 4; j++) {
+                  if (j == 0) {
+                    for (int k = 0; k < secondSubtitle[0].length; k++) {
+                      if (secondSubtitle[0]
+                              .toString()
+                              .substring(k, k + 1)
+                              .contains(new RegExp(r'[A-Z]')) ||
+                          secondSubtitle[0]
+                              .toString()
+                              .substring(k, k + 1)
+                              .contains(new RegExp(r'[a-z]'))) {
+                        if (match == 0) {
+                          subtitle2 =
+                              secondSubtitle[0].toString().substring(k) + ".";
+                          match++;
+                        }
+                      }
+                    }
+                  } else {
+                    subtitle2 += secondSubtitle[j] + ".";
+                  }
                 }
               }
+              subtitle = subtitle1 + subtitle2;
+            } else {
+              subtitle = jsonData[i]['subtitle'];
             }
-            subtitle = subtitle1 + subtitle2;
-          } else {
-            subtitle = jsonData[i]['subtitle'];
-          }
 
-          Noti notification = Noti(
-              title: jsonData[i]['title'],
-              subtitle: subtitle,
-              date: jsonData[i]['date'],
-              notiID: jsonData[i]['id'],
-              status: jsonData[i]['status']);
-          notifications.add(notification);
+            Noti notification = Noti(
+                title: jsonData[i]['title'],
+                subtitle: subtitle,
+                date: jsonData[i]['date'],
+                notiID: jsonData[i]['id'],
+                status: jsonData[i]['status']);
+            notifications.add(notification);
+          }
+          if (this.mounted) {
+            setState(() {
+              status = true;
+              connection = true;
+            });
+          }
+          setNoti();
         }
-        if (this.mounted) {
-          setState(() {
-            status = true;
-            connection = true;
-          });
-        }
-        setNoti();
-      }
-    }).catchError((err) {
-      _toast("No Internet connection, data can't load");
-      print("Get Notifications error: " + (err).toString());
-    });
-    _refreshController.refreshCompleted();
+      }).catchError((err) {
+        _toast("No Internet Connection");
+        print("Get Notifications error: " + (err).toString());
+      });
+      _refreshController.refreshCompleted();
+    } else {
+      _toast("Offline mode not allow to reload");
+      _refreshController.refreshCompleted();
+    }
   }
 
   void _onLoading() async {
@@ -852,7 +1085,8 @@ class _NotificationsState extends State<Notifications> {
           } else {
             subtitle = jsonData[i]['subtitle'];
           }
-
+          print('title: ' + jsonData[i]['title']);
+          print(subtitle);
           Noti notification = Noti(
               title: jsonData[i]['title'],
               subtitle: subtitle,

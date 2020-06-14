@@ -11,6 +11,7 @@ import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:route_transitions/route_transitions.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vvin/reminder.dart';
@@ -42,6 +43,7 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:vvin/reminderDB.dart';
+import 'package:vvin/vformResponse.dart';
 
 bool isScan;
 String full = "";
@@ -98,6 +100,7 @@ class _VProfileState extends State<VProfile>
   List<View> vProfileViews = [];
   List<Remarks> vProfileRemarks = [];
   List<Handler> allHandler = [];
+  List vformResponse = [];
   String name,
       phoneNo,
       status,
@@ -119,6 +122,7 @@ class _VProfileState extends State<VProfile>
   String urlWhatsApp = "https://vvinoa.vvin.com/api/whatsappForward.php";
   String assignURL = "https://vvinoa.vvin.com/api/assign.php";
   String handlers = "https://vvinoa.vvin.com/api/getHandler.php";
+  String responseURL = 'https://vvinoa.vvin.com/api/response.php';
   bool vProfileData,
       handlerData,
       viewsData,
@@ -131,6 +135,8 @@ class _VProfileState extends State<VProfile>
       hListStatus,
       assignDone,
       noHandler,
+      response,
+      noResponse,
       isSend;
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font13 = ScreenUtil().setSp(29.9, allowFontScalingSelf: false);
@@ -163,6 +169,7 @@ class _VProfileState extends State<VProfile>
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     check();
     _init();
+    noResponse = response = false;
     name = widget.vdata.name;
     phoneNo = widget.vdata.phoneNo;
     status = widget.vdata.status;
@@ -467,7 +474,9 @@ class _VProfileState extends State<VProfile>
                         fontSize: font18,
                         fontWeight: FontWeight.bold),
                   ),
-                  actions: <Widget>[popupMenuButton()],
+                  actions: (vProfileData == true)
+                      ? <Widget>[popupMenuButton()]
+                      : null,
                 ),
               ),
               body: Column(
@@ -883,6 +892,17 @@ class _VProfileState extends State<VProfile>
             ),
           ),
         ),
+        (vProfileDetails[0].app == 'VForm')
+            ? PopupMenuItem<String>(
+                value: "response",
+                child: Text(
+                  "View Response",
+                  style: TextStyle(
+                    fontSize: font14,
+                  ),
+                ),
+              )
+            : null,
       ],
       onSelected: (selectedItem) {
         switch (selectedItem) {
@@ -1027,9 +1047,43 @@ class _VProfileState extends State<VProfile>
               _editVProfile();
             }
             break;
+          case "response":
+            {
+              viewResponse();
+            }
+            break;
         }
       },
     );
+  }
+
+  void viewResponse() {
+    if (response == true) {
+      if (noResponse == false) {
+        Navigator.of(context).push(
+          PageRouteTransition(
+            animationType: AnimationType.scale,
+            builder: (context) => VFormResponse(
+              id: '',
+              vformID: vProfileDetails[0].vformID,
+              reponseID: '',
+              companyID: companyID,
+              userID: userID,
+              level: level,
+              userType: userType,
+              title: '',
+              data: vformResponse[0]['data'],
+            ),
+          ),
+        );
+      } else {
+        _toast('This response has been deleted');
+      }
+    } else {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        viewResponse();
+      });
+    }
   }
 
   void _scanner() async {
@@ -1123,7 +1177,7 @@ class _VProfileState extends State<VProfile>
           "companyName": "",
           "remark": "",
           "vtag": "",
-          "number": name + number,
+          "number": userID.toString() + number.toString(),
           "url": '',
           "nameCard": base64Image,
           "system": 'android',
@@ -1205,7 +1259,7 @@ class _VProfileState extends State<VProfile>
       "companyName": "",
       "remark": "",
       "vtag": "",
-      "number": name + number,
+      "number": userID.toString() + number.toString(),
       "url": '',
       "nameCard": '',
       "system": 'android',
@@ -1718,7 +1772,14 @@ class _VProfileState extends State<VProfile>
   void _saveContact() {
     if (vProfileData == true) {
       contact.givenName = vProfileDetails[0].name;
-      contact.phones = [Item(label: "mobile", value: "+" + widget.vdata.phoneNo.substring(0, 2) + ' ' + widget.vdata.phoneNo.substring(2))];
+      contact.phones = [
+        Item(
+            label: "mobile",
+            value: "+" +
+                widget.vdata.phoneNo.substring(0, 2) +
+                ' ' +
+                widget.vdata.phoneNo.substring(2))
+      ];
       if (vProfileDetails[0].company != '') {
         contact.company = vProfileDetails[0].company;
       }
@@ -1989,6 +2050,7 @@ class _VProfileState extends State<VProfile>
           created: "",
           lastActive: "",
           img: "",
+          vformID: "",
         );
         vProfileDetails.add(vprofile);
       } else {
@@ -2013,8 +2075,12 @@ class _VProfileState extends State<VProfile>
             created: data['created'].toString().substring(0, 10) ?? "",
             lastActive: data['lastActive'] ?? "",
             img: data['img'] ?? "",
+            vformID: data['vform_id'] ?? "",
           );
           vProfileDetails.add(vprofile);
+          if (vProfileDetails[0].app == 'VForm') {
+            getResponse();
+          }
           if (this.mounted) {
             setState(() {
               status = data['status'];
@@ -2030,6 +2096,37 @@ class _VProfileState extends State<VProfile>
     }).catchError((err) {
       _toast(err.toString());
       print("Get VProfile data error: " + (err).toString());
+    });
+  }
+
+  void getResponse() {
+    http.post(responseURL, body: {
+      "companyID": companyID,
+      "userID": userID,
+      "level": level,
+      "user_type": userType,
+      "vform_id": vProfileDetails[0].vformID,
+      "phone_number": phoneNo,
+    }).then((res) {
+      print("getResponse body: " + res.body);
+      if (res.body != 'nodata') {
+        var jsonData = json.decode(res.body);
+        vformResponse = jsonData;
+      } else {
+        if (this.mounted) {
+          setState(() {
+            noResponse = true;
+          });
+        }
+      }
+      if (this.mounted) {
+        setState(() {
+          response = true;
+        });
+      }
+    }).catchError((err) {
+      _toast(err.toString());
+      print("Get response error: " + (err).toString());
     });
   }
 
@@ -2060,7 +2157,6 @@ class _VProfileState extends State<VProfile>
           });
         }
       }
-      print(noHandler);
     }).catchError((err) {
       _toast(err.toString());
       print("Get handler error: " + (err).toString());

@@ -80,9 +80,6 @@ class _VFormResponseState extends State<VFormResponse> {
     _init();
     List list = widget.data.toString().split(':');
     length = int.parse(list[0].toString().substring(1));
-    // for (var i = 1; i <= length; i++) {
-    //   print(widget.data[length.toString()][i.toString()]);
-    // }
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         _showNotification();
@@ -267,7 +264,9 @@ class _VFormResponseState extends State<VFormResponse> {
             ),
             centerTitle: true,
             title: Text(
-              "Response #" + widget.id,
+              (widget.id == '')
+              ? "Response"
+              : "Response #" + widget.id,
               style: TextStyle(
                   color: Colors.black,
                   fontSize: font18,

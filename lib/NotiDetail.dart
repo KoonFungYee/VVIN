@@ -436,7 +436,9 @@ class _NotiDetailState extends State<NotiDetail> {
                     )
                   : Container(),
               (widget.notification.subtitle2 != "")
-                  ? Padding(
+                  ? (widget.notification.subtitle2.substring(widget.notification.subtitle2.length - 7, widget.notification.subtitle2.length) == 'branch.')
+                  ? Container()
+                  : Padding(
                       padding: EdgeInsets.all(10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.start,

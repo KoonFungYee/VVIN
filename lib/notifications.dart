@@ -82,7 +82,6 @@ class _NotificationsState extends State<Notifications> {
   List<Map> offlineNoti;
   int total, startTime, endTime, currentTabIndex;
   SharedPreferences prefs;
-  final _itemExtent = ScreenUtil().setHeight(245);
 
   @override
   void initState() {
@@ -526,7 +525,11 @@ class _NotificationsState extends State<Notifications> {
         type = 'new';
         list = title.split('- ');
       } else if (title.substring(0, 3) == 'VVI') {
-        type = 'user';
+        if (title.substring(title.length - 6, title.length) == 'branch') {
+          type = 'link';
+        } else {
+          type = 'user';
+        }
       } else {
         type = 'assign';
         list = title.split(' has');
@@ -556,341 +559,58 @@ class _NotificationsState extends State<Notifications> {
           children: <Widget>[
             WidgetANimator(
               InkWell(
-                onTap: () {
-                  changeStatus(i);
-                },
-                child: (connection == true)
-                    ? Row(
+                  onTap: () {
+                    changeStatus(i);
+                  },
+                  child: Row(
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.all(10.0),
+                        width: ScreenUtil().setWidth(80),
+                        height: ScreenUtil().setHeight(80),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ),
+                        child: _icon(type),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Container(
-                            margin: EdgeInsets.all(10.0),
-                            width: ScreenUtil().setWidth(80),
-                            height: ScreenUtil().setHeight(80),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: (type == 'new')
-                                ? Icon(Icons.insert_chart,
-                                    size: ScreenUtil().setHeight(40),
-                                    color: Color.fromRGBO(31, 127, 194, 1))
-                                : (type == 'assign')
-                                    ? Icon(FontAwesomeIcons.userPlus,
-                                        size: ScreenUtil().setHeight(40),
-                                        color: Color.fromRGBO(31, 127, 194, 1))
-                                    : Icon(FontAwesomeIcons.user,
-                                        size: ScreenUtil().setHeight(40),
-                                        color: Color.fromRGBO(31, 127, 194, 1)),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                    width: cwidth,
-                                    child: (type == 'new')
-                                        ? RichText(
-                                            text: TextSpan(children: [
-                                              TextSpan(
-                                                text: 'A New VData ',
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: subtitle.substring(
-                                                    subtitle.indexOf(
-                                                            nameStart) +
-                                                        nameStart.length,
-                                                    subtitle.indexOf(
-                                                        nameEnd,
-                                                        subtitle.indexOf(
-                                                                nameStart) +
-                                                            nameStart.length)),
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text:
-                                                    ' has been obtained through ',
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: list[1],
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                            ]),
-                                          )
-                                        : (type == 'user')
-                                            ? Text(
-                                                title.substring(7),
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontSize: font14,
-                                                ),
-                                              )
-                                            : RichText(
-                                                text: TextSpan(children: [
-                                                  TextSpan(
-                                                    text: 'VData ',
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text: subtitle.substring(
-                                                        subtitle.indexOf(
-                                                                nameStart) +
-                                                            nameStart.length,
-                                                        subtitle.indexOf(
-                                                            nameEnd,
-                                                            subtitle.indexOf(
-                                                                    nameStart) +
-                                                                nameStart
-                                                                    .length)),
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text:
-                                                        ' has been assigned to you by ',
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text: list[0],
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                ]),
-                                              ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: ScreenUtil().setHeight(10),
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  Text(
-                                    (connection == false)
-                                        ? offlineNoti[i]['date']
-                                            .toString()
-                                            .substring(0, 10)
-                                        : notifications[i]
-                                            .date
-                                            .toString()
-                                            .substring(0, 10),
-                                    style: TextStyle(
-                                      color: Color.fromRGBO(165, 165, 165, 1),
-                                      fontSize: font12,
-                                    ),
-                                  ),
-                                ],
+                              Container(
+                                width: cwidth,
+                                child: _title(title, type, subtitle, list),
                               ),
                             ],
                           ),
-                        ],
-                      )
-                    : Row(
-                        children: <Widget>[
-                          Container(
-                            margin: EdgeInsets.all(10.0),
-                            width: ScreenUtil().setWidth(80),
-                            height: ScreenUtil().setHeight(80),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: (type == 'new')
-                                ? Icon(Icons.insert_chart,
-                                    size: ScreenUtil().setHeight(40),
-                                    color: Color.fromRGBO(31, 127, 194, 1))
-                                : (type == 'assign')
-                                    ? Icon(FontAwesomeIcons.userPlus,
-                                        size: ScreenUtil().setHeight(40),
-                                        color: Color.fromRGBO(31, 127, 194, 1))
-                                    : Icon(FontAwesomeIcons.user,
-                                        size: ScreenUtil().setHeight(40),
-                                        color: Color.fromRGBO(31, 127, 194, 1)),
+                          SizedBox(
+                            height: ScreenUtil().setHeight(10),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
                             children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                    width: cwidth,
-                                    child: (type == 'new')
-                                        ? RichText(
-                                            text: TextSpan(children: [
-                                              TextSpan(
-                                                text: 'A New VData ',
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: subtitle.substring(
-                                                    subtitle.indexOf(
-                                                            nameStart) +
-                                                        nameStart.length,
-                                                    subtitle.indexOf(
-                                                        nameEnd,
-                                                        subtitle.indexOf(
-                                                                nameStart) +
-                                                            nameStart.length)),
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text:
-                                                    ' has been obtained through ',
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: list[1],
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: font16,
-                                                ),
-                                              ),
-                                            ]),
-                                          )
-                                        : (type == 'user')
-                                            ? Text(
-                                                title.substring(7),
-                                                style: TextStyle(
-                                                  color: Color.fromRGBO(
-                                                      20, 23, 32, 1),
-                                                  fontSize: font14,
-                                                ),
-                                              )
-                                            : RichText(
-                                                text: TextSpan(children: [
-                                                  TextSpan(
-                                                    text: 'VData ',
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text: subtitle.substring(
-                                                        subtitle.indexOf(
-                                                                nameStart) +
-                                                            nameStart.length,
-                                                        subtitle.indexOf(
-                                                            nameEnd,
-                                                            subtitle.indexOf(
-                                                                    nameStart) +
-                                                                nameStart
-                                                                    .length)),
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text:
-                                                        ' has been assigned to you by ',
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text: list[0],
-                                                    style: TextStyle(
-                                                      color: Color.fromRGBO(
-                                                          20, 23, 32, 1),
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: font16,
-                                                    ),
-                                                  ),
-                                                ]),
-                                              ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: ScreenUtil().setHeight(10),
-                              ),
-                              Row(
-                                children: <Widget>[
-                                  Text(
-                                    (connection == false)
-                                        ? offlineNoti[i]['date']
-                                            .toString()
-                                            .substring(0, 10)
-                                        : notifications[i]
-                                            .date
-                                            .toString()
-                                            .substring(0, 10),
-                                    style: TextStyle(
-                                      color: Color.fromRGBO(165, 165, 165, 1),
-                                      fontSize: font12,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                (connection == false)
+                                    ? offlineNoti[i]['date']
+                                        .toString()
+                                        .substring(0, 10)
+                                    : notifications[i]
+                                        .date
+                                        .toString()
+                                        .substring(0, 10),
+                                style: TextStyle(
+                                  color: Color.fromRGBO(165, 165, 165, 1),
+                                  fontSize: font12,
+                                ),
                               ),
                             ],
                           ),
                         ],
                       ),
-              ),
+                    ],
+                  )),
             ),
           ],
         ),
@@ -898,6 +618,140 @@ class _NotificationsState extends State<Notifications> {
       widgetList.add(widget1);
     }
     return widgetList;
+  }
+
+  Widget _title(String title, String type, String subtitle, List list) {
+    Widget widget;
+    String nameStart, nameEnd;
+    nameStart = 'Name: ';
+    nameEnd = 'Contact';
+    switch (type) {
+      case 'new':
+        widget = RichText(
+          text: TextSpan(children: [
+            TextSpan(
+              text: 'A New VData ',
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontSize: font16,
+              ),
+            ),
+            TextSpan(
+              text: subtitle.substring(
+                  subtitle.indexOf(nameStart) + nameStart.length,
+                  subtitle.indexOf(
+                      nameEnd, subtitle.indexOf(nameStart) + nameStart.length)),
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontWeight: FontWeight.bold,
+                fontSize: font16,
+              ),
+            ),
+            TextSpan(
+              text: ' has been obtained through ',
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontSize: font16,
+              ),
+            ),
+            TextSpan(
+              text: list[1],
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontWeight: FontWeight.bold,
+                fontSize: font16,
+              ),
+            ),
+          ]),
+        );
+        break;
+      case 'user':
+        widget = Text(
+          title.substring(7),
+          style: TextStyle(
+            color: Color.fromRGBO(20, 23, 32, 1),
+            fontSize: font14,
+          ),
+        );
+        break;
+      case 'assign':
+        widget = RichText(
+          text: TextSpan(children: [
+            TextSpan(
+              text: 'VData ',
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontSize: font16,
+              ),
+            ),
+            TextSpan(
+              text: subtitle.substring(
+                  subtitle.indexOf(nameStart) + nameStart.length,
+                  subtitle.indexOf(
+                      nameEnd, subtitle.indexOf(nameStart) + nameStart.length)),
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontWeight: FontWeight.bold,
+                fontSize: font16,
+              ),
+            ),
+            TextSpan(
+              text: ' has been assigned to you by ',
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontSize: font16,
+              ),
+            ),
+            TextSpan(
+              text: list[0],
+              style: TextStyle(
+                color: Color.fromRGBO(20, 23, 32, 1),
+                fontWeight: FontWeight.bold,
+                fontSize: font16,
+              ),
+            ),
+          ]),
+        );
+        break;
+      case 'link':
+        widget = Text(
+          title.substring(7),
+          style: TextStyle(
+            color: Color.fromRGBO(20, 23, 32, 1),
+            fontSize: font14,
+          ),
+        );
+        break;
+    }
+    return widget;
+  }
+
+  Widget _icon(String type) {
+    Widget widget;
+    switch (type) {
+      case 'new':
+        widget = Icon(Icons.insert_chart,
+            size: ScreenUtil().setHeight(40),
+            color: Color.fromRGBO(31, 127, 194, 1));
+        break;
+      case 'assign':
+        widget = Icon(FontAwesomeIcons.userPlus,
+            size: ScreenUtil().setHeight(40),
+            color: Color.fromRGBO(31, 127, 194, 1));
+        break;
+      case 'user':
+        widget = Icon(FontAwesomeIcons.user,
+            size: ScreenUtil().setHeight(40),
+            color: Color.fromRGBO(31, 127, 194, 1));
+        break;
+      case 'link':
+        widget = Image.asset('assets/images/unit.png',
+            width: ScreenUtil().setHeight(20),
+            height: ScreenUtil().setHeight(20));
+        break;
+      default:
+    }
+    return widget;
   }
 
   void _onRefresh() {
@@ -1064,7 +918,6 @@ class _NotificationsState extends State<Notifications> {
           } else {
             subtitle = jsonData[i]['subtitle'];
           }
-
           Noti notification = Noti(
               title: jsonData[i]['title'],
               subtitle: subtitle,

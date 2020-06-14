@@ -67,7 +67,6 @@ class _VFormState extends State<VForm> {
       RefreshController(initialRefresh: false);
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  final _itemExtent = ScreenUtil().setHeight(260);
   String now, total, search;
   bool nodata, more, ready;
   List vform = [];
@@ -425,7 +424,6 @@ class _VFormState extends State<VForm> {
                             onRefresh: _onRefresh,
                             onLoading: _onLoading,
                             child: ListView.builder(
-                                itemExtent: _itemExtent,
                                 itemCount: vform.length,
                                 itemBuilder: (context, int index) {
                                   return WidgetANimator(
