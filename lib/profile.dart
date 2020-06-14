@@ -9,6 +9,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:rxdart/subjects.dart';
@@ -1067,6 +1068,7 @@ class _ProfileState extends State<Profile> {
       vanalyticsDB.rawInsert('DELETE FROM analytics WHERE id > 0');
       Database vdataDB = await VDataDB.instance.database;
       vdataDB.rawInsert('DELETE FROM vdata WHERE id > 0');
+      FlutterAppBadger.removeBadge();
       Navigator.pushReplacement(
         context,
         AwesomePageRoute(

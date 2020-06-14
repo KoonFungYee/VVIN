@@ -1004,7 +1004,7 @@ class _NotificationsState extends State<Notifications> {
         totalNotification = "0";
       });
     }
-    FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
+    FlutterAppBadger.removeBadge();
   }
 
   void changeStatus(int index) async {

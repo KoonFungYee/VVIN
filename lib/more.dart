@@ -1168,6 +1168,7 @@ class _MoreState extends State<More> {
       vanalyticsDB.rawInsert('DELETE FROM analytics WHERE id > 0');
       Database vdataDB = await VDataDB.instance.database;
       vdataDB.rawInsert('DELETE FROM vdata WHERE id > 0');
+      FlutterAppBadger.removeBadge();
       Navigator.pushReplacement(
         context,
         AwesomePageRoute(
