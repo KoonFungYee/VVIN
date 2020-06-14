@@ -145,7 +145,6 @@ class _VDataState extends State<VData> {
     "VHome",
     "VForm",
   ];
-  final _itemExtent = ScreenUtil().setHeight(260);
 
   @override
   void initState() {
@@ -642,7 +641,6 @@ class _VDataState extends State<VData> {
                             onRefresh: _onRefresh,
                             onLoading: _onLoading,
                             child: ListView.builder(
-                              itemExtent: _itemExtent,
                               itemCount: (connection == false)
                                   ? offlineVData.length
                                   : vDataDetails.length,
@@ -986,6 +984,9 @@ class _VDataState extends State<VData> {
                                                         index),
                                               ],
                                             ),
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(10),
                                           ),
                                         ],
                                       ),
