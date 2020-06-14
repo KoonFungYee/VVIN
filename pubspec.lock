@@ -183,6 +183,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.9.3+5"
+  floating_menu:
+    dependency: "direct main"
+    description:
+      name: floating_menu
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0+hotfix.1"
   flutter:
     dependency: "direct main"
     description: flutter

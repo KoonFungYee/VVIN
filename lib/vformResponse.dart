@@ -3,6 +3,10 @@ import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:contacts_service/contacts_service.dart';
+import 'package:floating_menu/floating_menu.dart';
+import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,17 +16,28 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:ndialog/ndialog.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
 import 'package:vvin/vform.dart';
 import 'package:vvin/viewPDF.dart';
+
+_VFormResponseState pageState;
+
+class Item1 {
+  PermissionGroup group;
+  PermissionStatus status;
+
+  Item1(this.group, this.status);
+}
 
 class VFormResponse extends StatefulWidget {
   final String id;
@@ -48,7 +63,10 @@ class VFormResponse extends StatefulWidget {
       : super(key: key);
 
   @override
-  _VFormResponseState createState() => _VFormResponseState();
+  _VFormResponseState createState() {
+    pageState = _VFormResponseState();
+    return pageState;
+  }
 }
 
 enum UniLinksType { string, uri }
@@ -70,14 +88,18 @@ class _VFormResponseState extends State<VFormResponse> {
   double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlDelete = "https://vvinoa.vvin.com/api/deleteResponse.php";
-  String now;
+  List<Item1> list1 = List<Item1>();
+  String now, phoneNo, name, company, email, area, state, country, industry;
   int length;
+  bool isPhone = false;
 
   @override
   void initState() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     check();
     _init();
+    name = company = email = area = state = country = industry = '';
+    list1.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     List list = widget.data.toString().split(':');
     length = int.parse(list[0].toString().substring(1));
     _firebaseMessaging.configure(
@@ -264,9 +286,7 @@ class _VFormResponseState extends State<VFormResponse> {
             ),
             centerTitle: true,
             title: Text(
-              (widget.id == '')
-              ? "Response"
-              : "Response #" + widget.id,
+              (widget.id == '') ? "Response" : "Response #" + widget.id,
               style: TextStyle(
                   color: Colors.black,
                   fontSize: font18,
@@ -307,6 +327,61 @@ class _VFormResponseState extends State<VFormResponse> {
             ],
           ),
         ),
+        floatingActionButton: (isPhone == false)
+            ? null
+            : FloatingMenu(
+                isMainButton: true,
+                mainButtonColor: Colors.blueAccent,
+                mainButtonIcon: Icons.file_upload,
+                mainButtonShape: BoxShape.circle,
+                floatingType: FloatingType.RightCurve,
+                floatingButtonShape: BoxShape.circle,
+                floatingButtons: [
+                  FloatingButtonModel(
+                    locationDegree: 270,
+                    locationDistance: 70,
+                    shape: BoxShape.circle,
+                    color: Colors.orangeAccent,
+                    label: "Save Contact",
+                    icon: Icons.contact_phone,
+                    size: Size(45, 45),
+                    onPress: () {
+                      requestPermission();
+                    },
+                  ),
+                  FloatingButtonModel(
+                    locationDegree: 270,
+                    locationDistance: 130,
+                    shape: BoxShape.circle,
+                    color: Color.fromRGBO(37, 211, 102, 1),
+                    label: "WhatsApp",
+                    icon: FontAwesomeIcons.whatsapp,
+                    size: Size(45, 45),
+                    onPress: () async {
+                      var connectivityResult =
+                          await (Connectivity().checkConnectivity());
+                      if (connectivityResult == ConnectivityResult.wifi ||
+                          connectivityResult == ConnectivityResult.mobile) {
+                        FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
+                      } else {
+                        _toast("This feature need Internet connection");
+                      }
+                    },
+                  ),
+                  FloatingButtonModel(
+                    locationDegree: 270,
+                    locationDistance: 190,
+                    shape: BoxShape.circle,
+                    color: Colors.blue,
+                    label: "Call",
+                    icon: Icons.call,
+                    size: Size(45, 45),
+                    onPress: () {
+                      launch("tel:+" + phoneNo);
+                    },
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -314,6 +389,67 @@ class _VFormResponseState extends State<VFormResponse> {
   List<Widget> _list() {
     List widgetList = <Widget>[];
     for (var i = 1; i <= length; i++) {
+      String title = widget.data[length.toString()][i.toString()]['title'];
+      if (title == 'Phone' || title == '联络号码' || title == 'Nombor Hubungan') {
+        if (this.mounted) {
+          setState(() {
+            phoneNo = widget.data[length.toString()][i.toString()]['answer'];
+            isPhone = true;
+            _phoneFormat();
+          });
+        }
+      }
+      if (title == 'Name' || title == '姓名' || title == 'Nama') {
+        if (this.mounted) {
+          setState(() {
+            name = widget.data[length.toString()][i.toString()]['answer'];
+          });
+        }
+      }
+      if (title == 'Company Name' ||
+          title == '公司名称' ||
+          title == 'Nama Syarikat') {
+        if (this.mounted) {
+          setState(() {
+            company = widget.data[length.toString()][i.toString()]['answer'];
+          });
+        }
+      }
+      if (title == 'Email' || title == '电邮' || title == 'Emel') {
+        if (this.mounted) {
+          setState(() {
+            email = widget.data[length.toString()][i.toString()]['answer'];
+          });
+        }
+      }
+      if (title == 'Area' || title == '地区' || title == 'Bandar') {
+        if (this.mounted) {
+          setState(() {
+            area = widget.data[length.toString()][i.toString()]['answer'];
+          });
+        }
+      }
+      if (title == 'State' || title == '州属' || title == 'Negeri') {
+        if (this.mounted) {
+          setState(() {
+            state = widget.data[length.toString()][i.toString()]['answer'];
+          });
+        }
+      }
+      if (title == 'Country' || title == '国家' || title == 'Negara') {
+        if (this.mounted) {
+          setState(() {
+            country = widget.data[length.toString()][i.toString()]['answer'];
+          });
+        }
+      }
+      if (title == 'Industry' || title == '行业' || title == 'Industri') {
+        if (this.mounted) {
+          setState(() {
+            industry = widget.data[length.toString()][i.toString()]['answer'];
+          });
+        }
+      }
       String type = 'text';
       if (widget.data[length.toString()][i.toString()]['answer'] != null) {
         if (widget.data[length.toString()][i.toString()]['answer'].length > 5) {
@@ -345,7 +481,7 @@ class _VFormResponseState extends State<VFormResponse> {
                     children: <Widget>[
                       Flexible(
                         child: Text(
-                          widget.data[length.toString()][i.toString()]['title'],
+                          title,
                           style: TextStyle(
                             color: Color.fromRGBO(120, 120, 120, 1),
                             fontSize: font16,
@@ -462,7 +598,7 @@ class _VFormResponseState extends State<VFormResponse> {
                     children: <Widget>[
                       Flexible(
                         child: Text(
-                          widget.data[length.toString()][i.toString()]['title'],
+                          title,
                           style: TextStyle(
                             color: Color.fromRGBO(120, 120, 120, 1),
                             fontSize: font16,
@@ -669,6 +805,68 @@ class _VFormResponseState extends State<VFormResponse> {
         }
       },
     );
+  }
+
+  void _phoneFormat() {
+    String patttern = r'[0-9]';
+    RegExp regExp = new RegExp(patttern);
+    for (int i = 0; i < phoneNo.length; i++) {
+      if (!regExp.hasMatch(phoneNo.substring(i, i + 1))) {
+        phoneNo = phoneNo.substring(i + 1);
+      } else {
+        break;
+      }
+    }
+    if (phoneNo.substring(0, 1) != '6') {
+      if (this.mounted) {
+        setState(() {
+          phoneNo = "+6" + phoneNo.substring(0, 1) + ' ' + phoneNo.substring(1);
+        });
+      }
+    } else {
+      if (this.mounted) {
+        setState(() {
+          phoneNo = "+" + phoneNo.substring(0, 2) + ' ' + phoneNo.substring(2);
+        });
+      }
+    }
+  }
+
+  Future requestPermission() async {
+    var status = await PermissionHandler()
+        .requestPermissions([pageState.list1[0].group]);
+    if (status.toString() ==
+        "{PermissionGroup.contacts: PermissionStatus.granted}") {
+      _saveContact();
+    }
+  }
+
+  void _saveContact() {
+    Contact contact = Contact();
+    PostalAddress address = PostalAddress(label: "Home");
+    contact.givenName = name;
+      contact.phones = [Item(label: "mobile", value: phoneNo)];
+      if (company != '') {
+        contact.company = company;
+      }
+      if (email != '') {
+        contact.emails = [Item(label: "work", value: email)];
+      }
+      if (area != '') {
+        address.city = area;
+      }
+      if (state != '') {
+        address.region = state;
+      }
+      if (country != '') {
+        address.country = country;
+      }
+      if (industry != '') {
+        contact.jobTitle = industry;
+      }
+      contact.postalAddresses = [address];
+      ContactsService.addContact(contact);
+      _toast('Saved to contact');
   }
 
   void _toast(String message) {
