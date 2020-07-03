@@ -70,6 +70,7 @@ class _NotificationsState extends State<Notifications> {
       "https://vvinoa.vvin.com/api/notificationAction.php";
   String userID,
       companyID,
+      branchID,
       level,
       userType,
       title,
@@ -411,7 +412,7 @@ class _NotificationsState extends State<Notifications> {
         ),
         body: SmartRefresher(
           enablePullDown: true,
-          enablePullUp: true,
+          enablePullUp: (notifications.length != total) ? true : false,
           header: MaterialClassicHeader(),
           footer: CustomFooter(
             builder: (BuildContext context, LoadStatus mode) {
@@ -760,6 +761,7 @@ class _NotificationsState extends State<Notifications> {
       http.post(urlNotification, body: {
         "userID": userID,
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "user_type": userType,
         "count": "0",
@@ -859,6 +861,7 @@ class _NotificationsState extends State<Notifications> {
       http.post(urlNotification, body: {
         "userID": userID,
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "user_type": userType,
         "count": notifications.length.toString(),
@@ -982,6 +985,7 @@ class _NotificationsState extends State<Notifications> {
         .post(urlNotiChangeStatus, body: {
           "userID": userID,
           "companyID": companyID,
+          "branchID": branchID,
           "level": level,
           "user_type": userType,
           "id": "all",
@@ -1017,6 +1021,7 @@ class _NotificationsState extends State<Notifications> {
         List phones = names[1].toString().split(' Make');
         VDataDetails vdata = new VDataDetails(
           companyID: companyID,
+          branchID: branchID,
           userID: userID,
           level: level,
           userType: userType,
@@ -1066,6 +1071,7 @@ class _NotificationsState extends State<Notifications> {
             enterPage: NotiDetail(
               notification: notification,
               companyID: companyID,
+              branchID: branchID,
               level: level,
               userID: userID,
               userType: userType,
@@ -1080,6 +1086,7 @@ class _NotificationsState extends State<Notifications> {
             .post(urlNotiChangeStatus, body: {
               "userID": userID,
               "companyID": companyID,
+              "branchID": branchID,
               "level": level,
               "user_type": userType,
               "id": notifications[index].notiID,
@@ -1155,6 +1162,10 @@ class _NotificationsState extends State<Notifications> {
   void checkConnection() async {
     prefs = await SharedPreferences.getInstance();
     companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
+    if (branchID == '') {
+      branchID = "0";
+    }
     level = prefs.getString('level');
     userID = prefs.getString('userID');
     userType = prefs.getString('user_type');
@@ -1177,15 +1188,12 @@ class _NotificationsState extends State<Notifications> {
   }
 
   void getNotifications() async {
-    userID = prefs.getString('userID');
-    companyID = prefs.getString('companyID');
-    level = prefs.getString('level');
-    userType = prefs.getString('user_type');
     notification();
     startTime = (DateTime.now()).millisecondsSinceEpoch;
     http.post(urlNotification, body: {
       "userID": userID,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
       "count": "0",
@@ -1309,6 +1317,7 @@ class _NotificationsState extends State<Notifications> {
     http.post(urlNoti, body: {
       "userID": userID,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
     }).then((res) async {

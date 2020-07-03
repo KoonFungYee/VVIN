@@ -105,6 +105,7 @@ class _VProfileState extends State<VProfile>
       phoneNo,
       status,
       companyID,
+      branchID,
       userID,
       level,
       userType,
@@ -174,6 +175,7 @@ class _VProfileState extends State<VProfile>
     phoneNo = widget.vdata.phoneNo;
     status = widget.vdata.status;
     companyID = widget.vdata.companyID;
+    branchID = widget.vdata.branchID;
     userID = widget.vdata.userID;
     level = widget.vdata.level;
     userType = widget.vdata.userType;
@@ -642,7 +644,7 @@ class _VProfileState extends State<VProfile>
                   SizedBox(
                     height: ScreenUtil().setHeight(20),
                   ),
-                  (handlerData == true && noHandler == true && level == '0')
+                  (handlerData == true && noHandler == true && (level == '0' || level == '4'))
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
@@ -1068,6 +1070,7 @@ class _VProfileState extends State<VProfile>
               vformID: vProfileDetails[0].vformID,
               reponseID: '',
               companyID: companyID,
+              branchID: branchID,
               userID: userID,
               level: level,
               userType: userType,
@@ -1169,6 +1172,7 @@ class _VProfileState extends State<VProfile>
     http
         .post(urlWhatsApp, body: {
           "companyID": companyID,
+          "branchID": branchID,
           "userID": userID,
           "user_type": userType,
           "level": level,
@@ -1251,6 +1255,7 @@ class _VProfileState extends State<VProfile>
     }
     http.post(urlWhatsApp, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "user_type": userType,
       "level": level,
@@ -1622,6 +1627,7 @@ class _VProfileState extends State<VProfile>
         connectivityResult == ConnectivityResult.mobile) {
       http.post(assignURL, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "userID": userID,
         "level": level,
         "user_type": userType,
@@ -1899,6 +1905,7 @@ class _VProfileState extends State<VProfile>
           }
           http.post(urlSaveRemark, body: {
             "companyID": companyID,
+            "branchID": branchID,
             "userID": userID,
             "level": level,
             "user_type": userType,
@@ -1908,6 +1915,7 @@ class _VProfileState extends State<VProfile>
             if (res.body == "success") {
               VDataDetails vdata = new VDataDetails(
                 companyID: widget.vdata.companyID,
+                branchID: widget.vdata.branchID,
                 userID: widget.vdata.userID,
                 level: widget.vdata.level,
                 userType: widget.vdata.userType,
@@ -1965,11 +1973,13 @@ class _VProfileState extends State<VProfile>
 
   void setupData() {
     companyID = companyID;
+    branchID = branchID;
     userID = userID;
     level = level;
     userType = userType;
     http.post(handlers, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "user_type": userType,
       "level": level,
@@ -1999,6 +2009,7 @@ class _VProfileState extends State<VProfile>
   void getVTag() {
     http.post(urlVTag, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2025,6 +2036,7 @@ class _VProfileState extends State<VProfile>
   void getVProfileData() {
     http.post(urlVProfile, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2102,6 +2114,7 @@ class _VProfileState extends State<VProfile>
   void getResponse() {
     http.post(responseURL, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2133,6 +2146,7 @@ class _VProfileState extends State<VProfile>
   void getHandler() {
     http.post(urlHandler, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2166,6 +2180,7 @@ class _VProfileState extends State<VProfile>
   void getViews() {
     http.post(urlViews, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2202,6 +2217,7 @@ class _VProfileState extends State<VProfile>
   void getRemarks() {
     http.post(urlRemarks, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2246,6 +2262,7 @@ class _VProfileState extends State<VProfile>
     http.post(urlChangeStatus, body: {
       "phone_number": phoneNo,
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,

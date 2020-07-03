@@ -11,7 +11,6 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:http/http.dart' as http;
-import 'package:vvin/data.dart';
 import 'package:vvin/forgot.dart';
 import 'package:device_info/device_info.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -23,33 +22,19 @@ import 'package:menu_button/menu_button.dart';
 final TextEditingController _emcontroller = TextEditingController();
 final TextEditingController _passcontroller = TextEditingController();
 final ScrollController controller = ScrollController();
-final String urlLogin = "https://vvinoa.vvin.com/api/newlogin.php";
-final String urlToken = "https://vvinoa.vvin.com/api/newsaveToken.php";
-final String urlBranch = "https://vvinoa.vvin.com/api/branch.php";
+final String urlLogin = "https://vvinoa.vvin.com/api/login.php";
+final String urlToken = "https://vvinoa.vvin.com/api/saveToken.php";
 FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-String token,
-    _email,
-    _password,
-    _companySelection,
-    _branchSelection,
-    companyID,
-    userID,
-    level,
-    userType,
-    branchID;
-bool login, visible, gotbranch, gotcompany;
+String token, _email, _password, _mySelection;
+bool login, visible;
 List data;
-List companyList = [];
-List branchList = [];
-List<Branch> branchDetails = [];
-var allData;
 
-class Login extends StatefulWidget {
+class LoginOld extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _LoginOldPageState createState() => _LoginOldPageState();
 }
 
-class _LoginPageState extends State<Login> {
+class _LoginOldPageState extends State<LoginOld> {
   String system, version, manufacture, model;
   SharedPreferences prefs;
   double _scaleFactor = 1.0;
@@ -73,7 +58,8 @@ class _LoginPageState extends State<Login> {
       token = fbtoken;
       // print(fbtoken);
     });
-    login = visible = gotbranch = gotcompany = false;
+    login = false;
+    visible = false;
     setup();
     checkPlatform();
   }
@@ -84,6 +70,11 @@ class _LoginPageState extends State<Login> {
     _email = "";
     _password = "";
     _passcontroller.text = '';
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -129,7 +120,7 @@ class _LoginPageState extends State<Login> {
                     fontSize: font25,
                   ),
                 ),
-                (gotcompany == true || gotbranch == true)
+                (login == true)
                     ? Default()
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -297,12 +288,9 @@ class _LoginPageState extends State<Login> {
 
   void _onLogin() async {
     FocusScope.of(context).requestFocus(new FocusNode());
-    if (this.mounted) {
-      setState(() {
-        _email = _emcontroller.text.toLowerCase();
-        _password = _passcontroller.text;
-      });
-    }
+    _email = _emcontroller.text.toLowerCase();
+    _password = _passcontroller.text;
+
     if (_email != "" && _password != "") {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.wifi ||
@@ -313,64 +301,22 @@ class _LoginPageState extends State<Login> {
           "password": _password,
         }).then((res) async {
           var extractdata = json.decode(res.body);
-          // print(extractdata);
-          allData = extractdata;
-          if (extractdata[0] != 'failed') {
-            if (extractdata.length == 1) {
-              if (extractdata[0][0]['total_branch'].toString() == '0' ||
-                  extractdata[0][0]['total_branch'].toString() == '1') {
-                String branchid =
-                    (extractdata[0][0]['total_branch'].toString() == '1')
-                        ? extractdata[0][0]['branch_list'][0]['branch_id']
-                        : '';
-                if (this.mounted) {
-                  setState(() {
-                    companyID = extractdata[0][0]['company_id'];
-                    userID = extractdata[0][0]['user_id'];
-                    userType = extractdata[0][0]['user_type'];
-                    level = extractdata[0][0]['level'];
-                    branchID = branchid;
-                  });
-                }
-                _onProceed(branchID);
-              } else {
-                for (int j = 0; j < allData[0][0]['total_branch']; j++) {
-                  if (j == 0) {
-                    if (this.mounted) {
-                      setState(() {
-                        _branchSelection =
-                            allData[0][0]['branch_list'][j]['name'];
-                      });
-                    }
-                  }
-                  Branch branch = Branch(
-                    branchName: allData[0][0]['branch_list'][j]['name'],
-                    branchID: allData[0][0]['branch_list'][j]['branch_id'],
-                  );
-                  branchDetails.add(branch);
-                  branchList.add(allData[0][0]['branch_list'][j]['name']);
-                }
-                Navigator.pop(context);
-                if (this.mounted) {
-                  setState(() {
-                    companyID = extractdata[0][0]['company_id'];
-                    userID = extractdata[0][0]['user_id'];
-                    userType = extractdata[0][0]['user_type'];
-                    level = extractdata[0][0]['level'];
-                    gotbranch = true;
-                  });
-                }
-              }
+          // print("Login body: " + (extractdata).toString());
+          data = extractdata;
+
+          if (data[0] == "success") {
+            data.removeAt(0);
+            if (data.length == 1) {
+              setState(() {
+                _mySelection = data[0];
+              });
+              _onProceed();
             } else {
               Navigator.pop(context);
-              for (int i = 0; i < extractdata.length; i++) {
-                companyList.add(extractdata[i][0]['company_name'].toString());
-              }
-              if (this.mounted) {
-                setState(() {
-                  gotcompany = true;
-                });
-              }
+              setState(() {
+                login = true;
+                _mySelection = data[0];
+              });
             }
           } else {
             Navigator.pop(context);
@@ -391,14 +337,14 @@ class _LoginPageState extends State<Login> {
     }
   }
 
-  Future<void> _onProceed(String branchID) async {
+  Future<void> _onProceed() async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
       http.post(urlToken, body: {
-        "user_id": userID,
-        "company_id": companyID,
-        "branch_id": branchID,
+        "email": _email,
+        "companyName": _mySelection,
         "lastLogin": DateTime.now().toString(),
         "token": token,
         "system": system,
@@ -406,26 +352,20 @@ class _LoginPageState extends State<Login> {
         "manufacture": manufacture,
         "model": model,
       }).then((res) async {
-        var extractdata = json.decode(res.body);
-        // print("On proceed body: " + extractdata[0]);
-        if (extractdata[0] != "failed") {
-          prefs = await SharedPreferences.getInstance();
+        if (res.body != "failed") {
+          var data = json.decode(res.body);
+          // print("On proceed body: " + (data).toString());
           await prefs.setString('email', _email);
-          await prefs.setString('companyID', companyID);
-          await prefs.setString('userID', userID);
-          await prefs.setString('level', level);
-          await prefs.setString('user_type', userType);
-          await prefs.setString('branchID', branchID);
-          companyList.clear();
-          branchList.clear();
-          branchDetails.clear();
-          allData = null;
+          await prefs.setString('companyID', data[0]);
+          await prefs.setString('userID', data[1]);
+          await prefs.setString('level', data[2]);
+          await prefs.setString('user_type', data[4]);
           Navigator.pop(context);
           if (prefs.getString('first') != null) {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => VAnalytics(name: extractdata[0])));
+                    builder: (context) => VAnalytics(name: data[3])));
           } else {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => OnBoarding()));
@@ -436,7 +376,7 @@ class _LoginPageState extends State<Login> {
         }
       }).catchError((err) {
         Navigator.pop(context);
-        _toast(err.toString());
+        _toast("Please contact VVIN IT desk");
         print("On proceed error: " + err.toString());
       });
     } else {
@@ -547,21 +487,11 @@ class _Default extends State<Default> {
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
   String system, version, manufacture, model;
-  SharedPreferences prefs;
 
   @override
   void initState() {
     checkPlatform();
-    if (gotcompany == true) {
-      _companySelection = companyList[0];
-    } else {
-      _companySelection = '';
-    }
-    if (gotbranch == true) {
-      _branchSelection = branchList[0];
-    } else {
-      _branchSelection = '';
-    }
+    _mySelection = data[0];
     super.initState();
   }
 
@@ -595,36 +525,7 @@ class _Default extends State<Default> {
           children: <Widget>[
             Flexible(
               child: Text(
-                _companySelection,
-                style: TextStyle(fontSize: font14),
-              ),
-            ),
-            SizedBox(
-              width: ScreenUtil().setWidth(50),
-              height: ScreenUtil().setWidth(50),
-              child: FittedBox(
-                fit: BoxFit.fill,
-                child: Icon(
-                  Icons.arrow_drop_down,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-    final Widget branchButton = SizedBox(
-      width: MediaQuery.of(context).size.width * 0.8,
-      height: ScreenUtil().setHeight(60),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Flexible(
-              child: Text(
-                _branchSelection,
+                _mySelection,
                 style: TextStyle(fontSize: font14),
               ),
             ),
@@ -648,226 +549,89 @@ class _Default extends State<Default> {
         SizedBox(
           height: ScreenUtil().setHeight(60),
         ),
-        (gotbranch == true)
-            ? Container(
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(
-                          "Please select a branch",
-                          style: TextStyle(
-                              fontSize: font15, fontWeight: FontWeight.w500),
-                        )
-                      ],
-                    ),
-                    SizedBox(
-                      height: ScreenUtil().setHeight(20),
-                    ),
-                    MenuButton(
-                      child: branchButton,
-                      items: branchList,
-                      scrollPhysics: AlwaysScrollableScrollPhysics(),
-                      topDivider: true,
-                      itemBuilder: (value) => Container(
-                        height: ScreenUtil().setHeight(60),
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 0.0, horizontal: 10),
-                        child: Text(value, style: TextStyle(fontSize: font14)),
-                      ),
-                      toggledChild: Container(
-                        color: Colors.white,
-                        child: branchButton,
-                      ),
-                      divider: Container(
-                        height: 1,
-                        color: Colors.grey[300],
-                      ),
-                      onItemSelected: (value) {
-                        setState(() {
-                          _branchSelection = value;
-                        });
-                      },
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(3.0)),
-                          color: Colors.white),
-                      onMenuButtonToggle: (isToggle) {},
-                    ),
-                    SizedBox(
-                      height: ScreenUtil().setHeight(60),
-                    ),
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: ScreenUtil().setHeight(80),
-                      ),
-                      child: BouncingWidget(
-                        scaleFactor: _scaleFactor,
-                        onPressed: _onProceed,
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.5,
-                          height: ScreenUtil().setHeight(80),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                            color: Color.fromRGBO(34, 175, 240, 1),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Proceed',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: font14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+        Row(
+          children: <Widget>[
+            Text(
+              "Please select a company",
+              style: TextStyle(fontSize: font15, fontWeight: FontWeight.w500),
+            )
+          ],
+        ),
+        SizedBox(
+          height: ScreenUtil().setHeight(20),
+        ),
+        MenuButton(
+          child: button,
+          items: data,
+          scrollPhysics: AlwaysScrollableScrollPhysics(),
+          topDivider: true,
+          itemBuilder: (value) => Container(
+            height: ScreenUtil().setHeight(60),
+            width: MediaQuery.of(context).size.width * 0.8,
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+            child: Text(value, style: TextStyle(fontSize: font14)),
+          ),
+          toggledChild: Container(
+            color: Colors.white,
+            child: button,
+          ),
+          divider: Container(
+            height: 1,
+            color: Colors.grey[300],
+          ),
+          onItemSelected: (value) {
+            setState(() {
+              _mySelection = value;
+            });
+          },
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: const BorderRadius.all(Radius.circular(3.0)),
+              color: Colors.white),
+          onMenuButtonToggle: (isToggle) {},
+        ),
+        SizedBox(
+          height: ScreenUtil().setHeight(60),
+        ),
+        Container(
+          margin: EdgeInsets.symmetric(
+            horizontal: ScreenUtil().setHeight(80),
+          ),
+          child: BouncingWidget(
+            scaleFactor: _scaleFactor,
+            onPressed: _onProceed,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.5,
+              height: ScreenUtil().setHeight(80),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.0),
+                color: Color.fromRGBO(34, 175, 240, 1),
+              ),
+              child: Center(
+                child: Text(
+                  'Proceed',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: font14,
+                  ),
                 ),
-              )
-            : Container(
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(
-                          "Please select a company",
-                          style: TextStyle(
-                              fontSize: font15, fontWeight: FontWeight.w500),
-                        )
-                      ],
-                    ),
-                    SizedBox(
-                      height: ScreenUtil().setHeight(20),
-                    ),
-                    MenuButton(
-                      child: button,
-                      items: companyList,
-                      scrollPhysics: AlwaysScrollableScrollPhysics(),
-                      topDivider: true,
-                      itemBuilder: (value) => Container(
-                        height: ScreenUtil().setHeight(60),
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 0.0, horizontal: 10),
-                        child: Text(value, style: TextStyle(fontSize: font14)),
-                      ),
-                      toggledChild: Container(
-                        color: Colors.white,
-                        child: button,
-                      ),
-                      divider: Container(
-                        height: 1,
-                        color: Colors.grey[300],
-                      ),
-                      onItemSelected: (value) {
-                        setState(() {
-                          _companySelection = value;
-                        });
-                      },
-                      decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(3.0)),
-                          color: Colors.white),
-                      onMenuButtonToggle: (isToggle) {},
-                    ),
-                    SizedBox(
-                      height: ScreenUtil().setHeight(60),
-                    ),
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: ScreenUtil().setHeight(80),
-                      ),
-                      child: BouncingWidget(
-                        scaleFactor: _scaleFactor,
-                        onPressed: _onBranch,
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.5,
-                          height: ScreenUtil().setHeight(80),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                            color: Color.fromRGBO(34, 175, 240, 1),
-                          ),
-                          child: Center(
-                            child: Text(
-                              'Proceed',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: font14,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Future<void> _onBranch() async {
-    for (int i = 0; i < allData.length; i++) {
-      if (_companySelection == allData[i][0]['company_name']) {
-        if (this.mounted) {
-          setState(() {
-            companyID = allData[i][0]['company_id'];
-            userType = allData[i][0]['user_type'];
-            level = allData[i][0]['level'];
-            userID = allData[i][0]['user_id'];
-          });
-        }
-
-        if (allData[i][0]['total_branch'] == 0) {
-          branchID = '';
-          _onProceed();
-        } else {
-          for (int j = 0; j < allData[i][0]['total_branch']; j++) {
-            if (j == 0) {
-              setState(() {
-                _branchSelection = allData[i][0]['branch_list'][j]['name'];
-              });
-            }
-            Branch branch = Branch(
-              branchName: allData[i][0]['branch_list'][j]['name'],
-              branchID: allData[i][0]['branch_list'][j]['branch_id'],
-            );
-            branchDetails.add(branch);
-            branchList.add(allData[i][0]['branch_list'][j]['name']);
-          }
-          if (this.mounted) {
-            setState(() {
-              gotbranch = true;
-            });
-          }
-        }
-      }
-    }
-  }
-
   Future<void> _onProceed() async {
-    if (gotbranch == true) {
-      for (var data in branchDetails) {
-        if (_branchSelection == data.branchName) {
-          branchID = data.branchID;
-        }
-      }
-    }
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
       _onLoading1();
       http.post(urlToken, body: {
-        "user_id": userID,
-        "company_id": companyID,
-        "branch_id": branchID,
+        "email": _email,
+        "companyName": _mySelection,
         "lastLogin": DateTime.now().toString(),
         "token": token,
         "system": system,
@@ -875,26 +639,22 @@ class _Default extends State<Default> {
         "manufacture": manufacture,
         "model": model,
       }).then((res) async {
-        var extractdata = json.decode(res.body);
-        // print("On proceed body: " + extractdata[0]);
+        // print("Level: " + res.body);
         if (res.body != "failed") {
-          prefs = await SharedPreferences.getInstance();
+          var data = json.decode(res.body);
+          // print("On proceed body: " + (data).toString());
+          SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('email', _email);
-          await prefs.setString('companyID', companyID);
-          await prefs.setString('userID', userID);
-          await prefs.setString('level', level);
-          await prefs.setString('user_type', userType);
-          await prefs.setString('branchID', branchID);
-          companyList.clear();
-          branchList.clear();
-          branchDetails.clear();
-          allData = null;
+          await prefs.setString('companyID', data[0]);
+          await prefs.setString('userID', data[1]);
+          await prefs.setString('level', data[2]);
+          await prefs.setString('user_type', data[4]);
           Navigator.pop(context);
           if (prefs.getString('first') != null) {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => VAnalytics(name: extractdata[0])));
+                    builder: (context) => VAnalytics(name: data[3])));
           } else {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => OnBoarding()));

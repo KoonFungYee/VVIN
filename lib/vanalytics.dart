@@ -79,6 +79,7 @@ class _VAnalyticsState extends State<VAnalytics>
   SharedPreferences prefs;
   String dateBanner,
       companyID,
+      branchID,
       level,
       userID,
       userType,
@@ -2427,6 +2428,7 @@ class _VAnalyticsState extends State<VAnalytics>
         connectivityResult == ConnectivityResult.mobile) {
       VDataDetails vdata = new VDataDetails(
         companyID: companyID,
+        branchID: branchID,
         userID: userID,
         level: level,
         userType: userType,
@@ -2491,7 +2493,7 @@ class _VAnalyticsState extends State<VAnalytics>
       String channel;
       switch (position) {
         case 0:
-          channel = "whatsApp forward";
+          channel = "whatsapp forward";
           break;
         case 1:
           channel = "contact form";
@@ -2897,6 +2899,7 @@ class _VAnalyticsState extends State<VAnalytics>
   Future<void> getPreference() async {
     prefs = await SharedPreferences.getInstance();
     companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
     level = prefs.getString('level');
     userID = prefs.getString('userID');
     userType = prefs.getString('user_type');
@@ -2921,6 +2924,7 @@ class _VAnalyticsState extends State<VAnalytics>
   void getReminder() {
     http.post(urlGetReminder, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2975,7 +2979,7 @@ class _VAnalyticsState extends State<VAnalytics>
         prefs.setString("getreminder", "1");
       }
     }).catchError((err) {
-      _toast("Get reminder error" + err.toString());
+      _toast(err.toString());
       print("Get reminder error: " + (err).toString());
     });
   }
@@ -3019,6 +3023,7 @@ class _VAnalyticsState extends State<VAnalytics>
     http.post(urlNoti, body: {
       "userID": userID,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
     }).then((res) async {
@@ -3042,6 +3047,7 @@ class _VAnalyticsState extends State<VAnalytics>
     }
     http.post(urlTopViews, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
@@ -3198,13 +3204,14 @@ class _VAnalyticsState extends State<VAnalytics>
     }
     http.post(urlLeads, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
       "startDate": _startDate.toString().substring(0, 10),
       "endDate": _endDate.toString().substring(0, 10),
     }).then((res) {
-      // print("VAnalytics total leads body: " + res.body);
+      // print("VAnalytics chart body: " + res.body);
       if (res.body == "nodata") {
         LeadData leadsData = LeadData(
           date: DateTime.now().toString().substring(0, 10),
@@ -3260,6 +3267,7 @@ class _VAnalyticsState extends State<VAnalytics>
     http.post(urlVAnalytics, body: {
       "system": system,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,

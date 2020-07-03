@@ -86,11 +86,11 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       channel,
       apps,
       companyID,
+      branchID,
       userID,
       level,
       userType,
       link_id,
-      linkID,
       search,
       startDate,
       endDate,
@@ -567,7 +567,9 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                           Text(
                               (connection == true)
                                   ? (total == null) ? "" : total.toString()
-                                  : (link == true && vData == true && vtagStatus == true)
+                                  : (link == true &&
+                                          vData == true &&
+                                          vtagStatus == true)
                                       ? (offlineVData.length != 0)
                                           ? offlineVData[0]['total']
                                           : "0"
@@ -666,6 +668,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                                 VDataDetails vdata =
                                                     new VDataDetails(
                                                   companyID: companyID,
+                                                  branchID: branchID,
                                                   userID: userID,
                                                   level: level,
                                                   userType: userType,
@@ -1157,6 +1160,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     http.post(urlNoti, body: {
       "userID": userID,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
     }).then((res) async {
@@ -2634,7 +2638,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
               return StatefulBuilder(
                 builder: (BuildContext context, StateSetter setModalState) {
                   return Container(
-                    height: MediaQuery.of(context).size.height * 0.96,
+                    height: MediaQuery.of(context).size.height * 0.3,
                     child: Column(
                       children: <Widget>[
                         Container(
@@ -2818,6 +2822,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   Future<void> getPreference() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
     level = prefs.getString('level');
     userID = prefs.getString('userID');
     userType = prefs.getString('user_type');
@@ -2831,6 +2836,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   void getVTag() {
     http.post(urlVTag, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2853,8 +2859,24 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   }
 
   void getData() {
+    // print(companyID);
+    // print(branchID);
+    // print(level);
+    // print(userID);
+    // print(userType);
+    // print(widget.vDataFilter.startDate);
+    // print(widget.vDataFilter.endDate);
+    // print(type);
+    // print(channel);
+    // print(apps);
+    // print(link_id);
+    // print(_byStatus);
+    // print(_byExecutive);
+    // print(_byVTag);
+    // print('hi' + search);
     http.post(urlVData, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
@@ -2916,6 +2938,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   void _onLoading() {
     http.post(urlVData, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
@@ -2976,6 +2999,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   void getLinks() {
     http.post(urlLinks, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
@@ -3019,6 +3043,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     executiveList.add("All Executives");
     http.post(urlHandler, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "user_type": userType,
       "level": level,
@@ -3053,6 +3078,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     http.post(urlChangeStatus, body: {
       "phone_number": vDataDetails[index].phoneNo,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "status": newVal,
       "userID": userID,
@@ -3109,21 +3135,18 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       }
       for (int i = 0; i < linksID.length; i++) {
         if (_byLink == linksID[i].link_type + linksID[i].link) {
-          linkID = linksID[i].link_type + linksID[i].link_id;
+          link_id = linksID[i].link_type + linksID[i].link_id;
         }
       }
       if (this.mounted) {
         setState(() {
           nodata = false;
-          type = type;
-          channel = channel;
-          linkID = linkID;
-          search = search;
           total = null;
         });
       }
       http.post(urlVData, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "userID": userID,
         "user_type": userType,
@@ -3132,7 +3155,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         "type": type,
         "channel": channel,
         "apps": apps,
-        "link_id": linkID,
+        "link_id": link_id,
         "status": _byStatus,
         "executive": _byExecutive,
         "vtag": _byVTag,
@@ -3202,6 +3225,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           connectivityResult == ConnectivityResult.mobile) {
         http.post(urlVData, body: {
           "companyID": companyID,
+          "branchID": branchID,
           "level": level,
           "userID": userID,
           "user_type": userType,
@@ -3217,8 +3241,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           "search": search,
           "count": "0",
         }).then((res) {
-          // print("Filter status:" + (res.statusCode).toString());
-          print("Search body: " + res.body.toString());
+          // print("Search body: " + res.body.toString());
           if (res.body == "nodata") {
             if (this.mounted) {
               setState(() {
@@ -3309,6 +3332,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
 
       http.post(urlVData, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "userID": userID,
         "user_type": userType,
@@ -3368,6 +3392,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
 
       http.post(urlLinks, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "userID": userID,
         "user_type": userType,

@@ -44,6 +44,7 @@ class VFormResponse extends StatefulWidget {
   final String vformID;
   final String reponseID;
   final String companyID;
+  final String branchID;
   final String userID;
   final String level;
   final String userType;
@@ -54,6 +55,7 @@ class VFormResponse extends StatefulWidget {
       this.id,
       this.vformID,
       this.companyID,
+      this.branchID,
       this.userID,
       this.level,
       this.reponseID,
@@ -742,6 +744,7 @@ class _VFormResponseState extends State<VFormResponse> {
       http
           .post(urlDelete, body: {
             "companyID": widget.companyID,
+            "branchID": widget.branchID,
             "userID": widget.userID,
             "level": widget.level,
             "user_type": widget.userType,
@@ -766,6 +769,7 @@ class _VFormResponseState extends State<VFormResponse> {
         exitPage: widget,
         enterPage: VForm(
           companyID: widget.companyID,
+          branchID: widget.branchID,
           userID: widget.userID,
           level: widget.level,
           userType: widget.userType,
@@ -845,28 +849,28 @@ class _VFormResponseState extends State<VFormResponse> {
     Contact contact = Contact();
     PostalAddress address = PostalAddress(label: "Home");
     contact.givenName = name;
-      contact.phones = [Item(label: "mobile", value: phoneNo)];
-      if (company != '') {
-        contact.company = company;
-      }
-      if (email != '') {
-        contact.emails = [Item(label: "work", value: email)];
-      }
-      if (area != '') {
-        address.city = area;
-      }
-      if (state != '') {
-        address.region = state;
-      }
-      if (country != '') {
-        address.country = country;
-      }
-      if (industry != '') {
-        contact.jobTitle = industry;
-      }
-      contact.postalAddresses = [address];
-      ContactsService.addContact(contact);
-      _toast('Saved to contact');
+    contact.phones = [Item(label: "mobile", value: phoneNo)];
+    if (company != '') {
+      contact.company = company;
+    }
+    if (email != '') {
+      contact.emails = [Item(label: "work", value: email)];
+    }
+    if (area != '') {
+      address.city = area;
+    }
+    if (state != '') {
+      address.region = state;
+    }
+    if (country != '') {
+      address.country = country;
+    }
+    if (industry != '') {
+      contact.jobTitle = industry;
+    }
+    contact.postalAddresses = [address];
+    ContactsService.addContact(contact);
+    _toast('Saved to contact');
   }
 
   void _toast(String message) {

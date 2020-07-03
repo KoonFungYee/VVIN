@@ -79,13 +79,14 @@ class _VDataState extends State<VData> {
   List vtagList = [];
   Database vdataDB;
   String companyID,
+      branchID,
       userID,
       _byLink,
       _byVTag,
       _byStatus,
       _byExecutive,
+      _byBranch,
       link_id,
-      linkID,
       type,
       channel,
       apps,
@@ -160,6 +161,7 @@ class _VDataState extends State<VData> {
     _byVTag = "All VTags";
     _byStatus = "All Status";
     _byExecutive = "All Executives";
+    _byBranch = "All Branch";
     link_id = "All Links";
     type = "all";
     channel = "all";
@@ -600,8 +602,10 @@ class _VDataState extends State<VData> {
                         )
                       : Flexible(
                           child: SmartRefresher(
-                            enablePullDown: true,
-                            enablePullUp: true,
+                            enablePullDown: (connection == true) ? true : false,
+                            enablePullUp: (connection == true)
+                                ? (vDataDetails.length != total) ? true : false
+                                : false,
                             header: MaterialClassicHeader(),
                             footer: CustomFooter(
                               builder: (BuildContext context, LoadStatus mode) {
@@ -1102,9 +1106,9 @@ class _VDataState extends State<VData> {
           total = null;
         });
       }
-
       http.post(urlVData, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "userID": userID,
         "user_type": userType,
@@ -1121,7 +1125,7 @@ class _VDataState extends State<VData> {
         "count": "0",
         "offline": "no"
       }).then((res) {
-        // print("VData body: " + res.body.toString());
+        // print("search body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
             setState(() {
@@ -1169,6 +1173,7 @@ class _VDataState extends State<VData> {
 
       http.post(urlLinks, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "userID": userID,
         "user_type": userType,
@@ -1215,8 +1220,11 @@ class _VDataState extends State<VData> {
   }
 
   void _onLoading() {
+    print(_byVTag);
+    print(type);
     http.post(urlVData, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
@@ -1233,7 +1241,7 @@ class _VDataState extends State<VData> {
       "count": vDataDetails.length.toString(),
       "offline": "no"
     }).then((res) {
-      // print("Get More VData body: " + res.body.toString());
+      print("Get More VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
           setState(() {
@@ -1291,6 +1299,7 @@ class _VDataState extends State<VData> {
       }
       VDataDetails vdata = new VDataDetails(
         companyID: companyID,
+        branchID: branchID,
         userID: userID,
         level: level,
         userType: userType,
@@ -1493,9 +1502,8 @@ class _VDataState extends State<VData> {
                               SizedBox(
                                 height: ScreenUtil().setHeight(15),
                               ),
-                              (level != "0")
-                                  ? Row()
-                                  : Column(
+                              (level == "0" || level == "4")
+                                  ? Column(
                                       children: <Widget>[
                                         Row(
                                           mainAxisAlignment:
@@ -1722,7 +1730,8 @@ class _VDataState extends State<VData> {
                                           height: ScreenUtil().setHeight(30),
                                         ),
                                       ],
-                                    ),
+                                    )
+                                  : Row(),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
@@ -2356,6 +2365,106 @@ class _VDataState extends State<VData> {
                                       )
                                     : Container(),
                               ),
+                              Container(
+                                child: (level == "0")
+                                    ? Column(
+                                        children: <Widget>[
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(
+                                                "By Branch",
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: font14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(5),
+                                          ),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    _showBottomSheet(
+                                                        "byBranch");
+                                                  },
+                                                  child: Container(
+                                                    margin: EdgeInsets.fromLTRB(
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      ScreenUtil()
+                                                          .setHeight(20),
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      border: Border.all(
+                                                          color: Colors
+                                                              .grey.shade400,
+                                                          style: BorderStyle
+                                                              .solid),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: <Widget>[
+                                                        Expanded(
+                                                          child: Container(
+                                                            height: ScreenUtil()
+                                                                .setHeight(60),
+                                                            padding: EdgeInsets
+                                                                .fromLTRB(
+                                                                    ScreenUtil()
+                                                                        .setHeight(
+                                                                            10),
+                                                                    ScreenUtil()
+                                                                        .setHeight(
+                                                                            16),
+                                                                    0,
+                                                                    0),
+                                                            child: Text(
+                                                              _byBranch,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: TextStyle(
+                                                                fontSize:
+                                                                    font14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Icon(
+                                                          Icons.arrow_drop_down,
+                                                          color: Colors.black,
+                                                        ),
+                                                        SizedBox(
+                                                          width: ScreenUtil()
+                                                              .setWidth(10),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(20),
+                                          ),
+                                        ],
+                                      )
+                                    : Container(),
+                              ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
@@ -2866,7 +2975,7 @@ class _VDataState extends State<VData> {
               return StatefulBuilder(
                 builder: (BuildContext context, StateSetter setModalState) {
                   return Container(
-                    height: MediaQuery.of(context).size.height * 0.96,
+                    height: MediaQuery.of(context).size.height * 0.3,
                     child: Column(
                       children: <Widget>[
                         Container(
@@ -2988,6 +3097,7 @@ class _VDataState extends State<VData> {
       FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }
     companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
     userID = prefs.getString('userID');
     level = prefs.getString('level');
     userType = prefs.getString('user_type');
@@ -3014,6 +3124,7 @@ class _VDataState extends State<VData> {
     http.post(urlNoti, body: {
       "userID": userID,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
     }).then((res) async {
@@ -3077,6 +3188,7 @@ class _VDataState extends State<VData> {
   void getData() {
     http.post(urlVData, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
@@ -3145,20 +3257,21 @@ class _VDataState extends State<VData> {
         // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
-      print("Get data error: " + (err).toString());
+      print("Get data error: " + err.toString());
     });
   }
 
   void getOfflineData() {
     http.post(urlVData, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
       "type": type,
       "channel": channel,
       "apps": apps,
-      "link_id": link_id,
+      "link_id": "All Links",
       "status": _byStatus,
       "executive": _byExecutive,
       "vtag": _byVTag,
@@ -3196,6 +3309,7 @@ class _VDataState extends State<VData> {
   void getLinks() {
     http.post(urlLinks, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "userID": userID,
       "user_type": userType,
@@ -3250,6 +3364,7 @@ class _VDataState extends State<VData> {
     executiveList.add("All Executives");
     http.post(urlHandler, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "user_type": userType,
       "level": level,
@@ -3291,6 +3406,7 @@ class _VDataState extends State<VData> {
   void getVTag() {
     http.post(urlVTag, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -3362,6 +3478,7 @@ class _VDataState extends State<VData> {
       http.post(urlChangeStatus, body: {
         "phone_number": vDataDetails[index].phoneNo.toString(),
         "companyID": companyID,
+        "branchID": branchID,
         "userID": userID,
         "level": level,
         "user_type": userType,
@@ -3400,21 +3517,18 @@ class _VDataState extends State<VData> {
       endDate = _endDate.toString().substring(0, 10);
       for (int i = 0; i < linksID.length; i++) {
         if (_byLink == linksID[i].link_type + linksID[i].link) {
-          linkID = linksID[i].link_type + linksID[i].link_id;
+          link_id = linksID[i].link_type + linksID[i].link_id;
         }
       }
       if (this.mounted) {
         setState(() {
           nodata = false;
-          type = type;
-          channel = channel;
-          linkID = linkID;
-          search = search;
           total = null;
         });
       }
       http.post(urlVData, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "level": level,
         "userID": userID,
         "user_type": userType,
@@ -3423,7 +3537,7 @@ class _VDataState extends State<VData> {
         "type": type,
         "channel": channel,
         "apps": apps,
-        "link_id": linkID,
+        "link_id": link_id,
         "status": _byStatus,
         "executive": _byExecutive,
         "vtag": _byVTag,
@@ -3431,7 +3545,7 @@ class _VDataState extends State<VData> {
         "count": "0",
         "offline": "no"
       }).then((res) {
-        // print("Filter body: " + res.body.toString());
+        // print("_done body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
             setState(() {
@@ -3494,6 +3608,7 @@ class _VDataState extends State<VData> {
           connectivityResult == ConnectivityResult.mobile) {
         http.post(urlVData, body: {
           "companyID": companyID,
+          "branchID": branchID,
           "level": level,
           "userID": userID,
           "user_type": userType,
@@ -3502,7 +3617,7 @@ class _VDataState extends State<VData> {
           "type": type,
           "channel": channel,
           "apps": apps,
-          "link_id": link_id.toString(),
+          "link_id": link_id,
           "status": _byStatus,
           "executive": _byExecutive,
           "vtag": _byVTag,

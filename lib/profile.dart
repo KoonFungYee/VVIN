@@ -63,6 +63,7 @@ class _ProfileState extends State<Profile> {
   int addressLength, emailLength, offLineAddressLength, offLineEmailLength;
   String level,
       companyID,
+      branchID,
       userID,
       userType,
       name,
@@ -300,6 +301,7 @@ class _ProfileState extends State<Profile> {
                           EditCompanyDetails editCompany =
                               new EditCompanyDetails(
                                   companyID: companyID,
+                                  branchID: branchID,
                                   userID: userID,
                                   level: level,
                                   userType: userType,
@@ -865,11 +867,13 @@ class _ProfileState extends State<Profile> {
   Future<void> loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
     userID = prefs.getString('userID');
     level = prefs.getString('level');
     userType = prefs.getString('user_type');
     http.post(companyURL, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType
@@ -991,6 +995,7 @@ class _ProfileState extends State<Profile> {
         http
             .post(urlReminder, body: {
               "companyID": companyID,
+              "branchID": branchID,
               "userID": userID,
               "level": level,
               "user_type": userType,
@@ -1049,6 +1054,7 @@ class _ProfileState extends State<Profile> {
       prefs.setString('noti', null);
       prefs.setString('newNoti', null);
       prefs.setString("getreminder", null);
+      prefs.setString("branchID", null);
 
       _clearToken();
 
@@ -1069,15 +1075,8 @@ class _ProfileState extends State<Profile> {
       Database vdataDB = await VDataDB.instance.database;
       vdataDB.rawInsert('DELETE FROM vdata WHERE id > 0');
       FlutterAppBadger.removeBadge();
-      Navigator.pushReplacement(
-        context,
-        AwesomePageRoute(
-          transitionDuration: Duration(milliseconds: 600),
-          exitPage: widget,
-          enterPage: Login(),
-          transition: ParallaxTransition(),
-        ),
-      );
+      Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Login()));
     } else {
       _toast("Please connect to Internet first");
     }
@@ -1086,6 +1085,7 @@ class _ProfileState extends State<Profile> {
   void _clearToken() {
     http.post(urlLogout, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,

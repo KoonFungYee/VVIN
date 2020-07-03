@@ -47,7 +47,7 @@ class _SettingsState extends State<Settings> {
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlNotiChangeStatus =
       "https://vvinoa.vvin.com/api/notificationAction.php";
-  String assign, unassign, now;
+  String assign, unassign, now, companyID, branchID, userID, userType;
 
   @override
   void initState() {
@@ -139,8 +139,7 @@ class _SettingsState extends State<Settings> {
             CupertinoDialogAction(
               isDefaultAction: true,
               child: Text('Ok'),
-              onPressed: () async {
-              },
+              onPressed: () async {},
             )
           ],
         ),
@@ -385,10 +384,14 @@ class _SettingsState extends State<Settings> {
       } else {
         status = "1";
       }
+      print(widget.setting.branchID);
+      print(status);
+      print(assign);
       if (type == "unassign") {
         http.post(urlNotiChangeStatus, body: {
           "userID": widget.setting.userID,
           "companyID": widget.setting.companyID,
+          "branchID": widget.setting.branchID,
           "level": widget.setting.level,
           "user_type": widget.setting.userType,
           "actionType": "updateSetting",
@@ -403,7 +406,8 @@ class _SettingsState extends State<Settings> {
             }
             _toast("Status changed");
           } else {
-            _toast("Status can't changed, please check you Internet connection");
+            _toast(
+                "Status can't changed, please check you Internet connection");
           }
         }).catchError((err) {
           print("Change unassign error: " + (err).toString());
@@ -412,6 +416,7 @@ class _SettingsState extends State<Settings> {
         http.post(urlNotiChangeStatus, body: {
           "userID": widget.setting.userID,
           "companyID": widget.setting.companyID,
+          "branchID": widget.setting.branchID,
           "level": widget.setting.level,
           "user_type": widget.setting.userType,
           "actionType": "updateSetting",
@@ -426,7 +431,8 @@ class _SettingsState extends State<Settings> {
             }
             _toast("Status changed");
           } else {
-            _toast("Status can't changed, please check you Internet connection");
+            _toast(
+                "Status can't changed, please check you Internet connection");
           }
         }).catchError((err) {
           _toast(err.toString());

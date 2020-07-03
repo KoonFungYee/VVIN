@@ -22,9 +22,10 @@ class CurrentIndex {
 }
 
 class EditCompanyDetails {
-  String companyID, userID, level, userType, image, name, phone, email, website, address;
+  String companyID, branchID, userID, level, userType, image, name, phone, email, website, address;
   EditCompanyDetails(
       {this.companyID,
+      this.branchID,
       this.userID,
       this.level,
       this.userType,
@@ -42,10 +43,10 @@ class Noti {
 }
 
 class Myworks {
-  String date, title, link, category, qr, url, urlName, id, priority;
+  String date, title, link, category, qr, urlName, id, priority;
   bool offLine;
   List handlers;
-  Myworks({this.date, this.title, this.link, this.category, this.qr, this.url, this.urlName, this.offLine, this.id, this.handlers, this.priority});
+  Myworks({this.date, this.title, this.link, this.category, this.qr, this.urlName, this.offLine, this.id, this.handlers, this.priority});
 }
 
 class TopView {
@@ -60,9 +61,11 @@ class LeadData {
 
 class VDataDetails {
   String companyID,
+      branchID,
       userID,
       level,
       userType,
+      branch,
       date,
       name,
       phoneNo,
@@ -76,6 +79,7 @@ class VDataDetails {
       fromVAnalytics;
   VDataDetails(
       {this.companyID,
+      this.branchID,
       this.userID,
       this.level,
       this.userType,
@@ -137,6 +141,11 @@ class VProfileData {
       this.vformID});
 }
 
+class Branch{
+  String branchName, branchID;
+  Branch({this.branchName, this.branchID});
+}
+
 class View{
   String date, link;
   View({this.date, this.link});
@@ -194,14 +203,14 @@ class VDataFilter{
 }
 
 class Setting{
-  String assign, unassign, userID, companyID, level, userType;
-  Setting({this.assign, this.unassign, this.userID, this.companyID, this.level, this.userType});
+  String assign, unassign, userID, companyID, branchID, level, userType;
+  Setting({this.assign, this.unassign, this.userID, this.companyID, this.branchID, this.level, this.userType});
 }
 
 class WhatsappForward{
-  String url, userID, companyID, level, userType;
+  String url, userID, companyID, branchID, level, userType, branch;
   List vtagList;
-  WhatsappForward({this.url, this.userID, this.companyID, this.level, this.userType, this.vtagList});
+  WhatsappForward({this.url, this.userID, this.companyID, this.branchID, this.level, this.userType, this.branch, this.vtagList});
 }
 
 YYDialog YYAlertDialogWithScaleIn() {

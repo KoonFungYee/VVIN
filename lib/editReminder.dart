@@ -57,8 +57,6 @@ class _EditReminderState extends State<EditReminder> {
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  // var _phonecontroller = MaskedTextController(mask: '000000000000');
-  // final TextEditingController _namecontroller = TextEditingController();
   final TextEditingController _remarkcontroller = TextEditingController();
   SharedPreferences prefs;
   String date, remark, now, active;
@@ -807,8 +805,6 @@ class _EditReminderState extends State<EditReminder> {
     String phoneNo = 'Phone Number: ' + widget.phoneNo + ' ';
     String decription = 'Remark: ' + _remarkcontroller.text + ' ';
     var scheduledNotificationDateTime = dateTime;
-    // var scheduledNotificationDateTime =
-    //     DateTime.now().add(Duration(seconds: 1));
     var vibrationPattern = Int64List(1);
     vibrationPattern[0] = 0;
 

@@ -78,6 +78,7 @@ class _MoreState extends State<More> {
   String urlReminder = "https://vvinoa.vvin.com/api/reminder.php";
   String level,
       companyID,
+      branchID,
       userID,
       userType,
       name,
@@ -922,6 +923,7 @@ class _MoreState extends State<More> {
       if (connection == true) {
         Setting setting = Setting(
             companyID: companyID,
+            branchID: branchID,
             userID: userID,
             level: level,
             userType: userType,
@@ -985,6 +987,7 @@ class _MoreState extends State<More> {
     http.post(urlNoti, body: {
       "userID": userID,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
     }).then((res) async {
@@ -1001,14 +1004,16 @@ class _MoreState extends State<More> {
 
   Future<void> loadData() async {
     companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
     userID = prefs.getString('userID');
     level = prefs.getString('level');
     userType = prefs.getString('user_type');
     http.post(companyURL, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
-      "user_type": userType
+      "user_type": userType,
     }).then((res) async {
       // print("Company details:" + res.body);
       try {
@@ -1091,6 +1096,7 @@ class _MoreState extends State<More> {
         http
             .post(urlReminder, body: {
               "companyID": companyID,
+              "branchID": branchID,
               "userID": userID,
               "level": level,
               "user_type": userType,
@@ -1149,6 +1155,7 @@ class _MoreState extends State<More> {
       prefs.setString('noti', null);
       prefs.setString('newNoti', null);
       prefs.setString("getreminder", null);
+      prefs.setString("branchID", null);
 
       _clearToken();
 
@@ -1169,15 +1176,8 @@ class _MoreState extends State<More> {
       Database vdataDB = await VDataDB.instance.database;
       vdataDB.rawInsert('DELETE FROM vdata WHERE id > 0');
       FlutterAppBadger.removeBadge();
-      Navigator.pushReplacement(
-        context,
-        AwesomePageRoute(
-          transitionDuration: Duration(milliseconds: 600),
-          exitPage: widget,
-          enterPage: Login(),
-          transition: ParallaxTransition(),
-        ),
-      );
+      Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Login()));
     } else {
       _toast("Please connect to Internet");
     }
@@ -1186,6 +1186,7 @@ class _MoreState extends State<More> {
   void _clearToken() {
     http.post(urlLogout, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,

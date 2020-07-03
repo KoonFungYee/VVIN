@@ -27,6 +27,7 @@ import 'package:vvin/vprofile.dart';
 class NotiDetail extends StatefulWidget {
   final NotificationDetail notification;
   final String companyID;
+  final String branchID;
   final String level;
   final String userID;
   final String userType;
@@ -34,6 +35,7 @@ class NotiDetail extends StatefulWidget {
       {Key key,
       this.notification,
       this.companyID,
+      this.branchID,
       this.level,
       this.userID,
       this.userType})
@@ -65,7 +67,7 @@ class _NotiDetailState extends State<NotiDetail> {
   String handlers = "https://vvinoa.vvin.com/api/getHandler.php";
   String assignURL = "https://vvinoa.vvin.com/api/assign.php";
   final ScrollController controller = ScrollController();
-  String companyID, userID, level, userType, phoneNo, now;
+  String companyID, branchID, userID, level, userType, phoneNo, now;
   bool handlerStatus, hListStatus, click;
   List name = [];
   List number = [];
@@ -79,6 +81,7 @@ class _NotiDetailState extends State<NotiDetail> {
     _init();
     handlerStatus = hListStatus = click = false;
     companyID = widget.companyID;
+    branchID = widget.branchID;
     userID = widget.userID;
     level = widget.level;
     userType = widget.userType;
@@ -291,7 +294,6 @@ class _NotiDetailState extends State<NotiDetail> {
                       child: Text(
                         widget.notification.title,
                         style: TextStyle(
-                            // decoration: TextDecoration.underline,
                             color: Colors.black,
                             fontSize: font14,
                             fontWeight: FontWeight.bold),
@@ -376,25 +378,25 @@ class _NotiDetailState extends State<NotiDetail> {
                           ),
                         ),
                         (level == '0')
-                        ? InkWell(
-                          onTap: _assign,
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  "Assign handler for this lead",
-                                  style: TextStyle(
-                                    color: Colors.blue,
-                                    fontSize: font12,
+                            ? InkWell(
+                                onTap: _assign,
+                                child: Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        "Assign handler for this lead",
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: font12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        )
-                        : null,
+                              )
+                            : null,
                       ],
                     )
                   : Padding(
@@ -436,25 +438,28 @@ class _NotiDetailState extends State<NotiDetail> {
                     )
                   : Container(),
               (widget.notification.subtitle2 != "")
-                  ? (widget.notification.subtitle2.substring(widget.notification.subtitle2.length - 7, widget.notification.subtitle2.length) == 'branch.')
-                  ? Container()
-                  : Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Flexible(
-                            child: Text(
-                              "If you did not perform the action, kindly contact our customer support immediately at support@jtapps.com.my to secure your account.",
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: font12,
+                  ? (widget.notification.subtitle2.substring(
+                              widget.notification.subtitle2.length - 7,
+                              widget.notification.subtitle2.length) ==
+                          'branch.')
+                      ? Container()
+                      : Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              Flexible(
+                                child: Text(
+                                  "If you did not perform the action, kindly contact our customer support immediately at support@jtapps.com.my to secure your account.",
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: font12,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    )
+                        )
                   : Container(),
               Padding(
                 padding: EdgeInsets.fromLTRB(10, 20, 10, 10),
@@ -503,6 +508,7 @@ class _NotiDetailState extends State<NotiDetail> {
   void _view() {
     VDataDetails vdata = new VDataDetails(
       companyID: companyID,
+      branchID: branchID,
       userID: userID,
       level: level,
       userType: userType,
@@ -872,6 +878,7 @@ class _NotiDetailState extends State<NotiDetail> {
         connectivityResult == ConnectivityResult.mobile) {
       http.post(assignURL, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "userID": userID,
         "level": level,
         "user_type": userType,
@@ -952,6 +959,7 @@ class _NotiDetailState extends State<NotiDetail> {
       setupData();
       http.post(urlHandler, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "userID": userID,
         "level": level,
         "user_type": userType,
@@ -977,12 +985,9 @@ class _NotiDetailState extends State<NotiDetail> {
   }
 
   void setupData() {
-    companyID = companyID;
-    userID = userID;
-    level = level;
-    userType = userType;
     http.post(handlers, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "user_type": userType,
       "level": level,

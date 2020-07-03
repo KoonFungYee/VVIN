@@ -76,6 +76,7 @@ class _EditVProfileState extends State<EditVProfile> {
   String handler,
       email,
       companyID,
+      branchID,
       userID,
       level,
       userType,
@@ -656,19 +657,30 @@ class _EditVProfileState extends State<EditVProfile> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: <Widget>[
-                          Text(
-                            "Handler",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: font14,
-                            ),
-                          ),
+                          (widget.handler.length > 0)
+                              ? Text(
+                                  "Handler",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: font14,
+                                  ),
+                                )
+                              : (widget.vdata.level == "0" ||
+                                      widget.vdata.level == "4")
+                                  ? Text(
+                                      "Handler",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: font14,
+                                      ),
+                                    )
+                                  : Container(),
                         ],
                       ),
                       SizedBox(
                         height: ScreenUtil().setHeight(4),
                       ),
-                      (widget.vdata.level == "0")
+                      (widget.vdata.level == "0" || widget.vdata.level == "4")
                           ? (widget.handler.length > 0)
                               ? Container(
                                   height: (widget.handler.length *
@@ -819,7 +831,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                       }),
                                 )
                               : Container(),
-                      (widget.vdata.level == "0")
+                      (widget.vdata.level == "0" || widget.vdata.level == "4")
                           ? Row(
                               children: <Widget>[
                                 Expanded(
@@ -1867,6 +1879,8 @@ class _EditVProfileState extends State<EditVProfile> {
                       onSelectedItemChanged: (int index) {
                         if (index != 0) {
                           selectedTag = vtagList[index];
+                        } else {
+                          selectedTag = '';
                         }
                       },
                       children: _text('vtagList'),
@@ -3158,15 +3172,12 @@ class _EditVProfileState extends State<EditVProfile> {
   }
 
   void getDetails() {
-    companyID = widget.vdata.companyID;
-    userID = widget.vdata.userID;
-    level = widget.vdata.level;
-    userType = widget.vdata.userType;
     http.post(urlDetails, body: {
-      "companyID": companyID,
-      "userID": userID,
-      "user_type": userType,
-      "level": level,
+      "companyID": widget.vdata.companyID,
+      "branchID": widget.vdata.branchID,
+      "userID": widget.vdata.userID,
+      "user_type": widget.vdata.userType,
+      "level": widget.vdata.level,
       "phoneNo": widget.vdata.phoneNo,
     }).then((res) {
       if (res.body != "") {
@@ -3217,15 +3228,12 @@ class _EditVProfileState extends State<EditVProfile> {
   }
 
   void setupData() {
-    companyID = widget.vdata.companyID;
-    userID = widget.vdata.userID;
-    level = widget.vdata.level;
-    userType = widget.vdata.userType;
     http.post(urlHandler, body: {
-      "companyID": companyID,
-      "userID": userID,
-      "user_type": userType,
-      "level": level,
+      "companyID": widget.vdata.companyID,
+      "branchID": widget.vdata.branchID,
+      "userID": widget.vdata.userID,
+      "user_type": widget.vdata.userType,
+      "level": widget.vdata.level,
     }).then((res) {
       if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
@@ -3280,15 +3288,12 @@ class _EditVProfileState extends State<EditVProfile> {
   }
 
   void getTag() {
-    companyID = widget.vdata.companyID;
-    userID = widget.vdata.userID;
-    level = widget.vdata.level;
-    userType = widget.vdata.userType;
     http.post(urlVTag, body: {
-      "companyID": companyID,
-      "userID": userID,
-      "level": level,
-      "user_type": userType,
+      "companyID": widget.vdata.companyID,
+      "branchID": widget.vdata.branchID,
+      "userID": widget.vdata.userID,
+      "level": widget.vdata.level,
+      "user_type": widget.vdata.userType,
       "phone_number": "all",
     }).then((res) {
       if (res.body != "nodata") {
@@ -3444,10 +3449,11 @@ class _EditVProfileState extends State<EditVProfile> {
       }
 
       http.post(urlSaveEditVProfile, body: {
-        "companyID": companyID,
-        "userID": userID,
-        "level": level,
-        "user_type": userType,
+        "companyID": widget.vdata.companyID,
+        "branchID": widget.vdata.branchID,
+        "userID": widget.vdata.userID,
+        "level": widget.vdata.level,
+        "user_type": widget.vdata.userType,
         "phoneNo": widget.vdata.phoneNo,
         "name": _nameController.text ?? "",
         "email": _emailController.text ?? "",
@@ -3483,10 +3489,11 @@ class _EditVProfileState extends State<EditVProfile> {
       Navigator.of(context).pop();
       Navigator.of(context).pop();
       VDataDetails vdata1 = new VDataDetails(
-        companyID: companyID,
-        userID: userID,
-        level: level,
-        userType: userType,
+        companyID: widget.vdata.companyID,
+        branchID: widget.vdata.branchID,
+        userID: widget.vdata.userID,
+        level: widget.vdata.level,
+        userType: widget.vdata.userType,
         date: widget.vdata.date,
         name: _nameController.text,
         phoneNo: widget.vdata.phoneNo,
@@ -3502,11 +3509,12 @@ class _EditVProfileState extends State<EditVProfile> {
         for (int j = 0; j < handlerList1.length; j++) {
           if (widget.handler[i] == handlerList1[j].handler) {
             http.post(urlSaveHandler, body: {
-              "companyID": companyID,
-              "userID": userID,
+              "companyID": widget.vdata.companyID,
+              "branchID": widget.vdata.branchID,
+              "userID": widget.vdata.userID,
               "handlerID": handlerList1[j].handlerID,
-              "level": level,
-              "user_type": userType,
+              "level": widget.vdata.level,
+              "user_type": widget.vdata.userType,
               "phoneNo": widget.vdata.phoneNo,
             }).then((res) {
               // print("Add handler: " + res.body.toString());
@@ -3514,10 +3522,11 @@ class _EditVProfileState extends State<EditVProfile> {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
                 VDataDetails vdata1 = new VDataDetails(
-                  companyID: companyID,
-                  userID: userID,
-                  level: level,
-                  userType: userType,
+                  companyID: widget.vdata.companyID,
+                  branchID: widget.vdata.branchID,
+                  userID: widget.vdata.userID,
+                  level: widget.vdata.level,
+                  userType: widget.vdata.userType,
                   date: widget.vdata.date,
                   name: _nameController.text,
                   phoneNo: widget.vdata.phoneNo,

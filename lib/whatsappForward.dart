@@ -1083,6 +1083,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         }
         http.post(urlWhatsApp, body: {
           "companyID": widget.whatsappForward.companyID,
+          "branchID": widget.whatsappForward.branchID,
           "userID": widget.whatsappForward.userID,
           "user_type": widget.whatsappForward.userType,
           "level": widget.whatsappForward.level,
@@ -1567,6 +1568,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     http
         .post(urlWhatsApp, body: {
           "companyID": widget.whatsappForward.companyID,
+          "branchID": widget.whatsappForward.branchID,
           "userID": widget.whatsappForward.userID,
           "user_type": widget.whatsappForward.userType,
           "level": widget.whatsappForward.level,

@@ -93,6 +93,7 @@ class _MyWorksState extends State<MyWorks> {
   bool isOffline, status, vtagStatus, connection, nodata, link, image, more;
   String search,
       companyID,
+      branchID,
       userID,
       level,
       userType,
@@ -106,11 +107,10 @@ class _MyWorksState extends State<MyWorks> {
       now,
       totalNotification;
   String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlMyWorks = "https://vvinoa.vvin.com/api/myWorks.php";
+  String urlMyWorks = "https://vvinoa.vvin.com/api/myWorks2.php";
   String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
   String assignURL = "https://vvinoa.vvin.com/api/assign.php";
   String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
-  String urlWhatsApp = "https://vvinoa.vvin.com/api/whatsappForward.php";
   String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
   List<Myworks> myWorks = [];
   List<Myworks> myWorks1 = [];
@@ -962,10 +962,9 @@ class _MyWorksState extends State<MyWorks> {
                                                   BouncingWidget(
                                                     scaleFactor: _scaleFactor,
                                                     onPressed: () {
-                                                      if (connection !=
-                                                            false) {
-                                                          _visitURL(index);
-                                                        } else {
+                                                      if (connection != false) {
+                                                        _visitURL(index);
+                                                      } else {
                                                         _toast(
                                                             "Please check your Internet Connection");
                                                       }
@@ -1183,6 +1182,7 @@ class _MyWorksState extends State<MyWorks> {
                     exitPage: widget,
                     enterPage: VForm(
                       companyID: companyID,
+                      branchID: branchID,
                       userID: userID,
                       level: level,
                       userType: userType,
@@ -1243,6 +1243,7 @@ class _MyWorksState extends State<MyWorks> {
         userID: userID,
         userType: userType,
         companyID: companyID,
+        branchID: branchID,
         level: level,
         vtagList: vtagList,
       );
@@ -1491,6 +1492,7 @@ class _MyWorksState extends State<MyWorks> {
         connectivityResult == ConnectivityResult.mobile) {
       http.post(assignURL, body: {
         "companyID": companyID,
+        "branchID": branchID,
         "userID": userID,
         "level": level,
         "user_type": userType,
@@ -1961,7 +1963,6 @@ class _MyWorksState extends State<MyWorks> {
                 Myworks mywork = Myworks(
                   date: myWorks1[i].date,
                   title: myWorks1[i].title,
-                  url: myWorks1[i].url,
                   urlName: myWorks1[i].urlName,
                   link: myWorks1[i].link,
                   category: myWorks1[i].category,
@@ -1979,7 +1980,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -2040,7 +2040,6 @@ class _MyWorksState extends State<MyWorks> {
                 Myworks mywork = Myworks(
                     date: myWorks1[i].date,
                     title: myWorks1[i].title,
-                    url: myWorks1[i].url,
                     urlName: myWorks1[i].urlName,
                     link: myWorks1[i].link,
                     category: myWorks1[i].category,
@@ -2058,7 +2057,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -2122,7 +2120,6 @@ class _MyWorksState extends State<MyWorks> {
                 Myworks mywork = Myworks(
                     date: myWorks1[i].date,
                     title: myWorks1[i].title,
-                    url: myWorks1[i].url,
                     urlName: myWorks1[i].urlName,
                     link: myWorks1[i].link,
                     category: myWorks1[i].category,
@@ -2140,7 +2137,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -2204,7 +2200,6 @@ class _MyWorksState extends State<MyWorks> {
                 Myworks mywork = Myworks(
                     date: myWorks1[i].date,
                     title: myWorks1[i].title,
-                    url: myWorks1[i].url,
                     urlName: myWorks1[i].urlName,
                     link: myWorks1[i].link,
                     category: myWorks1[i].category,
@@ -2222,7 +2217,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -2286,7 +2280,6 @@ class _MyWorksState extends State<MyWorks> {
                 Myworks mywork = Myworks(
                     date: myWorks1[i].date,
                     title: myWorks1[i].title,
-                    url: myWorks1[i].url,
                     urlName: myWorks1[i].urlName,
                     link: myWorks1[i].link,
                     category: myWorks1[i].category,
@@ -2304,7 +2297,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -2368,7 +2360,6 @@ class _MyWorksState extends State<MyWorks> {
                 Myworks mywork = Myworks(
                     date: myWorks1[i].date,
                     title: myWorks1[i].title,
-                    url: myWorks1[i].url,
                     urlName: myWorks1[i].urlName,
                     link: myWorks1[i].link,
                     category: myWorks1[i].category,
@@ -2386,7 +2377,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -2534,6 +2524,10 @@ class _MyWorksState extends State<MyWorks> {
         connectivityResult == ConnectivityResult.mobile) {
       companyID = prefs.getString('companyID');
       userID = prefs.getString('userID');
+      branchID = prefs.getString('branchID');
+      if (branchID == '') {
+        branchID = '0';
+      }
       level = prefs.getString('level');
       userType = prefs.getString('user_type');
       myWorks.clear();
@@ -2554,6 +2548,7 @@ class _MyWorksState extends State<MyWorks> {
   void getReminder() {
     http.post(urlGetReminder, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2608,7 +2603,7 @@ class _MyWorksState extends State<MyWorks> {
         prefs.setString("getreminder", "1");
       }
     }).catchError((err) {
-      _toast("Get reminder error" + err.toString());
+      _toast("Get reminder error: " + err.toString());
       print("Get reminder error: " + (err).toString());
     });
   }
@@ -2652,6 +2647,7 @@ class _MyWorksState extends State<MyWorks> {
     http.post(urlNoti, body: {
       "userID": userID,
       "companyID": companyID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
     }).then((res) {
@@ -2668,12 +2664,9 @@ class _MyWorksState extends State<MyWorks> {
   }
 
   void getHandlerList() {
-    companyID = companyID;
-    userID = userID;
-    level = level;
-    userType = userType;
     http.post(urlHandler, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "user_type": userType,
       "level": level,
@@ -2701,6 +2694,7 @@ class _MyWorksState extends State<MyWorks> {
   void getVTag() {
     http.post(urlVTag, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
       "level": level,
       "user_type": userType,
@@ -2725,7 +2719,9 @@ class _MyWorksState extends State<MyWorks> {
   void getLink() {
     http.post(urlMyWorks, body: {
       "companyID": companyID,
+      "branchID": branchID,
       "userID": userID,
+      "branchID": branchID,
       "level": level,
       "user_type": userType,
       "count": myWorks.length.toString(),
@@ -2746,7 +2742,6 @@ class _MyWorksState extends State<MyWorks> {
             Myworks mywork = Myworks(
                 date: jsonData[i]['date'],
                 title: jsonData[i]['title'],
-                url: jsonData[i]['url'],
                 urlName: jsonData[i]['urlName'],
                 link: jsonData[i]['link'],
                 category: jsonData[i]['category'],
@@ -2773,7 +2768,6 @@ class _MyWorksState extends State<MyWorks> {
             Myworks mywork = Myworks(
                 date: jsonData[i]['date'],
                 title: jsonData[i]['title'],
-                url: jsonData[i]['url'],
                 urlName: jsonData[i]['urlName'],
                 link: jsonData[i]['link'],
                 category: jsonData[i]['category'],
@@ -2920,7 +2914,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -2961,7 +2954,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -3004,7 +2996,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,
@@ -3047,7 +3038,6 @@ class _MyWorksState extends State<MyWorks> {
                   Myworks mywork = Myworks(
                       date: myWorks1[i].date,
                       title: myWorks1[i].title,
-                      url: myWorks1[i].url,
                       urlName: myWorks1[i].urlName,
                       link: myWorks1[i].link,
                       category: myWorks1[i].category,

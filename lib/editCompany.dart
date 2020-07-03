@@ -67,6 +67,7 @@ class _EditCompanyState extends State<EditCompany> {
   int number;
   String userID,
       companyID,
+      branchID,
       level,
       userType,
       image,
@@ -85,6 +86,7 @@ class _EditCompanyState extends State<EditCompany> {
     _init();
     check();
     companyID = widget.company.companyID;
+    branchID = widget.company.branchID;
     userID = widget.company.userID;
     level = widget.company.level;
     userType = widget.company.userType;
@@ -677,6 +679,7 @@ class _EditCompanyState extends State<EditCompany> {
       http.post(urlUploadImage, body: {
         "encoded_string": base64Image,
         "companyID": companyID,
+        "branchID": branchID,
         "userID": userID,
         "level": level,
         "user_type": userType,
@@ -684,7 +687,6 @@ class _EditCompanyState extends State<EditCompany> {
         if (res.body.toString() != "nodata") {
           if (this.mounted) {
             setState(() {
-              // imageCache.clear();
               image = res.body.toString();
             });
           }
@@ -719,6 +721,7 @@ class _EditCompanyState extends State<EditCompany> {
             connectivityResult == ConnectivityResult.mobile) {
           http.post(urlEditCompany, body: {
             "companyID": companyID,
+            "branchID": branchID,
             "userID": userID,
             "level": level,
             "user_type": userType,
@@ -728,7 +731,6 @@ class _EditCompanyState extends State<EditCompany> {
             "website": website,
             "address": address,
           }).then((res) async {
-            // print("Return from internet:" + res.body);
             if (res.body == "success") {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(

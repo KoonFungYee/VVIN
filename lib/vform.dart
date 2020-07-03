@@ -31,6 +31,7 @@ class VForm extends StatefulWidget {
   final String title;
   final String id;
   final String companyID;
+  final String branchID;
   final String userID;
   final String level;
   final String userType;
@@ -39,6 +40,7 @@ class VForm extends StatefulWidget {
       this.title,
       this.id,
       this.companyID,
+      this.branchID,
       this.userID,
       this.level,
       this.userType})
@@ -478,6 +480,7 @@ class _VFormState extends State<VForm> {
           vformID: widget.id,
           reponseID: vform[index][length]['1']['id'],
           companyID: widget.companyID,
+          branchID: widget.branchID,
           userID: widget.userID,
           level: widget.level,
           userType: widget.userType,
@@ -500,6 +503,7 @@ class _VFormState extends State<VForm> {
         connectivityResult == ConnectivityResult.mobile) {
       http.post(urlVForm, body: {
         "companyID": widget.companyID,
+        "branchID": widget.branchID,
         "userID": widget.userID,
         "level": widget.level,
         "user_type": widget.userType,
@@ -557,6 +561,7 @@ class _VFormState extends State<VForm> {
       http
           .post(urlDelete, body: {
             "companyID": widget.companyID,
+            "branchID": widget.branchID,
             "userID": widget.userID,
             "level": widget.level,
             "user_type": widget.userType,
@@ -760,6 +765,7 @@ class _VFormState extends State<VForm> {
         connectivityResult == ConnectivityResult.mobile) {
       http.post(urlVForm, body: {
         "companyID": widget.companyID,
+        "branchID": widget.branchID,
         "userID": widget.userID,
         "level": widget.level,
         "user_type": widget.userType,
@@ -807,6 +813,7 @@ class _VFormState extends State<VForm> {
         connectivityResult == ConnectivityResult.mobile) {
       http.post(urlVForm, body: {
         "companyID": widget.companyID,
+        "branchID": widget.branchID,
         "userID": widget.userID,
         "level": widget.level,
         "user_type": widget.userType,
@@ -854,6 +861,7 @@ class _VFormState extends State<VForm> {
   Future<void> initial() async {
     http.post(urlVForm, body: {
       "companyID": widget.companyID,
+      "branchID": widget.branchID,
       "userID": widget.userID,
       "level": widget.level,
       "user_type": widget.userType,
