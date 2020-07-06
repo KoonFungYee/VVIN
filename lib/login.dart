@@ -25,7 +25,6 @@ final TextEditingController _passcontroller = TextEditingController();
 final ScrollController controller = ScrollController();
 final String urlLogin = "https://vvinoa.vvin.com/api/newlogin.php";
 final String urlToken = "https://vvinoa.vvin.com/api/newsaveToken.php";
-final String urlBranch = "https://vvinoa.vvin.com/api/branch.php";
 FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 String token,
     _email,

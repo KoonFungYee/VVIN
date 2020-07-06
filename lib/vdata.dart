@@ -67,13 +67,22 @@ class _VDataState extends State<VData> {
       RefreshController(initialRefresh: false);
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  bool connection, nodata, link, vData, executive, more, vtagStatus;
+  bool connection,
+      nodata,
+      link,
+      vData,
+      vDataReady,
+      executive,
+      more,
+      vtagStatus,
+      branch;
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
   List<VDataDetails> vDataDetails1 = [];
   List<VDataDetails> vDataOffline = [];
   List<Map> offlineVData;
   List<Handler> handlerList = [];
+  List<Branch> branchesList = [];
   List<String> executiveList = [];
   List<String> links = [];
   List vtagList = [];
@@ -113,6 +122,7 @@ class _VDataState extends State<VData> {
   String urlLinks = "https://vvinoa.vvin.com/api/links.php";
   String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
   String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
+  String urlBranches = "https://vvinoa.vvin.com/api/branch.php";
   List<String> data = [
     "New",
     "Contacting",
@@ -154,6 +164,7 @@ class _VDataState extends State<VData> {
     _init();
     totalNotification = "0";
     currentTabIndex = 1;
+    vDataReady = branch = false;
     more = true;
     executive = link = vData = nodata = connection = vtagStatus = false;
     checkConnection();
@@ -161,7 +172,6 @@ class _VDataState extends State<VData> {
     _byVTag = "All VTags";
     _byStatus = "All Status";
     _byExecutive = "All Executives";
-    _byBranch = "All Branch";
     link_id = "All Links";
     type = "all";
     channel = "all";
@@ -567,7 +577,7 @@ class _VDataState extends State<VData> {
                           Text(
                               (connection == true)
                                   ? (total == null) ? "" : total.toString()
-                                  : (link == true && vData == true)
+                                  : (link == true && vDataReady == true)
                                       ? (offlineVData.length != 0)
                                           ? offlineVData[0]['total']
                                           : "0"
@@ -579,7 +589,7 @@ class _VDataState extends State<VData> {
               SizedBox(
                 height: ScreenUtil().setHeight(5),
               ),
-              (link == true && vData == true)
+              (link == true && vDataReady == true)
                   ? (nodata == true)
                       ? Center(
                           child: Container(
@@ -1100,11 +1110,17 @@ class _VDataState extends State<VData> {
         connectivityResult == ConnectivityResult.mobile) {
       if (this.mounted) {
         setState(() {
-          connection = false;
           vData = false;
           link = false;
           total = null;
         });
+      }
+      if (level == '0' && _byBranch != 'All Branch') {
+        for (var branch in branchesList) {
+          if (_byBranch == branch.branchName) {
+            branchID = branch.branchID;
+          }
+        }
       }
       http.post(urlVData, body: {
         "companyID": companyID,
@@ -1132,8 +1148,22 @@ class _VDataState extends State<VData> {
               vData = true;
               connection = true;
               nodata = true;
+              vDataReady = true;
               total = 0;
             });
+          }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
           }
         } else {
           var jsonData = json.decode(res.body);
@@ -1165,6 +1195,19 @@ class _VDataState extends State<VData> {
               vData = true;
               connection = true;
             });
+          }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
           }
         }
       }).catchError((err) {
@@ -1220,8 +1263,13 @@ class _VDataState extends State<VData> {
   }
 
   void _onLoading() {
-    print(_byVTag);
-    print(type);
+    if (level == '0' && _byBranch != 'All Branch') {
+      for (var branch in branchesList) {
+        if (_byBranch == branch.branchName) {
+          branchID = branch.branchID;
+        }
+      }
+    }
     http.post(urlVData, body: {
       "companyID": companyID,
       "branchID": branchID,
@@ -1241,7 +1289,7 @@ class _VDataState extends State<VData> {
       "count": vDataDetails.length.toString(),
       "offline": "no"
     }).then((res) {
-      print("Get More VData body: " + res.body.toString());
+      // print("Get More VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
           setState(() {
@@ -2766,6 +2814,101 @@ class _VDataState extends State<VData> {
         }
         break;
 
+      case "byBranch":
+        {
+          int position;
+          for (int i = 0; i < branchesList.length; i++) {
+            if (_byBranch == branchesList[i].branchName) {
+              position = i;
+            }
+          }
+          showModalBottomSheet(
+            isDismissible: false,
+            context: context,
+            builder: (context) {
+              return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setModalState) {
+                  return Container(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  width: 1, color: Colors.grey.shade300),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.all(
+                                  ScreenUtil().setHeight(20),
+                                ),
+                                child: Text(
+                                  "Select",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: font14,
+                                  ),
+                                ),
+                              ),
+                              InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  padding: EdgeInsets.all(
+                                    ScreenUtil().setHeight(20),
+                                  ),
+                                  child: Text(
+                                    "Done",
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context, true);
+                                  Navigator.of(context).pop();
+                                  _filter();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Flexible(
+                          child: Container(
+                            color: Colors.white,
+                            child: CupertinoPicker(
+                              backgroundColor: Colors.white,
+                              itemExtent: 28,
+                              scrollController: FixedExtentScrollController(
+                                  initialItem: position),
+                              onSelectedItemChanged: (int index) {
+                                if (this.mounted) {
+                                  setState(() {
+                                    _byBranch = branchesList[index].branchName;
+                                  });
+                                }
+                              },
+                              children: _branch(branchesList),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        }
+        break;
+
       case "byStatus":
         {
           int position;
@@ -3072,6 +3215,21 @@ class _VDataState extends State<VData> {
     return widgetList;
   }
 
+  List<Widget> _branch(List<Branch> branches) {
+    List widgetList = <Widget>[];
+    for (var each in branches) {
+      Widget widget1 = Text(
+        each.branchName,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
   List<Widget> _list(List list) {
     List widgetList = <Widget>[];
     for (var each in list) {
@@ -3100,6 +3258,7 @@ class _VDataState extends State<VData> {
     branchID = prefs.getString('branchID');
     userID = prefs.getString('userID');
     level = prefs.getString('level');
+    _byBranch = (level == "0") ? "All Branch" : "";
     userType = prefs.getString('user_type');
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
@@ -3117,7 +3276,50 @@ class _VDataState extends State<VData> {
     getLinks();
     getExecutive();
     getVTag();
+    if (level == "0") {
+      getBranches();
+    }
     notification();
+  }
+
+  void getBranches() {
+    http.post(urlBranches, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+    }).then((res) {
+      Branch branches = Branch(
+        branchID: '00',
+        branchName: 'All Branch',
+      );
+      branchesList.add(branches);
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          Branch branch = Branch(
+            branchID: data['id'],
+            branchName: data['name'],
+          );
+          branchesList.add(branch);
+        }
+        if (this.mounted) {
+          setState(() {
+            branch = true;
+          });
+        }
+        if (vData == true) {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        }
+      } else {}
+    }).catchError((err) {
+      print("Get branches error: " + err.toString());
+    });
   }
 
   void notification() {
@@ -3215,6 +3417,19 @@ class _VDataState extends State<VData> {
             total = 0;
           });
         }
+        if (level == "0" && branch == true) {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        } else {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        }
       } else {
         var jsonData = json.decode(res.body);
         if (this.mounted) {
@@ -3245,6 +3460,19 @@ class _VDataState extends State<VData> {
             vData = true;
             connection = true;
           });
+        }
+        if (level == "0" && branch == true) {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        } else {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
         }
       }
       if (link == true &&
@@ -3466,7 +3694,7 @@ class _VDataState extends State<VData> {
     if (this.mounted) {
       setState(() {
         link = true;
-        vData = true;
+        vDataReady = true;
       });
     }
   }
@@ -3525,6 +3753,13 @@ class _VDataState extends State<VData> {
           nodata = false;
           total = null;
         });
+      }
+      if (level == '0' && _byBranch != 'All Branch') {
+        for (var branch in branchesList) {
+          if (_byBranch == branch.branchName) {
+            branchID = branch.branchID;
+          }
+        }
       }
       http.post(urlVData, body: {
         "companyID": companyID,
@@ -3606,6 +3841,13 @@ class _VDataState extends State<VData> {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.wifi ||
           connectivityResult == ConnectivityResult.mobile) {
+        if (level == '0' && _byBranch != 'All Branch') {
+          for (var branch in branchesList) {
+            if (_byBranch == branch.branchName) {
+              branchID = branch.branchID;
+            }
+          }
+        }
         http.post(urlVData, body: {
           "companyID": companyID,
           "branchID": branchID,
