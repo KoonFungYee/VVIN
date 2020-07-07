@@ -616,8 +616,10 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                         )
                       : Flexible(
                           child: SmartRefresher(
-                            enablePullDown: true,
-                            enablePullUp: true,
+                            enablePullDown: (connection == true) ? true : false,
+                            enablePullUp: (connection == true)
+                                ? (vDataDetails.length != total) ? true : false
+                                : false,
                             header: MaterialClassicHeader(),
                             footer: CustomFooter(
                               builder: (BuildContext context, LoadStatus mode) {
