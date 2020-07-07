@@ -579,7 +579,9 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                           Text(
                               (connection == true)
                                   ? (total == null) ? "" : total.toString()
-                                  : (link == true && vDataReady == true)
+                                  : (link == true &&
+                                          vDataReady == true &&
+                                          vtagStatus == true)
                                       ? (offlineVData.length != 0)
                                           ? offlineVData[0]['total']
                                           : "0"
