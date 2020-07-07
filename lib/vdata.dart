@@ -3673,6 +3673,7 @@ class _VDataState extends State<VData> {
       setState(() {
         link = true;
         vDataReady = true;
+        vtagStatus = true;
       });
     }
   }
