@@ -67,12 +67,21 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-  bool connection, nodata, link, vData, executive, more, vtagStatus;
+  bool connection,
+      nodata,
+      link,
+      vData,
+      vDataReady,
+      executive,
+      more,
+      vtagStatus,
+      branch;
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
   List<VDataDetails> vDataDetails1 = [];
   List<Map> offlineVData;
   List<Handler> handlerList = [];
+  List<Branch> branchesList = [];
   List<String> executiveList = [];
   List<String> links = [];
   List vtagList = [];
@@ -81,6 +90,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   String _byLink,
       _byStatus,
       _byExecutive,
+      _byBranch,
       _byVTag,
       type,
       channel,
@@ -112,6 +122,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   String urlLinks = "https://vvinoa.vvin.com/api/links.php";
   String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
   String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
+  String urlBranches = "https://vvinoa.vvin.com/api/branch.php";
   List<String> data = [
     "New",
     "Contacting",
@@ -153,7 +164,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     currentTabIndex = 1;
     totalNotification = "0";
     more = true;
-    executive = link = vData = nodata = connection = vtagStatus = false;
+    vDataReady = branch =
+        executive = link = vData = nodata = connection = vtagStatus = false;
     _startDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.startDate);
     _endDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.endDate);
     checkConnection();
@@ -567,9 +579,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                           Text(
                               (connection == true)
                                   ? (total == null) ? "" : total.toString()
-                                  : (link == true &&
-                                          vData == true &&
-                                          vtagStatus == true)
+                                  : (link == true && vDataReady == true)
                                       ? (offlineVData.length != 0)
                                           ? offlineVData[0]['total']
                                           : "0"
@@ -581,7 +591,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
               SizedBox(
                 height: ScreenUtil().setHeight(5),
               ),
-              (link == true && vData == true && vtagStatus == true)
+              (link == true && vDataReady == true && vtagStatus == true)
                   ? (nodata == true)
                       ? Center(
                           child: Container(
@@ -657,41 +667,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                         children: <Widget>[
                                           InkWell(
                                             onTap: () async {
-                                              var connectivityResult =
-                                                  await (Connectivity()
-                                                      .checkConnectivity());
-                                              if (connectivityResult ==
-                                                      ConnectivityResult.wifi ||
-                                                  connectivityResult ==
-                                                      ConnectivityResult
-                                                          .mobile) {
-                                                VDataDetails vdata =
-                                                    new VDataDetails(
-                                                  companyID: companyID,
-                                                  branchID: branchID,
-                                                  userID: userID,
-                                                  level: level,
-                                                  userType: userType,
-                                                  date:
-                                                      vDataDetails[index].date,
-                                                  name:
-                                                      vDataDetails[index].name,
-                                                  phoneNo: vDataDetails[index]
-                                                      .phoneNo,
-                                                  status: vDataDetails[index]
-                                                      .status,
-                                                );
-                                                Navigator.of(context).push(
-                                                    PageRouteTransition(
-                                                        animationType:
-                                                            AnimationType.scale,
-                                                        builder: (context) =>
-                                                            VProfile(
-                                                                vdata: vdata)));
-                                              } else {
-                                                _toast(
-                                                    "No Internet Connection!");
-                                              }
+                                              _redirectVProfile(index);
                                             },
                                             child: Container(
                                               decoration: BoxDecoration(
@@ -1059,6 +1035,29 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         ),
       ),
     );
+  }
+
+  void _redirectVProfile(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      VDataDetails vdata = new VDataDetails(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        level: level,
+        userType: userType,
+        date: vDataDetails[index].date,
+        name: vDataDetails[index].name,
+        phoneNo: vDataDetails[index].phoneNo,
+        status: vDataDetails[index].status,
+      );
+      Navigator.of(context).push(PageRouteTransition(
+          animationType: AnimationType.scale,
+          builder: (context) => VProfile(vdata: vdata)));
+    } else {
+      _toast("No Internet Connection!");
+    }
   }
 
   Widget menuButton(String status, int index) {
@@ -2029,7 +2028,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                 height: ScreenUtil().setHeight(20),
                               ),
                               Container(
-                                child: (level == "0")
+                                child: (level == "0" || level == "4")
                                     ? Column(
                                         children: <Widget>[
                                           Row(
@@ -2096,6 +2095,106 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                                                     0),
                                                             child: Text(
                                                               _byExecutive,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: TextStyle(
+                                                                fontSize:
+                                                                    font14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Icon(
+                                                          Icons.arrow_drop_down,
+                                                          color: Colors.black,
+                                                        ),
+                                                        SizedBox(
+                                                          width: ScreenUtil()
+                                                              .setWidth(10),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(20),
+                                          ),
+                                        ],
+                                      )
+                                    : Container(),
+                              ),
+                              Container(
+                                child: (level == "0")
+                                    ? Column(
+                                        children: <Widget>[
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: <Widget>[
+                                              Text(
+                                                "By Branch",
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: font14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(5),
+                                          ),
+                                          Row(
+                                            children: <Widget>[
+                                              Expanded(
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    _showBottomSheet(
+                                                        "byBranch");
+                                                  },
+                                                  child: Container(
+                                                    margin: EdgeInsets.fromLTRB(
+                                                      0,
+                                                      0,
+                                                      0,
+                                                      ScreenUtil()
+                                                          .setHeight(20),
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              5),
+                                                      border: Border.all(
+                                                          color: Colors
+                                                              .grey.shade400,
+                                                          style: BorderStyle
+                                                              .solid),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: <Widget>[
+                                                        Expanded(
+                                                          child: Container(
+                                                            height: ScreenUtil()
+                                                                .setHeight(60),
+                                                            padding: EdgeInsets
+                                                                .fromLTRB(
+                                                                    ScreenUtil()
+                                                                        .setHeight(
+                                                                            10),
+                                                                    ScreenUtil()
+                                                                        .setHeight(
+                                                                            16),
+                                                                    0,
+                                                                    0),
+                                                            child: Text(
+                                                              _byBranch,
                                                               overflow:
                                                                   TextOverflow
                                                                       .ellipsis,
@@ -2429,6 +2528,101 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         }
         break;
 
+      case "byBranch":
+        {
+          int position;
+          for (int i = 0; i < branchesList.length; i++) {
+            if (_byBranch == branchesList[i].branchName) {
+              position = i;
+            }
+          }
+          showModalBottomSheet(
+            isDismissible: false,
+            context: context,
+            builder: (context) {
+              return StatefulBuilder(
+                builder: (BuildContext context, StateSetter setModalState) {
+                  return Container(
+                    height: MediaQuery.of(context).size.height * 0.3,
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  width: 1, color: Colors.grey.shade300),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.all(
+                                  ScreenUtil().setHeight(20),
+                                ),
+                                child: Text(
+                                  "Select",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: font14,
+                                  ),
+                                ),
+                              ),
+                              InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  padding: EdgeInsets.all(
+                                    ScreenUtil().setHeight(20),
+                                  ),
+                                  child: Text(
+                                    "Done",
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context, true);
+                                  Navigator.of(context).pop();
+                                  _filter();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Flexible(
+                          child: Container(
+                            color: Colors.white,
+                            child: CupertinoPicker(
+                              backgroundColor: Colors.white,
+                              itemExtent: 28,
+                              scrollController: FixedExtentScrollController(
+                                  initialItem: position),
+                              onSelectedItemChanged: (int index) {
+                                if (this.mounted) {
+                                  setState(() {
+                                    _byBranch = branchesList[index].branchName;
+                                  });
+                                }
+                              },
+                              children: _branch(branchesList),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        }
+        break;
+
       case "byStatus":
         {
           int position;
@@ -2720,6 +2914,21 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     }
   }
 
+  List<Widget> _branch(List<Branch> branches) {
+    List widgetList = <Widget>[];
+    for (var each in branches) {
+      Widget widget1 = Text(
+        each.branchName,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
   List<Widget> _link(List<Links> linksID) {
     List widgetList = <Widget>[];
     for (var each in linksID) {
@@ -2764,6 +2973,21 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   }
 
   void checkConnection() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
+    userID = prefs.getString('userID');
+    level = prefs.getString('level');
+    _byBranch = (level == "0") ? "All Branch" : "";
+    userType = prefs.getString('user_type');
+    if (prefs.getString("noti") != null) {
+      if (this.mounted) {
+        setState(() {
+          totalNotification = prefs.getString("noti");
+        });
+      }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
+    }
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
@@ -2820,17 +3044,56 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   }
 
   Future<void> getPreference() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    companyID = prefs.getString('companyID');
-    branchID = prefs.getString('branchID');
-    level = prefs.getString('level');
-    userID = prefs.getString('userID');
-    userType = prefs.getString('user_type');
-    notification();
+    if (level == "0" || level == "4") {
+      getExecutive();
+    }
     getData();
-    getVTag();
     getLinks();
-    getExecutive();
+    getVTag();
+    if (level == "0") {
+      getBranches();
+    }
+    notification();
+  }
+
+  void getBranches() {
+    http.post(urlBranches, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+    }).then((res) {
+      Branch branches = Branch(
+        branchID: '00',
+        branchName: 'All Branch',
+      );
+      branchesList.add(branches);
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          Branch branch = Branch(
+            branchID: data['id'],
+            branchName: data['name'],
+          );
+          branchesList.add(branch);
+        }
+        if (this.mounted) {
+          setState(() {
+            branch = true;
+          });
+        }
+        if (vData == true) {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        }
+      } else {}
+    }).catchError((err) {
+      print("Get branches error: " + err.toString());
+    });
   }
 
   void getVTag() {
@@ -2859,21 +3122,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   }
 
   void getData() {
-    // print(companyID);
-    // print(branchID);
-    // print(level);
-    // print(userID);
-    // print(userType);
-    // print(widget.vDataFilter.startDate);
-    // print(widget.vDataFilter.endDate);
-    // print(type);
-    // print(channel);
-    // print(apps);
-    // print(link_id);
-    // print(_byStatus);
-    // print(_byExecutive);
-    // print(_byVTag);
-    // print('hi' + search);
     http.post(urlVData, body: {
       "companyID": companyID,
       "branchID": branchID,
@@ -2891,6 +3139,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "start_date": widget.vDataFilter.startDate,
       "end_date": widget.vDataFilter.endDate,
       "count": "0",
+      "offline": "no"
     }).then((res) {
       // print("VData body: " + res.body.toString());
       if (res.body == "nodata") {
@@ -2902,9 +3151,26 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
             total = 0;
           });
         }
+        if (level == "0" && branch == true) {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        } else {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        }
       } else {
         var jsonData = json.decode(res.body);
-        total = jsonData[0]['total'];
+        if (this.mounted) {
+          setState(() {
+            total = jsonData[0]['total'];
+          });
+        }
         vDataDetails.clear();
         vDataDetails1.clear();
         for (var data in jsonData) {
@@ -2929,13 +3195,33 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
             connection = true;
           });
         }
+        if (level == "0" && branch == true) {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        } else {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        }
       }
     }).catchError((err) {
-      print("Get data error: " + (err).toString());
+      print("Get data error: " + err.toString());
     });
   }
 
   void _onLoading() {
+    if (level == '0' && _byBranch != 'All Branch') {
+      for (var branch in branchesList) {
+        if (_byBranch == branch.branchName) {
+          branchID = branch.branchID;
+        }
+      }
+    }
     http.post(urlVData, body: {
       "companyID": companyID,
       "branchID": branchID,
@@ -2953,8 +3239,9 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "start_date": _startDate.toString().substring(0, 10),
       "end_date": _endDate.toString().substring(0, 10),
       "count": vDataDetails.length.toString(),
+      "offline": "no"
     }).then((res) {
-      // print("VData body: " + res.body.toString());
+      // print("Get More VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
           setState(() {
@@ -3073,7 +3360,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     });
   }
 
-  setStatus(int index, String newVal) {
+  void setStatus(int index, String newVal) {
     vDataDetails[index].status = newVal;
     http.post(urlChangeStatus, body: {
       "phone_number": vDataDetails[index].phoneNo,
@@ -3127,12 +3414,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
       Navigator.pop(context);
-      if (this.mounted) {
-        setState(() {
-          startDate = _startDate.toString().substring(0, 10);
-          endDate = _endDate.toString().substring(0, 10);
-        });
-      }
+      startDate = _startDate.toString().substring(0, 10);
+      endDate = _endDate.toString().substring(0, 10);
       for (int i = 0; i < linksID.length; i++) {
         if (_byLink == linksID[i].link_type + linksID[i].link) {
           link_id = linksID[i].link_type + linksID[i].link_id;
@@ -3143,6 +3426,13 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           nodata = false;
           total = null;
         });
+      }
+      if (level == '0' && _byBranch != 'All Branch') {
+        for (var branch in branchesList) {
+          if (_byBranch == branch.branchName) {
+            branchID = branch.branchID;
+          }
+        }
       }
       http.post(urlVData, body: {
         "companyID": companyID,
@@ -3161,8 +3451,9 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         "vtag": _byVTag,
         "search": search,
         "count": "0",
+        "offline": "no"
       }).then((res) {
-        // print("Filter body: " + res.body.toString());
+        // print("_done body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
             setState(() {
@@ -3223,6 +3514,13 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.wifi ||
           connectivityResult == ConnectivityResult.mobile) {
+        if (level == '0' && _byBranch != 'All Branch') {
+          for (var branch in branchesList) {
+            if (_byBranch == branch.branchName) {
+              branchID = branch.branchID;
+            }
+          }
+        }
         http.post(urlVData, body: {
           "companyID": companyID,
           "branchID": branchID,
@@ -3234,12 +3532,13 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           "type": type,
           "channel": channel,
           "apps": apps,
-          "link_id": link_id.toString(),
+          "link_id": link_id,
           "status": _byStatus,
           "executive": _byExecutive,
           "vtag": _byVTag,
           "search": search,
           "count": "0",
+          "offline": "no"
         }).then((res) {
           // print("Search body: " + res.body.toString());
           if (res.body == "nodata") {
@@ -3284,10 +3583,11 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
             }
           }
         }).catchError((err) {
+          _toast("Something wrong, please contact VVIN IT deesk");
           print("Search error: " + (err).toString());
         });
       } else {
-        _toast("Please check your internet connection");
+        _toast("Please check your Internet Connection");
       }
     } else {
       offlineVData = await vdataDB.rawQuery(
@@ -3317,19 +3617,24 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     return result;
   }
 
-  Future<Null> _onRefresh() async {
+  void _onRefresh() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
       if (this.mounted) {
         setState(() {
-          connection = false;
           vData = false;
           link = false;
           total = null;
         });
       }
-
+      if (level == '0' && _byBranch != 'All Branch') {
+        for (var branch in branchesList) {
+          if (_byBranch == branch.branchName) {
+            branchID = branch.branchID;
+          }
+        }
+      }
       http.post(urlVData, body: {
         "companyID": companyID,
         "branchID": branchID,
@@ -3344,23 +3649,42 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         "executive": _byExecutive,
         "vtag": _byVTag,
         "search": search,
-        "start_date": widget.vDataFilter.startDate,
-        "end_date": widget.vDataFilter.endDate,
+        "start_date": minimumDate,
+        "end_date": DateTime.now().toString().substring(0, 10),
         "count": "0",
+        "offline": "no"
       }).then((res) {
-        // print("VData body: " + res.body.toString());
+        // print("search body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
             setState(() {
               vData = true;
               connection = true;
               nodata = true;
+              vDataReady = true;
               total = 0;
             });
           }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          }
         } else {
           var jsonData = json.decode(res.body);
-          total = jsonData[0]['total'];
+          if (this.mounted) {
+            setState(() {
+              total = jsonData[0]['total'];
+            });
+          }
           vDataDetails.clear();
           vDataDetails1.clear();
           for (var data in jsonData) {
@@ -3384,6 +3708,19 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
               vData = true;
               connection = true;
             });
+          }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
           }
         }
       }).catchError((err) {
@@ -3421,6 +3758,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
             links.add(link);
           }
         }
+        _startDate = DateFormat("yyyy-MM-dd").parse(minimumDate);
+        _endDate = DateTime.now();
         if (this.mounted) {
           setState(() {
             link = true;
