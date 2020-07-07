@@ -37,7 +37,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:contacts_service/contacts_service.dart';
-import 'dart:math';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';

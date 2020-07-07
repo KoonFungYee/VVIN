@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:fake_whatsapp/fake_whatsapp.dart';
