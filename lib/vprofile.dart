@@ -1168,7 +1168,7 @@ class _VProfileState extends State<VProfile>
     pickedImage = await FlutterNativeImage.compressImage(pickedImage.path,
         quality: 40, percentage: 30);
     base64Image = base64Encode(pickedImage.readAsBytesSync());
-    String number = Random().nextInt(200).toString();
+    String number = DateTime.now().millisecondsSinceEpoch.toString();
     http
         .post(urlWhatsApp, body: {
           "companyID": companyID,

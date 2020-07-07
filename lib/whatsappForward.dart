@@ -1564,7 +1564,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     pickedImage = await FlutterNativeImage.compressImage(pickedImage.path,
         quality: 40, percentage: 30);
     base64Image = base64Encode(pickedImage.readAsBytesSync());
-    number = Random().nextInt(200).toString();
+    number = DateTime.now().millisecondsSinceEpoch.toString();
     http
         .post(urlWhatsApp, body: {
           "companyID": widget.whatsappForward.companyID,
