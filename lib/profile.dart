@@ -88,12 +88,8 @@ class _ProfileState extends State<Profile> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     check();
     _init();
-    start = false;
-    connection = false;
-    offLineAddressLength = 1;
-    addressLength = 1;
-    offLineEmailLength = 1;
-    emailLength = 1;
+    start = connection = false;
+    offLineAddressLength = addressLength = offLineEmailLength = emailLength = 1;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         prefs = await SharedPreferences.getInstance();

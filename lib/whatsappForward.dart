@@ -76,11 +76,8 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   void initState() {
     check();
     _init();
-    isSend = false;
-    isImageLoaded = false;
-    tempText = "";
-    base64Image = "";
-    number = "";
+    isSend = isImageLoaded = false;
+    tempText = base64Image = number = "";
     initialise();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {

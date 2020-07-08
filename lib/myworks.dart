@@ -122,7 +122,6 @@ class _MyWorksState extends State<MyWorks> {
   List<String> otherList = [];
   List<String> allHandler = [];
   String tempText = "";
-  final _itemExtent = ScreenUtil().setHeight(316);
 
   @override
   void initState() {
@@ -165,16 +164,10 @@ class _MyWorksState extends State<MyWorks> {
     isImageLoaded =
         link = nodata = connection = vtagStatus = status = isOffline = false;
     more = true;
-    base64Image = "";
-    _phonecontroller.text = "";
-    _namecontroller.text = "";
-    _companycontroller.text = "";
-    _remarkcontroller.text = "";
-    search = "";
+    search = base64Image = _phonecontroller.text = _namecontroller.text =
+        _companycontroller.text = _remarkcontroller.text = "";
     category = "all";
-    total = 0;
-    imageIndex = 0;
-    linkIndex = 0;
+    total = imageIndex = linkIndex = 0;
     checkConnection();
     super.initState();
   }
@@ -187,10 +180,10 @@ class _MyWorksState extends State<MyWorks> {
         //   url: "https://" + link.substring(12),
         // );
       }, onError: (err) {});
-      String initialLink;
+      // String initialLink;
       if (prefs.getString('url') == '1') {
         try {
-          initialLink = await getInitialLink();
+          // initialLink = await getInitialLink();
           // FlutterWebBrowser.openWebPage(
           //   url: "https://" + initialLink.substring(12),
           // );
@@ -657,7 +650,6 @@ class _MyWorksState extends State<MyWorks> {
                             onRefresh: _onRefresh,
                             // onLoading: _onLoading,
                             child: ListView.builder(
-                              itemExtent: _itemExtent,
                               itemCount: (connection == false)
                                   ? offlineLink.length
                                   : myWorks.length,
@@ -1036,6 +1028,10 @@ class _MyWorksState extends State<MyWorks> {
                                                     ),
                                                   ),
                                                 ],
+                                              ),
+                                              SizedBox(
+                                                height:
+                                                    ScreenUtil().setHeight(20),
                                               ),
                                             ],
                                           ),
@@ -2687,7 +2683,7 @@ class _MyWorksState extends State<MyWorks> {
       }
     }).catchError((err) {
       _toast("No Internet Connection");
-      print("Setup Data error: " + (err).toString());
+      print("Setup Data error: " + err.toString());
     });
   }
 

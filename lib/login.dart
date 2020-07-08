@@ -63,7 +63,7 @@ class _LoginPageState extends State<Login> {
       statusBarColor: Colors.white,
     ));
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    token = "";
+    token = _email = _password = _passcontroller.text = '';
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     _firebaseMessaging.onIosSettingsRegistered
@@ -80,9 +80,6 @@ class _LoginPageState extends State<Login> {
   void setup() async {
     prefs = await SharedPreferences.getInstance();
     _emcontroller.text = prefs.getString('email');
-    _email = "";
-    _password = "";
-    _passcontroller.text = '';
   }
 
   @override

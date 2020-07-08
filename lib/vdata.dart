@@ -1827,63 +1827,63 @@ class _VDataState extends State<VData> {
                                             ),
                                           ),
                                         ),
-                                        Container(
-                                          width: ScreenUtil().setWidth(250),
-                                          height: ScreenUtil().setHeight(60),
-                                          margin: EdgeInsets.fromLTRB(
-                                              0,
-                                              ScreenUtil().setHeight(10),
-                                              ScreenUtil().setWidth(15),
-                                              ScreenUtil().setHeight(10)),
-                                          decoration: BoxDecoration(
-                                            color: (channel == "contact form")
-                                                ? Colors.blue
-                                                : Colors.white,
-                                            border: Border(
-                                              top: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              right: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              bottom: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              left: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                            ),
-                                          ),
-                                          child: FlatButton(
-                                            onPressed: () {
-                                              setModalState(() {
-                                                channel = "contact form";
-                                              });
-                                            },
-                                            child: Text(
-                                              'Contact Form',
-                                              style: TextStyle(
-                                                fontSize: font11,
-                                                color:
-                                                    (channel == "contact form")
-                                                        ? Colors.white
-                                                        : Colors.grey,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   width: ScreenUtil().setWidth(250),
+                                        //   height: ScreenUtil().setHeight(60),
+                                        //   margin: EdgeInsets.fromLTRB(
+                                        //       0,
+                                        //       ScreenUtil().setHeight(10),
+                                        //       ScreenUtil().setWidth(15),
+                                        //       ScreenUtil().setHeight(10)),
+                                        //   decoration: BoxDecoration(
+                                        //     color: (channel == "contact form")
+                                        //         ? Colors.blue
+                                        //         : Colors.white,
+                                        //     border: Border(
+                                        //       top: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //       right: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //       bottom: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //       left: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //     ),
+                                        //   ),
+                                        //   child: FlatButton(
+                                        //     onPressed: () {
+                                        //       setModalState(() {
+                                        //         channel = "contact form";
+                                        //       });
+                                        //     },
+                                        //     child: Text(
+                                        //       'Contact Form',
+                                        //       style: TextStyle(
+                                        //         fontSize: font11,
+                                        //         color:
+                                        //             (channel == "contact form")
+                                        //                 ? Colors.white
+                                        //                 : Colors.grey,
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // ),
                                         Container(
                                           width: ScreenUtil().setWidth(320),
                                           height: ScreenUtil().setHeight(60),

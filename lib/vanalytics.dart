@@ -173,12 +173,8 @@ class _VAnalyticsState extends State<VAnalytics>
     refreshKey = GlobalKey<RefreshIndicatorState>();
     newVersion = "";
     totalNotification = "0";
-    currentTabIndex = 0;
-    editor = false;
-    connection = false;
-    nodata = false;
-    refresh = false;
-    load = 0;
+    editor = connection = nodata = refresh = false;
+    currentTabIndex = load = 0;
     _initialize();
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));

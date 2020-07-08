@@ -35,11 +35,6 @@ class _Forgot extends State<Forgot> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
     double tWidth = MediaQuery.of(context).size.width * 0.8;

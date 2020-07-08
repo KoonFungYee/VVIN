@@ -50,7 +50,6 @@ class _ReminderListState extends State<ReminderList> {
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   SharedPreferences prefs;
-  final _itemExtent = ScreenUtil().setHeight(245);
   bool status = false;
   List reminderList = [];
   String now;
@@ -301,7 +300,6 @@ class _ReminderListState extends State<ReminderList> {
                       ),
                     )
                   : ListView.builder(
-                      itemExtent: _itemExtent,
                       itemCount: reminderList.length,
                       itemBuilder: (BuildContext context, int index) {
                         return WidgetANimator(
@@ -396,6 +394,9 @@ class _ReminderListState extends State<ReminderList> {
                                         ),
                                       ),
                                     ],
+                                  ),
+                                  SizedBox(
+                                    height: ScreenUtil().setWidth(5),
                                   ),
                                 ],
                               ),

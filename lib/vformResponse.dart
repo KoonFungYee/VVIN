@@ -334,7 +334,7 @@ class _VFormResponseState extends State<VFormResponse> {
             : FloatingMenu(
                 isMainButton: true,
                 mainButtonColor: Colors.blueAccent,
-                mainButtonIcon: Icons.file_upload,
+                mainButtonIcon: Icons.share,
                 mainButtonShape: BoxShape.circle,
                 floatingType: FloatingType.RightCurve,
                 floatingButtonShape: BoxShape.circle,

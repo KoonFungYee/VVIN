@@ -384,9 +384,6 @@ class _SettingsState extends State<Settings> {
       } else {
         status = "1";
       }
-      print(widget.setting.branchID);
-      print(status);
-      print(assign);
       if (type == "unassign") {
         http.post(urlNotiChangeStatus, body: {
           "userID": widget.setting.userID,
@@ -436,7 +433,7 @@ class _SettingsState extends State<Settings> {
           }
         }).catchError((err) {
           _toast(err.toString());
-          print("Change assign error: " + (err).toString());
+          print("Change assign error: " + err.toString());
         });
       }
     }

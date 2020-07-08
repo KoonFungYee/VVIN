@@ -409,14 +409,8 @@ class _EditVProfileState extends State<EditVProfile> {
     _occupationController.text = widget.vprofileData.occupation;
     _areaController.text = widget.vprofileData.area;
     handlerIndex = 0;
-    handler = "";
-    selectedTag = "";
-    saveData = false;
-    saveHandler = false;
-    allHandler = false;
-    allTag = false;
-    nameCard = false;
-    gotData = false;
+    handler = selectedTag = "";
+    saveData = saveHandler = allHandler = allTag = nameCard = gotData = false;
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {

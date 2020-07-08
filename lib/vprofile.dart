@@ -169,7 +169,6 @@ class _VProfileState extends State<VProfile>
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     check();
     _init();
-    noResponse = response = false;
     name = widget.vdata.name;
     phoneNo = widget.vdata.phoneNo;
     status = widget.vdata.status;
@@ -178,8 +177,8 @@ class _VProfileState extends State<VProfile>
     userID = widget.vdata.userID;
     level = widget.vdata.level;
     userType = widget.vdata.userType;
-    noHandler = assignDone = handlerData = hListStatus = click = isFirst =
-        isSend = start = hasSpeech =
+    noResponse = response = noHandler = assignDone = handlerData = hListStatus =
+        click = isFirst = isSend = start = hasSpeech =
             vTagData = remarksData = viewsData = isScan = vProfileData = false;
     base64Image = _addRemark.text = resultText = speechText = "";
     // WidgetsBinding.instance.addObserver(this);
@@ -643,7 +642,9 @@ class _VProfileState extends State<VProfile>
                   SizedBox(
                     height: ScreenUtil().setHeight(20),
                   ),
-                  (handlerData == true && noHandler == true && (level == '0' || level == '4'))
+                  (handlerData == true &&
+                          noHandler == true &&
+                          (level == '0' || level == '4'))
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[

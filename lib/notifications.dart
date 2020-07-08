@@ -92,9 +92,7 @@ class _NotificationsState extends State<Notifications> {
     setTime();
     totalNotification = "0";
     currentTabIndex = 3;
-    status = false;
-    connection = false;
-    nodata = false;
+    status = connection = nodata = false;
     checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
