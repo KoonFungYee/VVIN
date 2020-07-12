@@ -66,17 +66,28 @@ class _VAnalyticsState extends State<VAnalytics>
   AnimationController animatedController;
   Animation dateBar, leadsChart, total, top10;
   StreamSubscription _sub;
+  SharedPreferences prefs;
   UniLinksType _type = UniLinksType.string;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   GlobalKey<RefreshIndicatorState> refreshKey;
+  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
+  String urlVAnalytics = "https://vvinoa.vvin.com/api/vanalytics.php";
+  String urlTopViews = "https://vvinoa.vvin.com/api/topview.php";
+  String urlLeads = "https://vvinoa.vvin.com/api/leads.php";
+  String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
+  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
+  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
+  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
+  double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
+  double font25 = ScreenUtil().setSp(57.5, allowFontScalingSelf: false);
+  int load, startTime, endTime, currentTabIndex;
   List<Map> offlineVAnalyticsData;
   List<Map> offlineTopViewData;
   List<Map> offlineChartData;
-  DateTime _startDate, _endDate, prevDate, _startDatePicker;
   List<TopView> topViews = [];
   List<LeadData> leadsDatas = [];
   List<LeadData> offlineLeadsDatas = [];
-  SharedPreferences prefs;
+  DateTime _startDate, _endDate, prevDate, _startDatePicker;
   String dateBanner,
       companyID,
       branchID,
@@ -114,17 +125,6 @@ class _VAnalyticsState extends State<VAnalytics>
       newVersion,
       now,
       totalNotification;
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlVAnalytics = "https://vvinoa.vvin.com/api/vanalytics.php";
-  String urlTopViews = "https://vvinoa.vvin.com/api/topview.php";
-  String urlLeads = "https://vvinoa.vvin.com/api/leads.php";
-  String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
-  int load, startTime, endTime, currentTabIndex;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
-  double font25 = ScreenUtil().setSp(57.5, allowFontScalingSelf: false);
   bool connection,
       nodata,
       positive,

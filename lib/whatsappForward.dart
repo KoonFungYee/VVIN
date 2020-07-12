@@ -49,21 +49,21 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
       BehaviorSubject<ReceivedNotification>();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
-  NotificationAppLaunchDetails notificationAppLaunchDetails;
-  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  Whatsapp _whatsapp = Whatsapp();
-  double _scaleFactor = 1.0;
-  StreamSubscription _sub;
-  UniLinksType _type = UniLinksType.string;
   final ScrollController controller = ScrollController();
-  var _phonecontroller = MaskedTextController(mask: '000000000000');
   final TextEditingController _namecontroller = TextEditingController();
   final TextEditingController _companycontroller = TextEditingController();
   final TextEditingController _remarkcontroller = TextEditingController();
   final ScrollController whatsappController = ScrollController();
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  Whatsapp _whatsapp = Whatsapp();
+  StreamSubscription _sub;
+  UniLinksType _type = UniLinksType.string;
+  var _phonecontroller = MaskedTextController(mask: '000000000000');
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
+  double _scaleFactor = 1.0;
   String urlWhatsApp = "https://vvinoa.vvin.com/api/whatsappForward.php";
   File pickedImage;
   bool _phoneEmpty, _nameEmpty, _phoneInvalid, isImageLoaded, isSend;

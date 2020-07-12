@@ -61,6 +61,9 @@ class _ProfileState extends State<Profile> {
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool start, connection, ready;
   int addressLength, emailLength, offLineAddressLength, offLineEmailLength;
+  String companyURL = "https://vvinoa.vvin.com/api/companyProfile.php";
+  String urlLogout = "https://vvinoa.vvin.com/api/logout.php";
+  String urlReminder = "https://vvinoa.vvin.com/api/reminder.php";
   String level,
       companyID,
       branchID,
@@ -79,9 +82,6 @@ class _ProfileState extends State<Profile> {
       addressLocal,
       now,
       location;
-  String companyURL = "https://vvinoa.vvin.com/api/companyProfile.php";
-  String urlLogout = "https://vvinoa.vvin.com/api/logout.php";
-  String urlReminder = "https://vvinoa.vvin.com/api/reminder.php";
 
   @override
   void initState() {

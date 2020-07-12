@@ -22,7 +22,17 @@ class CurrentIndex {
 }
 
 class EditCompanyDetails {
-  String companyID, branchID, userID, level, userType, image, name, phone, email, website, address;
+  String companyID,
+      branchID,
+      userID,
+      level,
+      userType,
+      image,
+      name,
+      phone,
+      email,
+      website,
+      address;
   EditCompanyDetails(
       {this.companyID,
       this.branchID,
@@ -39,14 +49,31 @@ class EditCompanyDetails {
 
 class Noti {
   String title, subtitle, date, notiID, status, vdataStatus;
-  Noti({this.title, this.subtitle, this.date, this.notiID, this.status, this.vdataStatus});
+  Noti(
+      {this.title,
+      this.subtitle,
+      this.date,
+      this.notiID,
+      this.status,
+      this.vdataStatus});
 }
 
 class Myworks {
-  String date, title, link, category, qr, urlName, id, priority;
+  String date, title, link, category, qr, urlName, id, branchID, branchName;
   bool offLine;
   List handlers;
-  Myworks({this.date, this.title, this.link, this.category, this.qr, this.urlName, this.offLine, this.id, this.handlers, this.priority});
+  Myworks(
+      {this.date,
+      this.title,
+      this.link,
+      this.category,
+      this.qr,
+      this.urlName,
+      this.offLine,
+      this.id,
+      this.handlers,
+      this.branchID,
+      this.branchName});
 }
 
 class TopView {
@@ -102,7 +129,7 @@ class Link {
 }
 
 class VProfileData {
-  String name, 
+  String name,
       email,
       company,
       ic,
@@ -121,7 +148,7 @@ class VProfileData {
       img,
       vformID;
   VProfileData(
-      {this.name, 
+      {this.name,
       this.email,
       this.company,
       this.ic,
@@ -137,80 +164,102 @@ class VProfileData {
       this.channel,
       this.created,
       this.lastActive,
-      this.img, 
+      this.img,
       this.vformID});
 }
 
-class Branch{
+class Branch {
   String branchName, branchID;
   Branch({this.branchName, this.branchID});
 }
 
-class View{
+class View {
   String date, link;
   View({this.date, this.link});
 }
 
-class Remarks{
+class Remarks {
   String date, remark, system;
   Remarks({this.date, this.remark, this.system});
 }
 
-class Gender{
+class Gender {
   String gender;
   int position;
   Gender({this.gender, this.position});
 }
 
-class Handler{
+class Handler {
   String handler, handlerID;
+  List branches;
   int position;
-  Handler({this.handler, this.handlerID, this.position});
+  Handler({this.handler, this.handlerID, this.position, this.branches});
 }
 
-class Industry{
+class Industry {
   String industry;
   int position;
   Industry({this.industry, this.position});
 }
 
-class Country{
+class Country {
   String country;
   int position;
   Country({this.country, this.position});
 }
 
-class States{
+class States {
   String state;
   int position;
   States({this.state, this.position});
 }
 
-class NotificationDetail{
+class NotificationDetail {
   String title, subtitle1, subtitle2;
   NotificationDetail({this.title, this.subtitle1, this.subtitle2});
 }
 
-class Links{
+class Links {
   String link_type, link, link_id;
   int position;
   Links({this.link_type, this.link, this.link_id, this.position});
 }
 
-class VDataFilter{
+class VDataFilter {
   String startDate, endDate, type, status, app, channel;
-  VDataFilter({this.startDate, this.endDate, this.type, this.status, this.app, this.channel});
+  VDataFilter(
+      {this.startDate,
+      this.endDate,
+      this.type,
+      this.status,
+      this.app,
+      this.channel});
 }
 
-class Setting{
+class Setting {
   String assign, unassign, userID, companyID, branchID, level, userType;
-  Setting({this.assign, this.unassign, this.userID, this.companyID, this.branchID, this.level, this.userType});
+  Setting(
+      {this.assign,
+      this.unassign,
+      this.userID,
+      this.companyID,
+      this.branchID,
+      this.level,
+      this.userType});
 }
 
-class WhatsappForward{
+class WhatsappForward {
   String url, userID, companyID, branchID, level, userType, branch;
   List vtagList;
-  WhatsappForward({this.url, this.userID, this.companyID, this.branchID, this.level, this.userType, this.branch, this.vtagList});
+  WhatsappForward(
+      {this.url,
+      this.userID,
+      this.companyID,
+      this.branchID,
+      this.level,
+      this.userType,
+      this.branch,
+      this.vtagList});
 }
 
 YYDialog YYAlertDialogWithScaleIn() {
@@ -234,8 +283,7 @@ YYDialog YYAlertDialogWithScaleIn() {
       padding: EdgeInsets.only(top: 24.0),
       gravity: Gravity.center,
       text1: "NO",
-      onTap1: () {
-      },
+      onTap1: () {},
       color1: Colors.blue,
       fontSize1: 14.0,
       text2: "YES",

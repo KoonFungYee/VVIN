@@ -58,6 +58,7 @@ class _NotificationsState extends State<Notifications> {
   bool more = true;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
+  SharedPreferences prefs;
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
@@ -79,10 +80,9 @@ class _NotificationsState extends State<Notifications> {
       now,
       totalNotification;
   List<Noti> notifications = [];
-  bool status, connection, nodata;
   List<Map> offlineNoti;
+  bool status, connection, nodata;
   int total, startTime, endTime, currentTabIndex;
-  SharedPreferences prefs;
 
   @override
   void initState() {

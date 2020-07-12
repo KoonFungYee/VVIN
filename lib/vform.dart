@@ -60,20 +60,21 @@ class _VFormState extends State<VForm> {
       BehaviorSubject<ReceivedNotification>();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
-  NotificationAppLaunchDetails notificationAppLaunchDetails;
-  SharedPreferences prefs;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  SharedPreferences prefs;
+  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
+  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
+  String urlVForm = "https://vvinoa.vvin.com/api/vform.php";
+  String urlDelete = "https://vvinoa.vvin.com/api/deleteResponse.php";
   String now, total, search;
   bool nodata, more, ready;
   List vform = [];
-  String urlVForm = "https://vvinoa.vvin.com/api/vform.php";
-  String urlDelete = "https://vvinoa.vvin.com/api/deleteResponse.php";
+  
 
   @override
   void initState() {

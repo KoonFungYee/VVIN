@@ -52,45 +52,47 @@ class MyWorks extends StatefulWidget {
 enum UniLinksType { string, uri }
 
 class _MyWorksState extends State<MyWorks> {
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
   final BehaviorSubject<ReceivedNotification>
       didReceiveLocalNotificationSubject =
       BehaviorSubject<ReceivedNotification>();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
-  NotificationAppLaunchDetails notificationAppLaunchDetails;
-  StreamSubscription _sub;
-  UniLinksType _type = UniLinksType.string;
-  double _scaleFactor = 1.0;
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
   double font10 = ScreenUtil().setSp(23, allowFontScalingSelf: false);
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font13 = ScreenUtil().setSp(30, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  final TextEditingController _phonecontroller = TextEditingController();
-  final TextEditingController _namecontroller = TextEditingController();
-  final TextEditingController _companycontroller = TextEditingController();
-  final TextEditingController _remarkcontroller = TextEditingController();
+  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
+  String urlMyWorks = "https://vvinoa.vvin.com/api/myWorks2.php";
+  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
+  String assignURL = "https://vvinoa.vvin.com/api/assign.php";
+  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
+  String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
+  String urlBranches = "https://vvin.com/api/getBranch.php";
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
-  String filePath = "";
-  List<Map> offlineLink;
-  List vtagList = [];
-  List seletedVTag = [];
-  List handlerAllList = [];
-  List handlerAllList1 = [];
+  UniLinksType _type = UniLinksType.string;
+  StreamSubscription _sub;
   Database db;
-  int total,
-      startTime,
-      endTime,
-      imageIndex,
-      linkIndex,
-      totalQR,
-      totalLink,
-      currentTabIndex;
-  bool isOffline, status, vtagStatus, connection, nodata, link, image, more;
+  final TextEditingController _companycontroller = TextEditingController();
+  final TextEditingController _namecontroller = TextEditingController();
+  final TextEditingController _phonecontroller = TextEditingController();
+  final TextEditingController _remarkcontroller = TextEditingController();
+  double _scaleFactor = 1.0;
+  List<String> allHandler = [];
+  List<Branch> branchList = [];
+  List<Handler> handlersBranch = [];
+  List<Handler> handlersNoBranch = [];
+  List<Myworks> myWorks = [];
+  List<Myworks> myWorks1 = [];
+  List vtagList = [];
+  List<Map> offlineLink;
+  SharedPreferences prefs;
+  int total, totalQR, totalLink, currentTabIndex;
   String search,
       companyID,
       branchID,
@@ -98,30 +100,28 @@ class _MyWorksState extends State<MyWorks> {
       level,
       userType,
       category,
-      dateInternet,
-      titleInternet,
-      linkInternet,
-      typeInternet,
       location,
-      base64Image,
+      selectedBranch,
+      filePath,
       now,
       totalNotification;
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlMyWorks = "https://vvinoa.vvin.com/api/myWorks2.php";
-  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
-  String assignURL = "https://vvinoa.vvin.com/api/assign.php";
-  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
-  String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
-  List<Myworks> myWorks = [];
-  List<Myworks> myWorks1 = [];
-  SharedPreferences prefs;
-  File pickedImage;
-  bool isImageLoaded;
-  List<String> scanner = [];
-  List<String> phoneList = [];
-  List<String> otherList = [];
-  List<String> allHandler = [];
-  String tempText = "";
+  bool status,
+      vtagStatus,
+      connection,
+      nodata,
+      link,
+      image,
+      more,
+      branchReady,
+      clearHandler;
+
+  @override
+  dispose() {
+    if (_sub != null) _sub.cancel();
+    didReceiveLocalNotificationSubject.close();
+    selectNotificationSubject.close();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -159,15 +159,15 @@ class _MyWorksState extends State<MyWorks> {
         }
       },
     );
-    totalNotification = "0";
-    currentTabIndex = 2;
-    isImageLoaded =
-        link = nodata = connection = vtagStatus = status = isOffline = false;
+    clearHandler =
+        branchReady = link = nodata = connection = vtagStatus = status = false;
     more = true;
-    search = base64Image = _phonecontroller.text = _namecontroller.text =
+    filePath = search = _phonecontroller.text = _namecontroller.text =
         _companycontroller.text = _remarkcontroller.text = "";
+    totalNotification = "0";
     category = "all";
-    total = imageIndex = linkIndex = 0;
+    currentTabIndex = 2;
+    total = 0;
     checkConnection();
     super.initState();
   }
@@ -350,14 +350,6 @@ class _MyWorksState extends State<MyWorks> {
     }
   }
 
-  @override
-  dispose() {
-    if (_sub != null) _sub.cancel();
-    didReceiveLocalNotificationSubject.close();
-    selectNotificationSubject.close();
-    super.dispose();
-  }
-
   void _onRefresh() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
@@ -376,699 +368,6 @@ class _MyWorksState extends State<MyWorks> {
       _toast("No Internet connection, data can't load");
     }
     _refreshController.refreshCompleted();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
-    return WillPopScope(
-      onWillPop: _onBackPressAppBar,
-      child: Scaffold(
-        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          onTap: onTapped,
-          currentIndex: currentTabIndex,
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.trending_up,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "VAnalytics",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.insert_chart,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "VData",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.assignment,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "My Works",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: (totalNotification != "0")
-                  ? Badge(
-                      position: BadgePosition.topRight(top: -8, right: -5),
-                      animationDuration: Duration(milliseconds: 300),
-                      animationType: BadgeAnimationType.slide,
-                      badgeContent: Text(
-                        '$totalNotification',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: ScreenUtil()
-                              .setSp(20, allowFontScalingSelf: false),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      child: Icon(
-                        Icons.notifications,
-                        size: ScreenUtil().setHeight(40),
-                      ),
-                    )
-                  : Icon(
-                      Icons.notifications,
-                      size: ScreenUtil().setHeight(40),
-                    ),
-              title: Text(
-                "Notifications",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.menu,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "More",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            )
-          ],
-        ),
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(
-            ScreenUtil().setHeight(85),
-          ),
-          child: AppBar(
-            brightness: Brightness.light,
-            backgroundColor: Colors.white,
-            elevation: 1,
-            centerTitle: true,
-            title: Text(
-              "My Works",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: font18,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        body: Container(
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: ScreenUtil().setHeight(20),
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      child: Card(
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(
-                              ScreenUtil().setHeight(20),
-                              0,
-                              ScreenUtil().setHeight(20),
-                              0),
-                          height: ScreenUtil().setHeight(80),
-                          child: TextField(
-                            onChanged: _search,
-                            style: TextStyle(
-                              fontSize: font14,
-                            ),
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: ScreenUtil().setHeight(6),
-                              ),
-                              hintText: "Search",
-                              suffix: IconButton(
-                                iconSize: ScreenUtil().setHeight(35),
-                                icon: Icon(Icons.keyboard_hide),
-                                onPressed: () {
-                                  FocusScope.of(context)
-                                      .requestFocus(new FocusNode());
-                                },
-                              ),
-                              suffixIcon: Icon(
-                                Icons.search,
-                                size: ScreenUtil().setHeight(45),
-                              ),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(ScreenUtil().setWidth(10), 0,
-                        ScreenUtil().setHeight(0), 0),
-                    child: Card(
-                      child: InkWell(
-                        onTap: _myWorkfilter,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: EdgeInsets.all(
-                            ScreenUtil().setHeight(15),
-                          ),
-                          child: Icon(
-                            Icons.tune,
-                            size: ScreenUtil().setHeight(45),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: ScreenUtil().setHeight(10),
-              ),
-              (status == true && vtagStatus == true)
-                  ? Container(
-                      padding: EdgeInsets.all(
-                        ScreenUtil().setHeight(10),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            "QR downloaded: " + totalQR.toString(),
-                            style: TextStyle(fontSize: font12),
-                          ),
-                          Text(
-                            "Link downloaded: " + totalLink.toString(),
-                            style: TextStyle(fontSize: font12),
-                          )
-                        ],
-                      ),
-                    )
-                  : Container(),
-              SizedBox(
-                height: ScreenUtil().setHeight(10),
-              ),
-              (status == true && vtagStatus == true)
-                  ? (nodata == true)
-                      ? Center(
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.6,
-                            child: EmptyListWidget(
-                                packageImage: PackageImage.Image_2,
-                                // title: 'No Data',
-                                subTitle: 'No Data',
-                                titleTextStyle: Theme.of(context)
-                                    .typography
-                                    .dense
-                                    .display1
-                                    .copyWith(color: Color(0xff9da9c7)),
-                                subtitleTextStyle: Theme.of(context)
-                                    .typography
-                                    .dense
-                                    .body2
-                                    .copyWith(color: Color(0xffabb8d6))),
-                          ),
-                        )
-                      : Flexible(
-                          child: SmartRefresher(
-                            enablePullDown: true,
-                            enablePullUp: false,
-                            header: MaterialClassicHeader(),
-                            footer: CustomFooter(
-                              builder: (BuildContext context, LoadStatus mode) {
-                                Widget body;
-                                if (mode == LoadStatus.idle) {
-                                  if (more == true) {
-                                    body = SpinKitRing(
-                                      lineWidth: 2,
-                                      color: Colors.blue,
-                                      size: 20.0,
-                                      duration: Duration(milliseconds: 600),
-                                    );
-                                  }
-                                } else if (mode == LoadStatus.loading) {
-                                  if (more == true) {
-                                    body = SpinKitRing(
-                                      lineWidth: 2,
-                                      color: Color.fromRGBO(0, 174, 239, 1),
-                                      size: 20.0,
-                                      duration: Duration(milliseconds: 600),
-                                    );
-                                  }
-                                } else if (mode == LoadStatus.failed) {
-                                  body = Text("Load Failed!Click retry!");
-                                } else if (mode == LoadStatus.canLoading) {
-                                  body = Text("release to load more");
-                                } else {
-                                  body = Text("No more Data");
-                                }
-                                return Container(
-                                  height: 55.0,
-                                  child: Center(child: body),
-                                );
-                              },
-                            ),
-                            controller: _refreshController,
-                            onRefresh: _onRefresh,
-                            // onLoading: _onLoading,
-                            child: ListView.builder(
-                              itemCount: (connection == false)
-                                  ? offlineLink.length
-                                  : myWorks.length,
-                              itemBuilder: (context, int index) {
-                                return WidgetANimator(
-                                  Card(
-                                    child: Column(
-                                      children: <Widget>[
-                                        Container(
-                                          padding: EdgeInsets.fromLTRB(
-                                              ScreenUtil().setHeight(20),
-                                              ScreenUtil().setHeight(20),
-                                              ScreenUtil().setHeight(20),
-                                              ScreenUtil().setHeight(0)),
-                                          child: Column(
-                                            children: <Widget>[
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    (connection == false)
-                                                        ? offlineLink[index]
-                                                            ['date']
-                                                        : myWorks[index].date,
-                                                    style: TextStyle(
-                                                      fontSize: font12,
-                                                      color: Color.fromRGBO(
-                                                          165, 165, 165, 1),
-                                                    ),
-                                                  ),
-                                                  (level != "0")
-                                                      ? Container()
-                                                      : (myWorks[index]
-                                                                      .category !=
-                                                                  "VForm" &&
-                                                              myWorks[index]
-                                                                      .category !=
-                                                                  "VBrochure")
-                                                          ? popupMenuButton(
-                                                              index)
-                                                          : popupMenuButton1(
-                                                              index),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height:
-                                                    ScreenUtil().setHeight(10),
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: <Widget>[
-                                                      Text(
-                                                        (connection == false)
-                                                            ? offlineLink[index]
-                                                                ['type']
-                                                            : myWorks[index]
-                                                                .category,
-                                                        style: TextStyle(
-                                                          fontSize: font12,
-                                                          color: Color.fromRGBO(
-                                                              0, 174, 239, 1),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  (connection == true)
-                                                      ? Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          children: <Widget>[
-                                                            Text(
-                                                              "Available Offline",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      font12,
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          153,
-                                                                          153,
-                                                                          153,
-                                                                          1)),
-                                                            )
-                                                          ],
-                                                        )
-                                                      : Container(),
-                                                ],
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Flexible(
-                                                    child: InkWell(
-                                                      onTap: () {
-                                                        // if (connection !=
-                                                        //     false) {
-                                                        //   _visitURL(index);
-                                                        // }
-                                                      },
-                                                      child: Text(
-                                                        (connection == false)
-                                                            ? offlineLink[index]
-                                                                ['title']
-                                                            : myWorks[index]
-                                                                .title,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .none,
-                                                            fontSize: font14,
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    20,
-                                                                    23,
-                                                                    32,
-                                                                    1),
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  _switch(index),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Divider(),
-                                        SizedBox(
-                                          height: ScreenUtil().setHeight(5),
-                                        ),
-                                        Container(
-                                          child: Column(
-                                            children: <Widget>[
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: <Widget>[
-                                                  BouncingWidget(
-                                                    scaleFactor: _scaleFactor,
-                                                    onPressed: () {
-                                                      if (connection == true) {
-                                                        _whatsappForward(
-                                                            myWorks[index]
-                                                                .link);
-                                                      } else {
-                                                        _toast(
-                                                            "Offline mode can not WhatsApp Forward");
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      height: ScreenUtil()
-                                                          .setHeight(65),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.22,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                        color: Colors.white,
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          top: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          left: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          right: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                        ),
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          'Forward',
-                                                          style: TextStyle(
-                                                              fontSize: font12,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  BouncingWidget(
-                                                    scaleFactor: _scaleFactor,
-                                                    onPressed: () {
-                                                      _viewQR(index);
-                                                    },
-                                                    child: Container(
-                                                      height: ScreenUtil()
-                                                          .setHeight(65),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.22,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                        color: Colors.white,
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          top: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          left: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          right: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                        ),
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          'QR Code',
-                                                          style: TextStyle(
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
-                                                              fontSize: font12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  BouncingWidget(
-                                                    scaleFactor: _scaleFactor,
-                                                    onPressed: () {
-                                                      if (connection != false) {
-                                                        _visitURL(index);
-                                                      } else {
-                                                        _toast(
-                                                            "Please check your Internet Connection");
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      height: ScreenUtil()
-                                                          .setHeight(65),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.22,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                        color: Colors.white,
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          top: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          left: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          right: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                        ),
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          'Visit URL',
-                                                          style: TextStyle(
-                                                              fontSize: font12,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height:
-                                                    ScreenUtil().setHeight(20),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        )
-                  : Container(
-                      height: MediaQuery.of(context).size.height * 0.5,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            JumpingText('Loading...'),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.02),
-                            SpinKitRing(
-                              lineWidth: 3,
-                              color: Colors.blue,
-                              size: 30.0,
-                              duration: Duration(milliseconds: 600),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _switch(int index) {
@@ -1136,8 +435,8 @@ class _MyWorksState extends State<MyWorks> {
           switch (selectedItem) {
             case "assign":
               {
-                _assign(myWorks[index].handlers,
-                    myWorks[index].category + "-" + myWorks[index].id);
+                selectedBranch = myWorks[index].branchName;
+                _assign(index, myWorks[index].handlers);
               }
               break;
           }
@@ -1257,173 +556,266 @@ class _MyWorksState extends State<MyWorks> {
     }
   }
 
-  void _assign(List handlerList, String id) async {
-    String handlersOld = "";
-    for (int j = 0; j < handlerList.length; j++) {
-      for (int i = 0; i < handlerAllList1.length; i++) {
-        if (handlerList[j] == handlerAllList1[i].handler) {
-          if (handlersOld == "") {
-            handlersOld = handlerAllList1[i].handlerID;
-          } else {
-            handlersOld = handlersOld + "," + handlerAllList1[i].handlerID;
-          }
-        }
-      }
-    }
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      showModalBottomSheet(
-          isDismissible: false,
-          context: context,
-          builder: (context) {
-            return StatefulBuilder(
-                builder: (BuildContext context, StateSetter setModalState) {
-              return Container(
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom:
-                              BorderSide(width: 1, color: Colors.grey.shade300),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Container(
-                            padding: EdgeInsets.all(
-                              ScreenUtil().setHeight(10),
-                            ),
-                            child: Text(
-                              "Assign",
-                              style: TextStyle(
-                                  fontSize: font14,
-                                  fontWeight: FontWeight.bold),
-                            ),
+  void _assign(int index, List handlers) async {
+    if (level == '0' && branchReady == false) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _assign(index, handlers);
+      });
+    } else {
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.wifi ||
+          connectivityResult == ConnectivityResult.mobile) {
+        showModalBottomSheet(
+            isDismissible: false,
+            context: context,
+            builder: (context) {
+              return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setModalState) {
+                return Container(
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                                width: 1, color: Colors.grey.shade300),
                           ),
-                          Container(
-                            child: Row(
-                              children: <Widget>[
-                                InkWell(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(100),
-                                    ),
-                                    padding: EdgeInsets.all(
-                                      ScreenUtil().setHeight(20),
-                                    ),
-                                    child: Text(
-                                      "Done",
-                                      style: TextStyle(
-                                        color: Colors.blue,
-                                        fontSize: font14,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(
+                                ScreenUtil().setHeight(10),
+                              ),
+                              child: Text(
+                                "Assign",
+                                style: TextStyle(
+                                    fontSize: font14,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            Container(
+                              child: Row(
+                                children: <Widget>[
+                                  InkWell(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                      ),
+                                      padding: EdgeInsets.all(
+                                        ScreenUtil().setHeight(20),
+                                      ),
+                                      child: Text(
+                                        "Done",
+                                        style: TextStyle(
+                                          color: Colors.blue,
+                                          fontSize: font14,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  onTap: () {
-                                    _assignDone(handlersOld, handlerList, id);
-                                  },
-                                )
-                              ],
-                            ),
-                          )
-                        ],
+                                    onTap: () {
+                                      _assignDone(handlers);
+                                    },
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(ScreenUtil().setHeight(10)),
-                      child: Column(
-                        children: <Widget>[
-                          SizedBox(
-                            height: ScreenUtil().setHeight(10),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              Flexible(
-                                child: Text(
+                      Container(
+                        margin: EdgeInsets.all(ScreenUtil().setHeight(10)),
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(
+                              height: ScreenUtil().setHeight(10),
+                            ),
+                            (level == '0')
+                                ? Column(
+                                    children: <Widget>[
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: <Widget>[
+                                          Flexible(
+                                            child: Text(
+                                                "Assign selected links to branch",
+                                                style: TextStyle(
+                                                    color: Colors.grey.shade600,
+                                                    fontSize: font13)),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: ScreenUtil().setHeight(5),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(0.5),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          border: Border.all(
+                                              color: Colors.grey.shade400,
+                                              style: BorderStyle.solid),
+                                        ),
+                                        child: Row(
+                                          children: <Widget>[
+                                            Expanded(
+                                              child: Container(
+                                                margin: EdgeInsets.fromLTRB(
+                                                    ScreenUtil().setHeight(10),
+                                                    0,
+                                                    0,
+                                                    0),
+                                                child: (selectedBranch == '')
+                                                    ? Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .start,
+                                                        children: <Widget>[
+                                                          Text(
+                                                            "--Select a Branch--",
+                                                            style: TextStyle(
+                                                                fontSize:
+                                                                    font13,
+                                                                color: Colors
+                                                                    .grey),
+                                                          )
+                                                        ],
+                                                      )
+                                                    : Text(
+                                                        selectedBranch,
+                                                        style: TextStyle(
+                                                          fontSize: font14,
+                                                        ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                _selectBranch(index,
+                                                    setModalState, handlers);
+                                              },
+                                              child: Container(
+                                                height:
+                                                    ScreenUtil().setHeight(60),
+                                                width:
+                                                    ScreenUtil().setHeight(60),
+                                                child: Center(
+                                                  child: Icon(
+                                                    Icons.arrow_drop_down,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: ScreenUtil().setHeight(40),
+                                      ),
+                                    ],
+                                  )
+                                : Container(),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Flexible(
+                                  child: Text(
                                     "Assign handler for the leads generated by this work",
                                     style: TextStyle(
                                         color: Colors.grey.shade600,
-                                        fontSize: font13)),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: ScreenUtil().setHeight(5),
-                          ),
-                          Container(
-                            padding: EdgeInsets.all(0.5),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                  color: Colors.grey.shade400,
-                                  style: BorderStyle.solid),
-                            ),
-                            child: Row(
-                              children: <Widget>[
-                                Expanded(
-                                  child: Container(
-                                    margin: EdgeInsets.fromLTRB(
-                                        ScreenUtil().setHeight(10), 0, 0, 0),
-                                    child: (handlerList.length == 0)
-                                        ? Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text(
-                                                "Handler",
-                                                style: TextStyle(
-                                                    fontSize: font13,
-                                                    color: Colors.grey),
-                                              )
-                                            ],
-                                          )
-                                        : Wrap(
-                                            direction: Axis.horizontal,
-                                            alignment: WrapAlignment.start,
-                                            children: _handler(
-                                                setModalState, handlerList),
-                                          ),
+                                        fontSize: font13),
                                   ),
                                 ),
-                                InkWell(
-                                  onTap: () {
-                                    _selectHandler(handlerList, id);
-                                  },
-                                  child: Container(
-                                    height: ScreenUtil().setHeight(60),
-                                    width: ScreenUtil().setHeight(60),
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.arrow_drop_down,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                )
                               ],
                             ),
-                          ),
-                        ],
+                            SizedBox(
+                              height: ScreenUtil().setHeight(5),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(0.5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                    color: Colors.grey.shade400,
+                                    style: BorderStyle.solid),
+                              ),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Container(
+                                      margin: EdgeInsets.fromLTRB(
+                                          ScreenUtil().setHeight(10), 0, 0, 0),
+                                      child: _displayHandler(
+                                          setModalState, index, handlers),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () {
+                                      _selectHandler(index, handlers);
+                                    },
+                                    child: Container(
+                                      height: ScreenUtil().setHeight(60),
+                                      width: ScreenUtil().setHeight(60),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.arrow_drop_down,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
+                    ],
+                  ),
+                );
+              });
             });
-          });
-    } else {
-      _toast("This feature need Internet connection");
+      } else {
+        _toast("This feature need Internet connection");
+      }
     }
   }
 
-  List<Widget> _handler(StateSetter setModalState, List handlerList) {
+  Widget _displayHandler(StateSetter setModalState, int index, List handlers) {
+    Widget widget1;
+    if (handlers.length == 0) {
+      widget1 = Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            "--Select a Handler--",
+            style: TextStyle(fontSize: font13, color: Colors.grey),
+          )
+        ],
+      );
+    } else {
+      widget1 = Wrap(
+        direction: Axis.horizontal,
+        alignment: WrapAlignment.start,
+        children: _handler(setModalState, index, handlers),
+      );
+    }
+    return widget1;
+  }
+
+  List<Widget> _handler(
+      StateSetter setModalState, int index, List handlerList) {
     List widgetList = <Widget>[];
     for (int i = 0; i < handlerList.length; i++) {
       Widget widget1 = InkWell(
@@ -1469,61 +861,67 @@ class _MyWorksState extends State<MyWorks> {
     return widgetList;
   }
 
-  void _assignDone(String handlersOld, List handlerList, String id) async {
+  void _assignDone(List handlerList) async {
     String handlers = "";
-    for (int j = 0; j < handlerList.length; j++) {
-      for (int i = 0; i < handlerAllList1.length; i++) {
-        if (handlerList[j] == handlerAllList1[i].handler) {
-          if (handlers == "") {
-            handlers = handlerAllList1[i].handlerID;
-          } else {
-            handlers = handlers + "," + handlerAllList1[i].handlerID;
-          }
-        }
+    if (selectedBranch != '' || selectedBranch != '-') {
+      for (var handler in handlerList) {
+        
       }
     }
-    Navigator.of(context).pop();
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      http.post(assignURL, body: {
-        "companyID": companyID,
-        "branchID": branchID,
-        "userID": userID,
-        "level": level,
-        "user_type": userType,
-        "id": id,
-        "handler": handlers,
-        "type": 'myworks',
-      }).then((res) async {
-        if (res.body == "success") {
-          _toast("Handler updated");
-        } else {
-          _toast("Something's wrong");
-        }
-      }).catchError((err) {
-        print("Assign error: " + (err).toString());
-      });
-    } else {
-      _toast("No Internet, data can't update");
-    }
+
+    // for (int j = 0; j < handlerList.length; j++) {
+    //   for (int i = 0; i < handlerAllList1.length; i++) {
+    //     if (handlerList[j] == handlerAllList1[i].handler) {
+    //       if (handlers == "") {
+    //         handlers = handlerAllList1[i].handlerID;
+    //       } else {
+    //         handlers = handlers + "," + handlerAllList1[i].handlerID;
+    //       }
+    //     }
+    //   }
+    // }
+    // var connectivityResult = await (Connectivity().checkConnectivity());
+    // if (connectivityResult == ConnectivityResult.wifi ||
+    //     connectivityResult == ConnectivityResult.mobile) {
+    //   http.post(assignURL, body: {
+    //     "companyID": companyID,
+    //     "branchID": branchID,
+    //     "userID": userID,
+    //     "level": level,
+    //     "user_type": userType,
+    //     "id": id,
+    //     "handler": handlers,
+    //     "type": 'myworks',
+    //   }).then((res) async {
+    //     if (res.body == "success") {
+    //       _toast("Handler updated");
+    //       Navigator.of(context).pop();
+    //     } else {
+    //       _toast("Something's wrong");
+    //       Navigator.of(context).pop();
+    //     }
+    //   }).catchError((err) {
+    //     print("Assign error: " + (err).toString());
+    //     Navigator.of(context).pop();
+    //   });
+    // } else {
+    //   _toast("No Internet, data can't update");
+    //   Navigator.of(context).pop();
+    // }
   }
 
-  void _selectHandler(List handlerList, String id) {
-    String handler = "";
-    Navigator.of(context).pop();
-    allHandler.clear();
-    for (var data in handlerAllList) {
-      allHandler.add(data.handler);
-    }
-
-    for (int i = 0; i < handlerList.length; i++) {
-      for (int j = 0; j < handlerAllList.length; j++) {
-        if (handlerList[i] == handlerAllList[j].handler) {
-          allHandler.removeAt(j);
+  void _selectBranch(int index, StateSetter setModalState1, List handlers) {
+    int position;
+    if (selectedBranch == "" || selectedBranch == "-") {
+      position = 0;
+    } else {
+      for (int i = 0; i < branchList.length; i++) {
+        if (selectedBranch == branchList[i].branchName) {
+          position = i;
         }
       }
     }
+    Navigator.pop(context);
     showModalBottomSheet(
       isDismissible: false,
       context: context,
@@ -1531,7 +929,7 @@ class _MyWorksState extends State<MyWorks> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             return Container(
-              height: MediaQuery.of(context).size.height * 0.5,
+              height: MediaQuery.of(context).size.height * 0.4,
               child: Column(
                 children: <Widget>[
                   Container(
@@ -1574,16 +972,185 @@ class _MyWorksState extends State<MyWorks> {
                             ),
                           ),
                           onTap: () {
-                            if (handler == "-" || handler == "") {
-                            } else {
-                              if (this.mounted) {
-                                setState(() {
-                                  handlerList.add(handler);
-                                });
-                              }
+                            if (selectedBranch != myWorks[index].branchName ||
+                                clearHandler == true) {
+                              handlers = [];
+                              clearHandler = true;
                             }
                             Navigator.pop(context);
-                            _assign(handlerList, id);
+                            _assign(index, handlers);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                      child: Container(
+                    color: Colors.white,
+                    child: CupertinoPicker(
+                      backgroundColor: Colors.white,
+                      itemExtent: 28,
+                      scrollController:
+                          FixedExtentScrollController(initialItem: position),
+                      onSelectedItemChanged: (int index) {
+                        if (this.mounted) {
+                          setState(() {
+                            selectedBranch = branchList[index].branchName;
+                          });
+                        }
+                      },
+                      children: _branchList(),
+                    ),
+                  ))
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  List<Widget> _branchList() {
+    List widgetList = <Widget>[];
+    List<Branch> list = branchList;
+    for (var each in list) {
+      Widget widget1 = Text(
+        each.branchName,
+        style: TextStyle(
+          fontSize: font14,
+        ),
+      );
+      widgetList.add(widget1);
+    }
+    return widgetList;
+  }
+
+  void _selectHandler(int index, List handlers) {
+    String handler = "";
+    allHandler.clear();
+    Navigator.of(context).pop();
+
+    if (selectedBranch == myWorks[index].branchName) {
+      if (selectedBranch == '' || selectedBranch == "-") {
+        for (var data in handlersNoBranch) {
+          allHandler.add(data.handler);
+        }
+      } else {
+        for (var data in handlersBranch) {
+          for (var branch in data.branches) {
+            if (branch['branch_id'] == myWorks[index].branchID) {
+              allHandler.add(data.handler);
+            }
+          }
+        }
+        if (allHandler[0] != '-') {
+          allHandler.insert(0, '-');
+        }
+      }
+      if (clearHandler == false) {
+        for (int i = 0; i < allHandler.length; i++) {
+          for (int j = 0; j < myWorks[index].handlers.length; j++) {
+            if (allHandler[i] == myWorks[index].handlers[j]) {
+              allHandler.removeAt(i);
+            }
+          }
+        }
+      } else {
+        for (int i = 0; i < allHandler.length; i++) {
+          for (int j = 0; j < handlers.length; j++) {
+            if (allHandler[i] == handlers[j]) {
+              allHandler.removeAt(i);
+            }
+          }
+        }
+      }
+    } else {
+      if (selectedBranch == "-") {
+        for (var data in handlersNoBranch) {
+          allHandler.add(data.handler);
+        }
+      } else {
+        for (var data in handlersBranch) {
+          for (var branch in data.branches) {
+            if (branch['branch_name'] == selectedBranch) {
+              allHandler.add(data.handler);
+            }
+          }
+        }
+        allHandler.insert(0, '-');
+        for (int i = 0; i < allHandler.length; i++) {
+          for (int j = 0; j < handlers.length; j++) {
+            if (allHandler[i] == handlers[j]) {
+              allHandler.removeAt(i);
+            }
+          }
+        }
+      }
+
+      for (int i = 0; i < allHandler.length; i++) {
+        for (int j = 0; j < handlers.length; j++) {
+          if (allHandler[i] == handlers[j]) {
+            allHandler.removeAt(i);
+          }
+        }
+      }
+    }
+    showModalBottomSheet(
+      isDismissible: false,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.4,
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom:
+                            BorderSide(width: 1, color: Colors.grey.shade300),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.all(
+                            ScreenUtil().setHeight(20),
+                          ),
+                          child: Text(
+                            "Select",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: font14,
+                            ),
+                          ),
+                        ),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            padding: EdgeInsets.all(
+                              ScreenUtil().setHeight(20),
+                            ),
+                            child: Text(
+                              "Done",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                          onTap: () {
+                            if (handler != "-" && handler != "") {
+                              handlers.add(handler);
+                            }
+                            Navigator.pop(context);
+                            _assign(index, handlers);
                           },
                         ),
                       ],
@@ -1965,6 +1532,8 @@ class _MyWorksState extends State<MyWorks> {
                   qr: myWorks1[i].qr,
                   id: myWorks1[i].id,
                   handlers: myWorks1[i].handlers,
+                  branchID: myWorks1[i].branchID ?? '',
+                  branchName: myWorks1[i].branchName ?? '',
                   offLine: false,
                 );
                 myWorks.add(mywork);
@@ -1982,6 +1551,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2042,6 +1613,8 @@ class _MyWorksState extends State<MyWorks> {
                     qr: myWorks1[i].qr,
                     id: myWorks1[i].id,
                     handlers: myWorks1[i].handlers,
+                    branchID: myWorks1[i].branchID ?? '',
+                    branchName: myWorks1[i].branchName ?? '',
                     offLine: false);
                 myWorks.add(mywork);
               } else {
@@ -2059,6 +1632,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2122,6 +1697,8 @@ class _MyWorksState extends State<MyWorks> {
                     qr: myWorks1[i].qr,
                     id: myWorks1[i].id,
                     handlers: myWorks1[i].handlers,
+                    branchID: myWorks1[i].branchID ?? '',
+                    branchName: myWorks1[i].branchName ?? '',
                     offLine: false);
                 myWorks.add(mywork);
               } else {
@@ -2139,6 +1716,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2202,6 +1781,8 @@ class _MyWorksState extends State<MyWorks> {
                     qr: myWorks1[i].qr,
                     id: myWorks1[i].id,
                     handlers: myWorks1[i].handlers,
+                    branchID: myWorks1[i].branchID ?? '',
+                    branchName: myWorks1[i].branchName ?? '',
                     offLine: false);
                 myWorks.add(mywork);
               } else {
@@ -2219,6 +1800,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2282,6 +1865,8 @@ class _MyWorksState extends State<MyWorks> {
                     qr: myWorks1[i].qr,
                     id: myWorks1[i].id,
                     handlers: myWorks1[i].handlers,
+                    branchID: myWorks1[i].branchID ?? '',
+                    branchName: myWorks1[i].branchName ?? '',
                     offLine: false);
                 myWorks.add(mywork);
               } else {
@@ -2299,6 +1884,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2362,6 +1949,8 @@ class _MyWorksState extends State<MyWorks> {
                     qr: myWorks1[i].qr,
                     id: myWorks1[i].id,
                     handlers: myWorks1[i].handlers,
+                    branchID: myWorks1[i].branchID ?? '',
+                    branchName: myWorks1[i].branchName ?? '',
                     offLine: false);
                 myWorks.add(mywork);
               } else {
@@ -2379,6 +1968,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2493,13 +2084,9 @@ class _MyWorksState extends State<MyWorks> {
               myWorks[index].id +
               '")');
     }
-    // endTime = DateTime.now().millisecondsSinceEpoch;
-    // int result = endTime - startTime;
-    // print("MyWork Loading Time: " + result.toString());
   }
 
   Future<void> checkConnection() async {
-    startTime = DateTime.now().millisecondsSinceEpoch;
     final _devicePath = await getApplicationDocumentsDirectory();
     location = _devicePath.path.toString();
     db = await MyWorksDB.instance.database;
@@ -2532,6 +2119,9 @@ class _MyWorksState extends State<MyWorks> {
       getVTag();
       getHandlerList();
       notification();
+      if (level == '0') {
+        getBranches();
+      }
       if (prefs.getString("getreminder") == null) {
         getReminder();
       }
@@ -2539,6 +2129,41 @@ class _MyWorksState extends State<MyWorks> {
       initialize();
       _toast("No Internet, the data shown is not up to date");
     }
+  }
+
+  void getBranches() {
+    http.post(urlBranches, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "userID": userID,
+      "user_type": userType,
+      "level": level,
+    }).then((res) {
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        // print(jsonData);
+        for (var data in jsonData) {
+          Branch branch = Branch(
+            branchID: data['id'],
+            branchName: data['name'],
+          );
+          branchList.add(branch);
+        }
+      }
+      Branch branch = Branch(
+        branchID: '',
+        branchName: '-',
+      );
+      branchList.insert(0, branch);
+      if (this.mounted) {
+        setState(() {
+          branchReady = true;
+        });
+      }
+    }).catchError((err) {
+      _toast("No Internet Connection");
+      print("Setup Data error: " + err.toString());
+    });
   }
 
   void getReminder() {
@@ -2669,17 +2294,18 @@ class _MyWorksState extends State<MyWorks> {
     }).then((res) {
       if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
+        // print(jsonData);
         for (var data in jsonData) {
           Handler handler = Handler(
             handler: data["handler"],
             position: data["position"],
             handlerID: data["handlerID"],
+            branches: (data["branch"] != '') ? data["branch"] : [],
           );
-          handlerAllList.add(handler);
-          handlerAllList1.add(handler);
+          (data["branch"] == '')
+              ? handlersNoBranch.add(handler)
+              : handlersBranch.add(handler);
         }
-      } else {
-        _toast("Something wrong, please contact VVIN IT help desk");
       }
     }).catchError((err) {
       _toast("No Internet Connection");
@@ -2717,7 +2343,6 @@ class _MyWorksState extends State<MyWorks> {
       "companyID": companyID,
       "branchID": branchID,
       "userID": userID,
-      "branchID": branchID,
       "level": level,
       "user_type": userType,
       "count": myWorks.length.toString(),
@@ -2744,6 +2369,8 @@ class _MyWorksState extends State<MyWorks> {
                 qr: jsonData[i]['qr'],
                 id: jsonData[i]['id'],
                 handlers: jsonData[i]['handler'],
+                branchID: jsonData[i]['branchID'] ?? '',
+                branchName: jsonData[i]['branchName'] ?? '',
                 offLine: false);
             myWorks.add(mywork);
             myWorks1.add(mywork);
@@ -2770,6 +2397,8 @@ class _MyWorksState extends State<MyWorks> {
                 qr: jsonData[i]['qr'],
                 id: jsonData[i]['id'],
                 handlers: jsonData[i]['handlers'],
+                branchID: jsonData[i]['branchID'] ?? '',
+                branchName: jsonData[i]['branchName'] ?? '',
                 offLine: false);
             myWorks.add(mywork);
             myWorks1.add(mywork);
@@ -2916,6 +2545,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2956,6 +2587,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -2998,6 +2631,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -3040,6 +2675,8 @@ class _MyWorksState extends State<MyWorks> {
                       qr: myWorks1[i].qr,
                       id: myWorks1[i].id,
                       handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
                       offLine: false);
                   myWorks.add(mywork);
                 }
@@ -3239,6 +2876,699 @@ class _MyWorksState extends State<MyWorks> {
           CustomAnimationWidget(
         controller: controller,
         child: child,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
+    return WillPopScope(
+      onWillPop: _onBackPressAppBar,
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.white,
+          onTap: onTapped,
+          currentIndex: currentTabIndex,
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.trending_up,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "VAnalytics",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.insert_chart,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "VData",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.assignment,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "My Works",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: (totalNotification != "0")
+                  ? Badge(
+                      position: BadgePosition.topRight(top: -8, right: -5),
+                      animationDuration: Duration(milliseconds: 300),
+                      animationType: BadgeAnimationType.slide,
+                      badgeContent: Text(
+                        '$totalNotification',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ScreenUtil()
+                              .setSp(20, allowFontScalingSelf: false),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      child: Icon(
+                        Icons.notifications,
+                        size: ScreenUtil().setHeight(40),
+                      ),
+                    )
+                  : Icon(
+                      Icons.notifications,
+                      size: ScreenUtil().setHeight(40),
+                    ),
+              title: Text(
+                "Notifications",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.menu,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "More",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            )
+          ],
+        ),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(
+            ScreenUtil().setHeight(85),
+          ),
+          child: AppBar(
+            brightness: Brightness.light,
+            backgroundColor: Colors.white,
+            elevation: 1,
+            centerTitle: true,
+            title: Text(
+              "My Works",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: font18,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        body: Container(
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: ScreenUtil().setHeight(20),
+              ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Container(
+                      child: Card(
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(
+                              ScreenUtil().setHeight(20),
+                              0,
+                              ScreenUtil().setHeight(20),
+                              0),
+                          height: ScreenUtil().setHeight(80),
+                          child: TextField(
+                            onChanged: _search,
+                            style: TextStyle(
+                              fontSize: font14,
+                            ),
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: ScreenUtil().setHeight(6),
+                              ),
+                              hintText: "Search",
+                              suffix: IconButton(
+                                iconSize: ScreenUtil().setHeight(35),
+                                icon: Icon(Icons.keyboard_hide),
+                                onPressed: () {
+                                  FocusScope.of(context)
+                                      .requestFocus(new FocusNode());
+                                },
+                              ),
+                              suffixIcon: Icon(
+                                Icons.search,
+                                size: ScreenUtil().setHeight(45),
+                              ),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(ScreenUtil().setWidth(10), 0,
+                        ScreenUtil().setHeight(0), 0),
+                    child: Card(
+                      child: InkWell(
+                        onTap: _myWorkfilter,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.all(
+                            ScreenUtil().setHeight(15),
+                          ),
+                          child: Icon(
+                            Icons.tune,
+                            size: ScreenUtil().setHeight(45),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: ScreenUtil().setHeight(10),
+              ),
+              (status == true && vtagStatus == true)
+                  ? Container(
+                      padding: EdgeInsets.all(
+                        ScreenUtil().setHeight(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            "QR downloaded: " + totalQR.toString(),
+                            style: TextStyle(fontSize: font12),
+                          ),
+                          Text(
+                            "Link downloaded: " + totalLink.toString(),
+                            style: TextStyle(fontSize: font12),
+                          )
+                        ],
+                      ),
+                    )
+                  : Container(),
+              SizedBox(
+                height: ScreenUtil().setHeight(10),
+              ),
+              (status == true && vtagStatus == true)
+                  ? (nodata == true)
+                      ? Center(
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: EmptyListWidget(
+                                packageImage: PackageImage.Image_2,
+                                // title: 'No Data',
+                                subTitle: 'No Data',
+                                titleTextStyle: Theme.of(context)
+                                    .typography
+                                    .dense
+                                    .display1
+                                    .copyWith(color: Color(0xff9da9c7)),
+                                subtitleTextStyle: Theme.of(context)
+                                    .typography
+                                    .dense
+                                    .body2
+                                    .copyWith(color: Color(0xffabb8d6))),
+                          ),
+                        )
+                      : Flexible(
+                          child: SmartRefresher(
+                            enablePullDown: true,
+                            enablePullUp: false,
+                            header: MaterialClassicHeader(),
+                            footer: CustomFooter(
+                              builder: (BuildContext context, LoadStatus mode) {
+                                Widget body;
+                                if (mode == LoadStatus.idle) {
+                                  if (more == true) {
+                                    body = SpinKitRing(
+                                      lineWidth: 2,
+                                      color: Colors.blue,
+                                      size: 20.0,
+                                      duration: Duration(milliseconds: 600),
+                                    );
+                                  }
+                                } else if (mode == LoadStatus.loading) {
+                                  if (more == true) {
+                                    body = SpinKitRing(
+                                      lineWidth: 2,
+                                      color: Color.fromRGBO(0, 174, 239, 1),
+                                      size: 20.0,
+                                      duration: Duration(milliseconds: 600),
+                                    );
+                                  }
+                                } else if (mode == LoadStatus.failed) {
+                                  body = Text("Load Failed!Click retry!");
+                                } else if (mode == LoadStatus.canLoading) {
+                                  body = Text("release to load more");
+                                } else {
+                                  body = Text("No more Data");
+                                }
+                                return Container(
+                                  height: 55.0,
+                                  child: Center(child: body),
+                                );
+                              },
+                            ),
+                            controller: _refreshController,
+                            onRefresh: _onRefresh,
+                            // onLoading: _onLoading,
+                            child: ListView.builder(
+                              itemCount: (connection == false)
+                                  ? offlineLink.length
+                                  : myWorks.length,
+                              itemBuilder: (context, int index) {
+                                return WidgetANimator(
+                                  Card(
+                                    child: Column(
+                                      children: <Widget>[
+                                        Container(
+                                          padding: EdgeInsets.fromLTRB(
+                                              ScreenUtil().setHeight(20),
+                                              ScreenUtil().setHeight(20),
+                                              ScreenUtil().setHeight(20),
+                                              ScreenUtil().setHeight(0)),
+                                          child: Column(
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text(
+                                                    (connection == false)
+                                                        ? offlineLink[index]
+                                                            ['date']
+                                                        : myWorks[index].date,
+                                                    style: TextStyle(
+                                                      fontSize: font12,
+                                                      color: Color.fromRGBO(
+                                                          165, 165, 165, 1),
+                                                    ),
+                                                  ),
+                                                  (level == "0" || level == "4")
+                                                      ? (myWorks[index]
+                                                                      .category !=
+                                                                  "VForm" &&
+                                                              myWorks[index]
+                                                                      .category !=
+                                                                  "VBrochure")
+                                                          ? popupMenuButton(
+                                                              index)
+                                                          : popupMenuButton1(
+                                                              index)
+                                                      : Container(),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height:
+                                                    ScreenUtil().setHeight(10),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Text(
+                                                        (connection == false)
+                                                            ? offlineLink[index]
+                                                                ['type']
+                                                            : myWorks[index]
+                                                                .category,
+                                                        style: TextStyle(
+                                                          fontSize: font12,
+                                                          color: Color.fromRGBO(
+                                                              0, 174, 239, 1),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  (connection == true)
+                                                      ? Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          children: <Widget>[
+                                                            Text(
+                                                              "Available Offline",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      font12,
+                                                                  color: Color
+                                                                      .fromRGBO(
+                                                                          153,
+                                                                          153,
+                                                                          153,
+                                                                          1)),
+                                                            )
+                                                          ],
+                                                        )
+                                                      : Container(),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Flexible(
+                                                    child: InkWell(
+                                                      onTap: () {
+                                                        // if (connection !=
+                                                        //     false) {
+                                                        //   _visitURL(index);
+                                                        // }
+                                                      },
+                                                      child: Text(
+                                                        (connection == false)
+                                                            ? offlineLink[index]
+                                                                ['title']
+                                                            : myWorks[index]
+                                                                .title,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .none,
+                                                            fontSize: font14,
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    20,
+                                                                    23,
+                                                                    32,
+                                                                    1),
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  _switch(index),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Divider(),
+                                        SizedBox(
+                                          height: ScreenUtil().setHeight(5),
+                                        ),
+                                        Container(
+                                          child: Column(
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: <Widget>[
+                                                  BouncingWidget(
+                                                    scaleFactor: _scaleFactor,
+                                                    onPressed: () {
+                                                      if (connection == true) {
+                                                        _whatsappForward(
+                                                            myWorks[index]
+                                                                .link);
+                                                      } else {
+                                                        _toast(
+                                                            "Offline mode can not WhatsApp Forward");
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      height: ScreenUtil()
+                                                          .setHeight(65),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.22,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                        color: Colors.white,
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          top: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          left: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          right: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          'Forward',
+                                                          style: TextStyle(
+                                                              fontSize: font12,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  BouncingWidget(
+                                                    scaleFactor: _scaleFactor,
+                                                    onPressed: () {
+                                                      _viewQR(index);
+                                                    },
+                                                    child: Container(
+                                                      height: ScreenUtil()
+                                                          .setHeight(65),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.22,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                        color: Colors.white,
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          top: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          left: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          right: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          'QR Code',
+                                                          style: TextStyle(
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1),
+                                                              fontSize: font12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  BouncingWidget(
+                                                    scaleFactor: _scaleFactor,
+                                                    onPressed: () {
+                                                      if (connection != false) {
+                                                        _visitURL(index);
+                                                      } else {
+                                                        _toast(
+                                                            "Please check your Internet Connection");
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      height: ScreenUtil()
+                                                          .setHeight(65),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.22,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                        color: Colors.white,
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          top: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          left: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          right: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          'Visit URL',
+                                                          style: TextStyle(
+                                                              fontSize: font12,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height:
+                                                    ScreenUtil().setHeight(20),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                  : Container(
+                      height: MediaQuery.of(context).size.height * 0.4,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            JumpingText('Loading...'),
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.02),
+                            SpinKitRing(
+                              lineWidth: 3,
+                              color: Colors.blue,
+                              size: 30.0,
+                              duration: Duration(milliseconds: 600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+            ],
+          ),
+        ),
       ),
     );
   }

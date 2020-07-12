@@ -71,6 +71,12 @@ class _EditVProfileState extends State<EditVProfile> {
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
+  String urlDetails = "https://vvinoa.vvin.com/api/cardDetails.php";
+  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
+  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
+  String urlSaveEditVProfile =
+      "https://vvinoa.vvin.com/api/saveEditVProfile.php";
+  String urlSaveHandler = "https://vvinoa.vvin.com/api/saveHandler.php";
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   int genderIndex, industryIndex, countryIndex, handlerIndex;
   String handler,
@@ -84,12 +90,6 @@ class _EditVProfileState extends State<EditVProfile> {
       now,
       details;
   bool saveHandler, saveData, allHandler, allTag, nameCard, gotData;
-  String urlDetails = "https://vvinoa.vvin.com/api/cardDetails.php";
-  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
-  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
-  String urlSaveEditVProfile =
-      "https://vvinoa.vvin.com/api/saveEditVProfile.php";
-  String urlSaveHandler = "https://vvinoa.vvin.com/api/saveHandler.php";
   List<Gender> genderList = [];
   List<Handler> handlerList = [];
   List<Handler> handlerList1 = [];

@@ -56,26 +56,23 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       BehaviorSubject<ReceivedNotification>();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   SharedPreferences prefs;
-  double _scaleFactor = 1.0;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
+  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
+  String urlVData = "https://vvinoa.vvin.com/api/vdata.php";
+  String urlChangeStatus = "https://vvinoa.vvin.com/api/vdataChangeStatus.php";
+  String urlLinks = "https://vvinoa.vvin.com/api/links.php";
+  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
+  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
+  String urlBranches = "https://vvinoa.vvin.com/api/branch.php";
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
-  bool connection,
-      nodata,
-      link,
-      vData,
-      vDataReady,
-      executive,
-      more,
-      vtagStatus,
-      branch;
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
   List<VDataDetails> vDataDetails1 = [];
@@ -86,7 +83,23 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   List<String> links = [];
   List vtagList = [];
   Database vdataDB;
-  int currentTabIndex;
+  double _scaleFactor = 1.0;
+  int tap, count, total, currentTabIndex;
+  DateTime _startDate,
+      _endDate,
+      _startDatePicker,
+      _endDatePicker,
+      startDateTime,
+      endDateTime;
+  bool connection,
+      nodata,
+      link,
+      vData,
+      vDataReady,
+      executive,
+      more,
+      vtagStatus,
+      branch;
   String _byLink,
       _byStatus,
       _byExecutive,
@@ -107,22 +120,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       minimumDate,
       maximumDate,
       now,
-      handlerStatus;
-  int tap, count, total;
-  DateTime _startDate,
-      _endDate,
-      _startDatePicker,
-      _endDatePicker,
-      startDateTime,
-      endDateTime;
-  String totalNotification;
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlVData = "https://vvinoa.vvin.com/api/vdata.php";
-  String urlChangeStatus = "https://vvinoa.vvin.com/api/vdataChangeStatus.php";
-  String urlLinks = "https://vvinoa.vvin.com/api/links.php";
-  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
-  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
-  String urlBranches = "https://vvinoa.vvin.com/api/branch.php";
+      handlerStatus,
+      totalNotification;
   List<String> data = [
     "New",
     "Contacting",
@@ -154,7 +153,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     "VFlex",
     "VHome",
   ];
-  final _itemExtent = ScreenUtil().setHeight(260);
 
   @override
   void initState() {
@@ -659,7 +657,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                             onRefresh: _onRefresh,
                             onLoading: _onLoading,
                             child: ListView.builder(
-                              itemExtent: _itemExtent,
                               itemCount: (connection == true)
                                   ? vDataDetails.length
                                   : offlineVData.length,
@@ -1004,6 +1001,9 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                                         index),
                                               ],
                                             ),
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(10),
                                           ),
                                         ],
                                       ),

@@ -23,9 +23,9 @@ import 'package:menu_button/menu_button.dart';
 final TextEditingController _emcontroller = TextEditingController();
 final TextEditingController _passcontroller = TextEditingController();
 final ScrollController controller = ScrollController();
+FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 final String urlLogin = "https://vvinoa.vvin.com/api/newlogin.php";
 final String urlToken = "https://vvinoa.vvin.com/api/newsaveToken.php";
-FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 String token,
     _email,
     _password,
@@ -63,7 +63,6 @@ class _LoginPageState extends State<Login> {
       statusBarColor: Colors.white,
     ));
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    token = _email = _password = _passcontroller.text = '';
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     _firebaseMessaging.onIosSettingsRegistered
@@ -72,6 +71,7 @@ class _LoginPageState extends State<Login> {
       token = fbtoken;
       // print(fbtoken);
     });
+    token = _email = _password = _passcontroller.text = '';
     login = visible = gotbranch = gotcompany = false;
     setup();
     checkPlatform();
@@ -313,7 +313,8 @@ class _LoginPageState extends State<Login> {
           allData = extractdata;
           if (extractdata[0] != 'failed') {
             if (extractdata.length == 1) {
-              if (extractdata[0][0]['total_branch'].toString() == '0' ||
+              if (extractdata[0][0]['level'] == '0' ||
+                  extractdata[0][0]['total_branch'].toString() == '0' ||
                   extractdata[0][0]['total_branch'].toString() == '1') {
                 String branchid =
                     (extractdata[0][0]['total_branch'].toString() == '1')
@@ -820,8 +821,7 @@ class _Default extends State<Default> {
             userID = allData[i][0]['user_id'];
           });
         }
-
-        if (allData[i][0]['total_branch'] == 0) {
+        if (level == '0' || allData[i][0]['total_branch'] == 0) {
           branchID = '';
           _onProceed();
         } else {

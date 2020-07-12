@@ -1336,7 +1336,6 @@ class _VProfileState extends State<VProfile>
         _assignCheck();
       });
     } else {
-      
       showModalBottomSheet(
           isDismissible: false,
           context: context,

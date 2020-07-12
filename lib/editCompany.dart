@@ -63,6 +63,8 @@ class _EditCompanyState extends State<EditCompany> {
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  String urlEditCompany = "https://vvinoa.vvin.com/api/editCompanyProfile.php";
+  String urlUploadImage = "https://vvinoa.vvin.com/api/uploadImage.php";
   File _image;
   int number;
   String userID,
@@ -78,8 +80,6 @@ class _EditCompanyState extends State<EditCompany> {
       address,
       now,
       status;
-  String urlEditCompany = "https://vvinoa.vvin.com/api/editCompanyProfile.php";
-  String urlUploadImage = "https://vvinoa.vvin.com/api/uploadImage.php";
 
   @override
   void initState() {
