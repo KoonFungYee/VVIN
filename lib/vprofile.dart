@@ -107,7 +107,7 @@ class _VProfileState extends State<VProfile>
   String urlSaveRemark = "https://vvinoa.vvin.com/api/saveRemark.php";
   String urlWhatsApp = "https://vvinoa.vvin.com/api/whatsappForward.php";
   String assignURL = "https://vvinoa.vvin.com/api/assign.php";
-  String handlers = "https://vvinoa.vvin.com/api/getHandler.php";
+  String urlAllHandlers = "https://vvinoa.vvin.com/api/getHandler.php";
   String responseURL = 'https://vvinoa.vvin.com/api/response.php';
   List handler, vTag;
   List<VProfileData> vProfileDetails = [];
@@ -142,6 +142,7 @@ class _VProfileState extends State<VProfile>
       noHandler,
       response,
       noResponse,
+      assignDoneClick,
       isSend;
   List<String> data = [
     "New",
@@ -176,9 +177,10 @@ class _VProfileState extends State<VProfile>
     userID = widget.vdata.userID;
     level = widget.vdata.level;
     userType = widget.vdata.userType;
-    noResponse = response = noHandler = assignDone = handlerData = hListStatus =
-        click = isFirst = isSend = start = hasSpeech =
-            vTagData = remarksData = viewsData = isScan = vProfileData = false;
+    assignDoneClick = noResponse = response = noHandler = assignDone =
+        handlerData = hListStatus = click = isFirst = isSend = start =
+            hasSpeech = vTagData =
+                remarksData = viewsData = isScan = vProfileData = false;
     base64Image = _addRemark.text = resultText = speechText = "";
     // WidgetsBinding.instance.addObserver(this);
     // PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
@@ -641,9 +643,7 @@ class _VProfileState extends State<VProfile>
                   SizedBox(
                     height: ScreenUtil().setHeight(20),
                   ),
-                  (handlerData == true &&
-                          noHandler == true &&
-                          (level == '0' || level == '4'))
+                  (handlerData == true && noHandler == true && level == '4')
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
@@ -1189,7 +1189,7 @@ class _VProfileState extends State<VProfile>
         .then((res) {})
         .catchError((err) {
           _toast('Something error on save image');
-          print((err).toString());
+          print(err.toString());
         });
     FirebaseVisionImage image = FirebaseVisionImage.fromFile(pickedImage);
     TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
@@ -1274,7 +1274,7 @@ class _VProfileState extends State<VProfile>
     }).catchError((err) {
       Navigator.of(context).pop();
       _toast(err.toString());
-      print("Scan name card error: " + (err).toString());
+      print("Scan name card error: " + err.toString());
     });
   }
 
@@ -1336,7 +1336,6 @@ class _VProfileState extends State<VProfile>
         _assignCheck();
       });
     } else {
-      
       showModalBottomSheet(
           isDismissible: false,
           context: context,
@@ -1608,60 +1607,78 @@ class _VProfileState extends State<VProfile>
   }
 
   void _assignDone() async {
-    String handlerIDs = '';
-    for (int j = 0; j < handler.length; j++) {
-      for (int i = 0; i < allHandler.length; i++) {
-        if (handler[j] == allHandler[i].handler) {
-          if (handlerIDs == "") {
-            handlerIDs = allHandler[i].handlerID;
-          } else {
-            handlerIDs = handlerIDs + "," + allHandler[i].handlerID;
+    if (assignDoneClick == false) {
+      if (this.mounted) {
+        setState(() {
+          assignDoneClick = true;
+        });
+      }
+      String handlerIDs = '';
+      for (int j = 0; j < handler.length; j++) {
+        for (int i = 0; i < allHandler.length; i++) {
+          if (handler[j] == allHandler[i].handler) {
+            if (handlerIDs == "") {
+              handlerIDs = allHandler[i].handlerID;
+            } else {
+              handlerIDs = handlerIDs + "," + allHandler[i].handlerID;
+            }
           }
         }
       }
-    }
-    Navigator.of(context).pop();
-    _onLoading1();
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      http.post(assignURL, body: {
-        "companyID": companyID,
-        "branchID": branchID,
-        "userID": userID,
-        "level": level,
-        "user_type": userType,
-        "id": phoneNo,
-        "handler": handlerIDs,
-        "type": 'phone',
-      }).then((res) async {
-        if (res.body == "success") {
-          if (this.mounted) {
-            setState(() {
-              assignDone = true;
-              noHandler = false;
-            });
-          }
-          Future.delayed(const Duration(seconds: 3), () {
+      Navigator.of(context).pop();
+      _onLoading1();
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.wifi ||
+          connectivityResult == ConnectivityResult.mobile) {
+        http.post(assignURL, body: {
+          "companyID": companyID,
+          "branchID": branchID,
+          "userID": userID,
+          "level": level,
+          "user_type": userType,
+          "id": phoneNo,
+          "selected_branch": '',
+          "handler": handlerIDs,
+          "type": 'phone',
+        }).then((res) async {
+          if (res.body == "success") {
             if (this.mounted) {
               setState(() {
-                assignDone = false;
+                assignDone = true;
+                noHandler = false;
               });
             }
-          });
+            Future.delayed(const Duration(seconds: 3), () {
+              if (this.mounted) {
+                setState(() {
+                  assignDone = false;
+                });
+              }
+            });
+            Navigator.of(context).pop();
+            _toast("Handler updated");
+          } else {
+            Navigator.of(context).pop();
+            _toast("At least one handler needed");
+          }
+          if (this.mounted) {
+            setState(() {
+              assignDoneClick = false;
+            });
+          }
+        }).catchError((err) {
           Navigator.of(context).pop();
-          _toast("Handler updated");
-        } else {
-          Navigator.of(context).pop();
-          _toast("At least one handler needed");
-        }
-      }).catchError((err) {
+          print("Assign error: " + err.toString());
+          if (this.mounted) {
+            setState(() {
+              assignDoneClick = false;
+            });
+          }
+        });
+      } else {
         Navigator.of(context).pop();
-        print("Assign error: " + (err).toString());
-      });
-    } else {
-      Navigator.of(context).pop();
-      _toast("No Internet, data can't update");
+        _toast("No Internet, data can't update");
+      }
     }
   }
 
@@ -1939,7 +1956,7 @@ class _VProfileState extends State<VProfile>
             Navigator.pop(context);
             _addRemark.text = "";
             _toast("No Internet Connection, data can't save");
-            print("On submit error: " + (err).toString());
+            print("On submit error: " + err.toString());
           });
         } else {
           _toast("Please check your Internet connection");
@@ -1960,8 +1977,8 @@ class _VProfileState extends State<VProfile>
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
-      setupData();
-      getHandler();
+      getAllHandler();
+      getHandler(); //Data handler
       getVProfileData();
       getViews();
       getRemarks();
@@ -1971,13 +1988,13 @@ class _VProfileState extends State<VProfile>
     }
   }
 
-  void setupData() {
+  void getAllHandler() {
     companyID = companyID;
     branchID = branchID;
     userID = userID;
     level = level;
     userType = userType;
-    http.post(handlers, body: {
+    http.post(urlAllHandlers, body: {
       "companyID": companyID,
       "branchID": branchID,
       "userID": userID,
@@ -1986,6 +2003,7 @@ class _VProfileState extends State<VProfile>
     }).then((res) {
       if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
+        // print(jsonData);
         for (var data in jsonData) {
           Handler handler = Handler(
             handler: data["handler"],
@@ -2002,7 +2020,7 @@ class _VProfileState extends State<VProfile>
       }
     }).catchError((err) {
       _toast("No Internet Connection");
-      print("Setup Data error: " + (err).toString());
+      print("Setup Data error: " + err.toString());
     });
   }
 
@@ -2029,7 +2047,7 @@ class _VProfileState extends State<VProfile>
       }
     }).catchError((err) {
       _toast(err.toString());
-      print("Get VTag error: " + (err).toString());
+      print("Get VTag error: " + err.toString());
     });
   }
 
@@ -2107,7 +2125,7 @@ class _VProfileState extends State<VProfile>
       }
     }).catchError((err) {
       _toast(err.toString());
-      print("Get VProfile data error: " + (err).toString());
+      print("Get VProfile data error: " + err.toString());
     });
   }
 
@@ -2121,7 +2139,7 @@ class _VProfileState extends State<VProfile>
       "vform_id": vProfileDetails[0].vformID,
       "phone_number": phoneNo,
     }).then((res) {
-      print("getResponse body: " + res.body);
+      // print("getResponse body: " + res.body);
       if (res.body != 'nodata') {
         var jsonData = json.decode(res.body);
         vformResponse = jsonData;
@@ -2139,7 +2157,7 @@ class _VProfileState extends State<VProfile>
       }
     }).catchError((err) {
       _toast(err.toString());
-      print("Get response error: " + (err).toString());
+      print("Get response error: " + err.toString());
     });
   }
 
@@ -2173,7 +2191,7 @@ class _VProfileState extends State<VProfile>
       }
     }).catchError((err) {
       _toast(err.toString());
-      print("Get handler error: " + (err).toString());
+      print("Get handler error: " + err.toString());
     });
   }
 
@@ -2210,7 +2228,7 @@ class _VProfileState extends State<VProfile>
       }
     }).catchError((err) {
       _toast(err.toString());
-      print("Get view error: " + (err).toString());
+      print("Get view error: " + err.toString());
     });
   }
 
@@ -2249,7 +2267,7 @@ class _VProfileState extends State<VProfile>
       }
     }).catchError((err) {
       _toast(err.toString());
-      print("Get remark error: " + (err).toString());
+      print("Get remark error: " + err.toString());
     });
   }
 
@@ -2290,7 +2308,7 @@ class _VProfileState extends State<VProfile>
         });
       }
       _toast("Status can't change, please check your Internet connection");
-      print("Set status error: " + (err).toString());
+      print("Set status error: " + err.toString());
     });
   }
 }

@@ -69,7 +69,7 @@ class _MyWorksState extends State<MyWorks> {
   String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
   String urlMyWorks = "https://vvinoa.vvin.com/api/myWorks2.php";
   String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
-  String assignURL = "https://vvinoa.vvin.com/api/assign.php";
+  String assignURL = "https://vvinoa.vvin.com/api/assign2.php";
   String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
   String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
   String urlBranches = "https://vvin.com/api/getBranch.php";
@@ -102,6 +102,7 @@ class _MyWorksState extends State<MyWorks> {
       category,
       location,
       selectedBranch,
+      linkID,
       filePath,
       now,
       totalNotification;
@@ -113,6 +114,7 @@ class _MyWorksState extends State<MyWorks> {
       image,
       more,
       branchReady,
+      assignDoneClick,
       clearHandler;
 
   @override
@@ -159,10 +161,10 @@ class _MyWorksState extends State<MyWorks> {
         }
       },
     );
-    clearHandler =
+    assignDoneClick = clearHandler =
         branchReady = link = nodata = connection = vtagStatus = status = false;
     more = true;
-    filePath = search = _phonecontroller.text = _namecontroller.text =
+    linkID = filePath = search = _phonecontroller.text = _namecontroller.text =
         _companycontroller.text = _remarkcontroller.text = "";
     totalNotification = "0";
     category = "all";
@@ -436,6 +438,7 @@ class _MyWorksState extends State<MyWorks> {
             case "assign":
               {
                 selectedBranch = myWorks[index].branchName;
+                linkID = myWorks[index].category + "-" + myWorks[index].id;
                 _assign(index, myWorks[index].handlers);
               }
               break;
@@ -862,52 +865,99 @@ class _MyWorksState extends State<MyWorks> {
   }
 
   void _assignDone(List handlerList) async {
-    String handlers = "";
-    if (selectedBranch != '' || selectedBranch != '-') {
-      for (var handler in handlerList) {
-        
+    if (assignDoneClick == false) {
+      if (this.mounted) {
+        setState(() {
+          assignDoneClick = true;
+        });
+      }
+      String handlers = '';
+      String selectedbranch = '';
+      if (level == '0') {
+        if (selectedBranch == '' || selectedBranch == '-') {
+          for (int i = 0; i < handlerList.length; i++) {
+            for (int j = 0; j < handlersNoBranch.length; j++) {
+              if (handlerList[i] == handlersNoBranch[j].handler) {
+                if (handlers == "") {
+                  handlers = handlersNoBranch[j].handlerID;
+                } else {
+                  handlers = handlers + "," + handlersNoBranch[j].handlerID;
+                }
+              }
+            }
+          }
+        } else {
+          for (int i = 0; i < handlerList.length; i++) {
+            for (int j = 0; j < handlersBranch.length; j++) {
+              if (handlerList[i] == handlersBranch[j].handler) {
+                if (handlers == "") {
+                  handlers = handlersBranch[j].handlerID;
+                } else {
+                  handlers = handlers + "," + handlersBranch[j].handlerID;
+                }
+              }
+            }
+          }
+          for (int i = 0; i < branchList.length; i++) {
+            if (selectedBranch == branchList[i].branchName) {
+              selectedbranch = branchList[i].branchID;
+            }
+          }
+        }
+      } else {
+        for (int i = 0; i < handlerList.length; i++) {
+          for (int j = 0; j < handlersBranch.length; j++) {
+            if (handlerList[i] == handlersBranch[j].handler) {
+              if (handlers == "") {
+                handlers = handlersBranch[j].handlerID;
+              } else {
+                handlers = handlers + "," + handlersBranch[j].handlerID;
+              }
+            }
+          }
+        }
+      }
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.wifi ||
+          connectivityResult == ConnectivityResult.mobile) {
+        http.post(assignURL, body: {
+          "companyID": companyID,
+          "branchID": branchID,
+          "userID": userID,
+          "level": level,
+          "user_type": userType,
+          "id": linkID,
+          "selected_branch": selectedbranch,
+          "handler": handlers,
+          "type": 'myworks',
+        }).then((res) async {
+          if (res.body == "success") {
+            _toast("Handler updated");
+            Navigator.of(context).pop();
+          } else {
+            _toast("Something's wrong");
+            Navigator.of(context).pop();
+          }
+          if (this.mounted) {
+            setState(() {
+              assignDoneClick = false;
+            });
+          }
+        }).catchError((err) {
+          print("Assign error: " + (err).toString());
+          _toast(err.toString());
+          Navigator.of(context).pop();
+          if (this.mounted) {
+            setState(() {
+              assignDoneClick = false;
+            });
+          }
+        });
+      } else {
+        _toast("No Internet, data can't update");
+        Navigator.of(context).pop();
       }
     }
-
-    // for (int j = 0; j < handlerList.length; j++) {
-    //   for (int i = 0; i < handlerAllList1.length; i++) {
-    //     if (handlerList[j] == handlerAllList1[i].handler) {
-    //       if (handlers == "") {
-    //         handlers = handlerAllList1[i].handlerID;
-    //       } else {
-    //         handlers = handlers + "," + handlerAllList1[i].handlerID;
-    //       }
-    //     }
-    //   }
-    // }
-    // var connectivityResult = await (Connectivity().checkConnectivity());
-    // if (connectivityResult == ConnectivityResult.wifi ||
-    //     connectivityResult == ConnectivityResult.mobile) {
-    //   http.post(assignURL, body: {
-    //     "companyID": companyID,
-    //     "branchID": branchID,
-    //     "userID": userID,
-    //     "level": level,
-    //     "user_type": userType,
-    //     "id": id,
-    //     "handler": handlers,
-    //     "type": 'myworks',
-    //   }).then((res) async {
-    //     if (res.body == "success") {
-    //       _toast("Handler updated");
-    //       Navigator.of(context).pop();
-    //     } else {
-    //       _toast("Something's wrong");
-    //       Navigator.of(context).pop();
-    //     }
-    //   }).catchError((err) {
-    //     print("Assign error: " + (err).toString());
-    //     Navigator.of(context).pop();
-    //   });
-    // } else {
-    //   _toast("No Internet, data can't update");
-    //   Navigator.of(context).pop();
-    // }
   }
 
   void _selectBranch(int index, StateSetter setModalState1, List handlers) {
@@ -1030,11 +1080,23 @@ class _MyWorksState extends State<MyWorks> {
     String handler = "";
     allHandler.clear();
     Navigator.of(context).pop();
-
     if (selectedBranch == myWorks[index].branchName) {
-      if (selectedBranch == '' || selectedBranch == "-") {
-        for (var data in handlersNoBranch) {
-          allHandler.add(data.handler);
+      if (level != '4') {
+        if (selectedBranch == '' || selectedBranch == "-") {
+          for (var data in handlersNoBranch) {
+            allHandler.add(data.handler);
+          }
+        } else {
+          for (var data in handlersBranch) {
+            for (var branch in data.branches) {
+              if (branch['branch_id'] == myWorks[index].branchID) {
+                allHandler.add(data.handler);
+              }
+            }
+          }
+          if (allHandler[0] != '-') {
+            allHandler.insert(0, '-');
+          }
         }
       } else {
         for (var data in handlersBranch) {
@@ -2298,7 +2360,6 @@ class _MyWorksState extends State<MyWorks> {
         for (var data in jsonData) {
           Handler handler = Handler(
             handler: data["handler"],
-            position: data["position"],
             handlerID: data["handlerID"],
             branches: (data["branch"] != '') ? data["branch"] : [],
           );
@@ -3223,6 +3284,24 @@ class _MyWorksState extends State<MyWorks> {
                                                               0, 174, 239, 1),
                                                         ),
                                                       ),
+                                                      (level == '0' &&
+                                                              myWorks[index]
+                                                                      .branchName !=
+                                                                  '')
+                                                          ? Text(
+                                                              ' (' +
+                                                                  myWorks[index]
+                                                                      .branchName +
+                                                                  ')',
+                                                              style: TextStyle(
+                                                                fontSize:
+                                                                    font12,
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        8, 195, 20, 1),
+                                                              ),
+                                                            )
+                                                          : Text(''),
                                                     ],
                                                   ),
                                                   (connection == true)
