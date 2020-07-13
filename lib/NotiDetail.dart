@@ -63,9 +63,9 @@ class _NotiDetailState extends State<NotiDetail> {
   double font13 = ScreenUtil().setSp(30, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  String urlHandler = "https://vvinoa.vvin.com/api/handler.php";
-  String handlers = "https://vvinoa.vvin.com/api/getHandler.php";
-  String assignURL = "https://vvinoa.vvin.com/api/assign.php";
+  String urlHandler = ip + "handler.php";
+  String handlers = ip + "getHandler.php";
+  String assignURL = ip + "assign.php";
   final ScrollController controller = ScrollController();
   String companyID, branchID, userID, level, userType, phoneNo, now;
   bool handlerStatus, hListStatus, click;

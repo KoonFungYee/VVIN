@@ -70,11 +70,11 @@ class _VAnalyticsState extends State<VAnalytics>
   UniLinksType _type = UniLinksType.string;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   GlobalKey<RefreshIndicatorState> refreshKey;
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlVAnalytics = "https://vvinoa.vvin.com/api/vanalytics.php";
-  String urlTopViews = "https://vvinoa.vvin.com/api/topview.php";
-  String urlLeads = "https://vvinoa.vvin.com/api/leads.php";
-  String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
+  String urlNoti = ip + "notiTotalNumber.php";
+  String urlVAnalytics = ip + "vanalytics.php";
+  String urlTopViews = ip + "topview.php";
+  String urlLeads = ip + "leads.php";
+  String urlGetReminder = ip + "getreminder.php";
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 
+String ip = 'http://211.25.23.149/api/';
+
 class ReceivedNotification {
   final int id;
   final String title;

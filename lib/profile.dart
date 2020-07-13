@@ -61,9 +61,9 @@ class _ProfileState extends State<Profile> {
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool start, connection, ready;
   int addressLength, emailLength, offLineAddressLength, offLineEmailLength;
-  String companyURL = "https://vvinoa.vvin.com/api/companyProfile.php";
-  String urlLogout = "https://vvinoa.vvin.com/api/logout.php";
-  String urlReminder = "https://vvinoa.vvin.com/api/reminder.php";
+  String companyURL = ip + "companyProfile.php";
+  String urlLogout = ip + "logout.php";
+  String urlReminder = ip + "reminder.php";
   String level,
       companyID,
       branchID,

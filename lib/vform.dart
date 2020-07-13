@@ -69,8 +69,8 @@ class _VFormState extends State<VForm> {
   SharedPreferences prefs;
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  String urlVForm = "https://vvinoa.vvin.com/api/vform.php";
-  String urlDelete = "https://vvinoa.vvin.com/api/deleteResponse.php";
+  String urlVForm = ip + "vform.php";
+  String urlDelete = ip + "deleteResponse.php";
   String now, total, search;
   bool nodata, more, ready;
   List vform = [];

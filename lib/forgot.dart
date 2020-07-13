@@ -5,12 +5,13 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:vvin/data.dart';
 import 'login.dart';
 import 'package:http/http.dart' as http;
 
 final ScrollController controller = ScrollController();
 final TextEditingController _emcontroller = TextEditingController();
-final String urlForget = "https://vvinoa.vvin.com/api/forget_password.php";
+final String urlForget = ip + "forget_password.php";
 
 class Forgot extends StatefulWidget {
   @override

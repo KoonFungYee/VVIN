@@ -64,7 +64,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   double _scaleFactor = 1.0;
-  String urlWhatsApp = "https://vvinoa.vvin.com/api/whatsappForward.php";
+  String urlWhatsApp = ip + "whatsappForward.php";
   File pickedImage;
   bool _phoneEmpty, _nameEmpty, _phoneInvalid, isImageLoaded, isSend;
   List<String> phoneList = [];

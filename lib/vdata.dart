@@ -116,13 +116,13 @@ class _VDataState extends State<VData> {
       _endDatePicker,
       startDateTime,
       endDateTime;
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlVData = "https://vvinoa.vvin.com/api/vdata.php";
-  String urlChangeStatus = "https://vvinoa.vvin.com/api/vdataChangeStatus.php";
-  String urlLinks = "https://vvinoa.vvin.com/api/links.php";
-  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
-  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
-  String urlBranches = "https://vvinoa.vvin.com/api/branch.php";
+  String urlNoti = ip + "notiTotalNumber.php";
+  String urlVData = ip + "vdata.php";
+  String urlChangeStatus = ip + "vdataChangeStatus.php";
+  String urlLinks = ip + "links.php";
+  String urlHandler = ip + "getHandler.php";
+  String urlVTag = ip + "vtag.php";
+  String urlBranches = ip + "branch.php";
   List<String> data = [
     "New",
     "Contacting",
@@ -3923,14 +3923,5 @@ class _VDataState extends State<VData> {
         child: child,
       ),
     );
-  }
-
-  String _dateFormat(String fullDate) {
-    String result, date, month, year;
-    date = fullDate.substring(8, 10);
-    month = fullDate.substring(5, 7);
-    year = fullDate.substring(0, 4);
-    result = date + "/" + month + "/" + year;
-    return result;
   }
 }

@@ -68,10 +68,10 @@ class _MoreState extends State<More> {
   BuildContext myContext;
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String companyURL = "https://vvinoa.vvin.com/api/companyProfile.php";
-  String urlLogout = "https://vvinoa.vvin.com/api/logout.php";
-  String urlReminder = "https://vvinoa.vvin.com/api/reminder.php";
+  String urlNoti = ip + "notiTotalNumber.php";
+  String companyURL = ip + "companyProfile.php";
+  String urlLogout = ip + "logout.php";
+  String urlReminder = ip + "reminder.php";
   SharedPreferences prefs;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool start, connection, ready, isFirst;

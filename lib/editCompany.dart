@@ -63,8 +63,8 @@ class _EditCompanyState extends State<EditCompany> {
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  String urlEditCompany = "https://vvinoa.vvin.com/api/editCompanyProfile.php";
-  String urlUploadImage = "https://vvinoa.vvin.com/api/uploadImage.php";
+  String urlEditCompany = ip + "editCompanyProfile.php";
+  String urlUploadImage = ip + "uploadImage.php";
   File _image;
   int number;
   String userID,

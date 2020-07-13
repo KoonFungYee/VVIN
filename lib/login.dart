@@ -24,8 +24,8 @@ final TextEditingController _emcontroller = TextEditingController();
 final TextEditingController _passcontroller = TextEditingController();
 final ScrollController controller = ScrollController();
 FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-final String urlLogin = "https://vvinoa.vvin.com/api/newlogin.php";
-final String urlToken = "https://vvinoa.vvin.com/api/newsaveToken.php";
+final String urlLogin = ip + "newlogin.php";
+final String urlToken = ip + "newsaveToken.php";
 String token,
     _email,
     _password,

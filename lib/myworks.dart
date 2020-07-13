@@ -66,13 +66,13 @@ class _MyWorksState extends State<MyWorks> {
   double font13 = ScreenUtil().setSp(30, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlMyWorks = "https://vvinoa.vvin.com/api/myWorks2.php";
-  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
-  String assignURL = "https://vvinoa.vvin.com/api/assign2.php";
-  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
-  String urlGetReminder = "https://vvinoa.vvin.com/api/getreminder.php";
-  String urlBranches = "https://vvin.com/api/getBranch.php";
+  String urlNoti = ip + "notiTotalNumber.php";
+  String urlMyWorks = ip + "myWorks2.php";
+  String urlHandler = ip + "getHandler.php";
+  String assignURL = ip + "assign2.php";
+  String urlVTag = ip + "vtag.php";
+  String urlGetReminder = ip + "getreminder.php";
+  String urlBranches = ip + "getBranch.php";
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   UniLinksType _type = UniLinksType.string;
@@ -621,7 +621,7 @@ class _MyWorksState extends State<MyWorks> {
                                       ),
                                     ),
                                     onTap: () {
-                                      _assignDone(handlers);
+                                      _assignDone(handlers, index);
                                     },
                                   )
                                 ],
@@ -864,7 +864,7 @@ class _MyWorksState extends State<MyWorks> {
     return widgetList;
   }
 
-  void _assignDone(List handlerList) async {
+  void _assignDone(List handlerList, int index) async {
     if (assignDoneClick == false) {
       if (this.mounted) {
         setState(() {
@@ -933,6 +933,12 @@ class _MyWorksState extends State<MyWorks> {
         }).then((res) async {
           if (res.body == "success") {
             _toast("Handler updated");
+            if (this.mounted) {
+              setState(() {
+                myWorks[index].branchName = selectedBranch;
+                myWorks[index].handlers = handlerList;
+              });
+            }
             Navigator.of(context).pop();
           } else {
             _toast("Something's wrong");
@@ -2764,15 +2770,6 @@ class _MyWorksState extends State<MyWorks> {
     }
   }
 
-  String _dateFormat(String fullDate) {
-    String result, date, month, year;
-    date = fullDate.substring(8, 10);
-    month = fullDate.substring(5, 7);
-    year = fullDate.substring(0, 4);
-    result = date + "/" + month + "/" + year;
-    return result;
-  }
-
   Future<String> get _localDevicePath async {
     final _devicePath = await getApplicationDocumentsDirectory();
     return _devicePath.path;
@@ -3298,7 +3295,10 @@ class _MyWorksState extends State<MyWorks> {
                                                                     font12,
                                                                 color: Color
                                                                     .fromRGBO(
-                                                                        8, 195, 20, 1),
+                                                                        8,
+                                                                        195,
+                                                                        20,
+                                                                        1),
                                                               ),
                                                             )
                                                           : Text(''),

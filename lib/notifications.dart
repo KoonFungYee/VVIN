@@ -65,10 +65,9 @@ class _NotificationsState extends State<Notifications> {
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  String urlNoti = "https://vvinoa.vvin.com/api/notiTotalNumber.php";
-  String urlNotification = "https://vvinoa.vvin.com/api/notification.php";
-  String urlNotiChangeStatus =
-      "https://vvinoa.vvin.com/api/notificationAction.php";
+  String urlNoti = ip + "notiTotalNumber.php";
+  String urlNotification = ip + "notification.php";
+  String urlNotiChangeStatus = ip + "notificationAction.php";
   String userID,
       companyID,
       branchID,
@@ -511,10 +510,7 @@ class _NotificationsState extends State<Notifications> {
     }
     for (var i = 0; i < length; i++) {
       List list;
-      String nameStart, nameEnd, type, title, subtitle;
-      nameStart = 'Name: ';
-      nameEnd = 'Contact';
-
+      String type, title, subtitle;
       if (connection == true) {
         title = notifications[i].title;
       } else {

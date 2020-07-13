@@ -71,12 +71,11 @@ class _EditVProfileState extends State<EditVProfile> {
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  String urlDetails = "https://vvinoa.vvin.com/api/cardDetails.php";
-  String urlHandler = "https://vvinoa.vvin.com/api/getHandler.php";
-  String urlVTag = "https://vvinoa.vvin.com/api/vtag.php";
-  String urlSaveEditVProfile =
-      "https://vvinoa.vvin.com/api/saveEditVProfile.php";
-  String urlSaveHandler = "https://vvinoa.vvin.com/api/saveHandler.php";
+  String urlDetails = ip + "cardDetails.php";
+  String urlHandler = ip + "getHandler.php";
+  String urlVTag = ip + "vtag.php";
+  String urlSaveEditVProfile = ip + "saveEditVProfile.php";
+  String urlSaveHandler = ip + "saveHandler.php";
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   int genderIndex, industryIndex, countryIndex, handlerIndex;
   String handler,
