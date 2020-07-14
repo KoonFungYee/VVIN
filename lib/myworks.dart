@@ -119,6 +119,10 @@ class _MyWorksState extends State<MyWorks> {
 
   @override
   dispose() {
+    _companycontroller.dispose();
+    _namecontroller.dispose();
+    _phonecontroller.dispose();
+    _remarkcontroller.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();

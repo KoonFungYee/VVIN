@@ -230,6 +230,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
 
   @override
   void dispose() {
+    _namecontroller.dispose();
+    _companycontroller.dispose();
+    _remarkcontroller.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();

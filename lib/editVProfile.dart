@@ -549,6 +549,13 @@ class _EditVProfileState extends State<EditVProfile> {
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _companyController.dispose();
+    _icController.dispose();
+    _positionController.dispose();
+    _occupationController.dispose();
+    _areaController.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();

@@ -356,7 +356,7 @@ class _VProfileState extends State<VProfile>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    _addRemark.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();

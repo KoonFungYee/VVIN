@@ -176,8 +176,7 @@ class _EditCompanyState extends State<EditCompany> {
             CupertinoDialogAction(
               isDefaultAction: true,
               child: Text('Ok'),
-              onPressed: () async {
-              },
+              onPressed: () async {},
             )
           ],
         ),
@@ -243,6 +242,11 @@ class _EditCompanyState extends State<EditCompany> {
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _websiteController.dispose();
+   _addressController.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();
