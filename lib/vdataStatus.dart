@@ -7,7 +7,6 @@ import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:route_transitions/route_transitions.dart';
@@ -19,19 +18,17 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:empty_widget/empty_widget.dart';
 import 'dart:convert';
 
-class VDataAll extends StatefulWidget {
-  final VDataInfo vdataInfo;
-  VDataAll({Key key, this.vdataInfo}) : super(key: key);
+class VDataStatus extends StatefulWidget {
+  VDataInfo vdataInfo;
+  VDataStatus({Key key, this.vdataInfo}) : super(key: key);
 
   @override
-  _VDataAllState createState() => _VDataAllState();
+  _VDataStatusState createState() => _VDataStatusState();
 }
 
-class _VDataAllState extends State<VDataAll> {
+class _VDataStatusState extends State<VDataStatus> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   String urlVData = ip + "vdata.php";
   String urlChangeStatus = ip + "vdataChangeStatus.php";
   List<VDataDetails> vDataDetails = [];
@@ -53,8 +50,8 @@ class _VDataAllState extends State<VDataAll> {
       search,
       startDate,
       endDate;
-  bool vDataReady, nodata, connection;
-  int total = 0;
+  bool vDataReady, nodata;
+  int total;
   List<String> data = [
     "New",
     "Contacting",
@@ -70,37 +67,24 @@ class _VDataAllState extends State<VDataAll> {
   @override
   void initState() {
     companyID = widget.vdataInfo.companyID;
-    print(companyID);
     branchID = widget.vdataInfo.branchID;
-    print(branchID);
     userID = widget.vdataInfo.userID;
-    print(userID);
     level = widget.vdataInfo.level;
-    print(level);
     userType = widget.vdataInfo.userType;
-    print(userType);
     type = widget.vdataInfo.type;
-    print(type);
     channel = widget.vdataInfo.channel;
-    print(channel);
     apps = widget.vdataInfo.apps;
-    print(apps);
     link_id = widget.vdataInfo.link_id;
-    print(link_id);
     _byStatus = widget.vdataInfo.byStatus;
-    print(_byStatus);
     _byExecutive = widget.vdataInfo.byExecutive;
-    print(_byExecutive);
     _byVTag = widget.vdataInfo.byVTag;
-    print(_byVTag);
     search = widget.vdataInfo.search;
-    print(search);
     startDate = widget.vdataInfo.startDate;
-    print(startDate);
     endDate = widget.vdataInfo.endDate;
-    print(endDate);
-    connection = vDataReady = nodata = false;
-    checkConnection();
+    total = widget.vdataInfo.total;
+    vDataDetails = widget.vdataInfo.vDataList;
+    nodata = false;
+    vDataReady = true;
     super.initState();
   }
 
@@ -132,10 +116,8 @@ class _VDataAllState extends State<VDataAll> {
                   ),
                 )
               : SmartRefresher(
-                  enablePullDown: (connection == true) ? true : false,
-                  enablePullUp: (connection == true)
-                      ? (vDataDetails.length != total) ? true : false
-                      : false,
+                  enablePullDown: true,
+                  enablePullUp: (vDataDetails.length != total) ? true : false,
                   header: MaterialClassicHeader(),
                   footer: CustomFooter(
                     builder: (BuildContext context, LoadStatus mode) {
@@ -169,11 +151,9 @@ class _VDataAllState extends State<VDataAll> {
                   ),
                   controller: _refreshController,
                   onRefresh: _onRefresh,
-                  // onLoading: _onLoading,
+                  onLoading: _onLoading,
                   child: ListView.builder(
-                    itemCount: (connection == false)
-                        ? offlineVData.length
-                        : vDataDetails.length,
+                    itemCount: vDataDetails.length,
                     itemBuilder: (context, int index) {
                       return WidgetANimator(
                         Card(
@@ -182,7 +162,7 @@ class _VDataAllState extends State<VDataAll> {
                               children: <Widget>[
                                 InkWell(
                                   onTap: () async {
-                                    // _redirectVProfile(index);
+                                    _redirectVProfile(index);
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(
@@ -204,9 +184,7 @@ class _VDataAllState extends State<VDataAll> {
                                               MainAxisAlignment.start,
                                           children: <Widget>[
                                             Text(
-                                              (connection == true)
-                                                  ? vDataDetails[index].date
-                                                  : offlineVData[index]['date'],
+                                              vDataDetails[index].date,
                                               style: TextStyle(
                                                 color: Colors.grey,
                                                 fontSize: font12,
@@ -231,13 +209,8 @@ class _VDataAllState extends State<VDataAll> {
                                                     children: <Widget>[
                                                       Flexible(
                                                         child: Text(
-                                                          (connection == true)
-                                                              ? vDataDetails[
-                                                                      index]
-                                                                  .name
-                                                              : offlineVData[
-                                                                      index]
-                                                                  ['name'],
+                                                          vDataDetails[index]
+                                                              .name,
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           style: TextStyle(
@@ -261,13 +234,8 @@ class _VDataAllState extends State<VDataAll> {
                                                     children: <Widget>[
                                                       Flexible(
                                                         child: Text(
-                                                          (connection == true)
-                                                              ? vDataDetails[
-                                                                      index]
-                                                                  .phoneNo
-                                                              : offlineVData[
-                                                                      index]
-                                                                  ['phone'],
+                                                          vDataDetails[index]
+                                                              .phoneNo,
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           style: TextStyle(
@@ -310,13 +278,8 @@ class _VDataAllState extends State<VDataAll> {
                                                     children: <Widget>[
                                                       Flexible(
                                                         child: Text(
-                                                          (connection == true)
-                                                              ? vDataDetails[
-                                                                      index]
-                                                                  .handler
-                                                              : offlineVData[
-                                                                      index]
-                                                                  ['handler'],
+                                                          vDataDetails[index]
+                                                              .handler,
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           style: TextStyle(
@@ -357,13 +320,8 @@ class _VDataAllState extends State<VDataAll> {
                                                     children: <Widget>[
                                                       Flexible(
                                                         child: Text(
-                                                          (connection == true)
-                                                              ? vDataDetails[
-                                                                      index]
-                                                                  .remark
-                                                              : offlineVData[
-                                                                      index]
-                                                                  ['remark'],
+                                                          vDataDetails[index]
+                                                              .remark,
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                           style: TextStyle(
@@ -404,13 +362,8 @@ class _VDataAllState extends State<VDataAll> {
                                           BouncingWidget(
                                             scaleFactor: _scaleFactor,
                                             onPressed: () {
-                                              (connection == true)
-                                                  ? launch("tel:+" +
-                                                      vDataDetails[index]
-                                                          .phoneNo)
-                                                  : launch("tel:+" +
-                                                      offlineVData[index]
-                                                          ['phone']);
+                                              launch("tel:+" +
+                                                  vDataDetails[index].phoneNo);
                                             },
                                             child: Container(
                                               height:
@@ -435,7 +388,7 @@ class _VDataAllState extends State<VDataAll> {
                                           BouncingWidget(
                                             scaleFactor: _scaleFactor,
                                             onPressed: () {
-                                              // _redirectWhatsApp(index);
+                                              _redirectWhatsApp(index);
                                             },
                                             child: Container(
                                               height:
@@ -485,12 +438,8 @@ class _VDataAllState extends State<VDataAll> {
                                           ),
                                         ],
                                       ),
-                                      (connection == true)
-                                          ? menuButton(
-                                              vDataDetails[index].status, index)
-                                          : menuButton(
-                                              offlineVData[index]['status'],
-                                              index),
+                                      menuButton(
+                                          vDataDetails[index].status, index),
                                     ],
                                   ),
                                 ),
@@ -526,79 +475,36 @@ class _VDataAllState extends State<VDataAll> {
     );
   }
 
-  void getData() {
-    http.post(urlVData, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "level": level,
-      "userID": userID,
-      "user_type": userType,
-      "type": type,
-      "channel": channel,
-      "apps": apps,
-      "link_id": link_id,
-      "status": _byStatus,
-      "executive": _byExecutive,
-      "vtag": _byVTag,
-      "search": search,
-      "start_date": startDate,
-      "end_date": endDate,
-      "count": "0",
-      "offline": "no"
-    }).then((res) {
-      // print("VDataAll body: " + res.body.toString());
-      if (res.body == "nodata") {
-        if (this.mounted) {
-          setState(() {
-            connection = true;
-            vDataReady = true;
-            nodata = true;
-          });
-        }
-      } else {
-        var jsonData = json.decode(res.body);
-        if (this.mounted) {
-          setState(() {
-            total = jsonData[0]['total'];
-          });
-        }
-        vDataDetails.clear();
-        for (var data in jsonData) {
-          VDataDetails vdata = VDataDetails(
-            date: data['date'],
-            name: data['name'] ?? "",
-            phoneNo: data['phone_number'],
-            email: data['email'] ?? '',
-            remark: data['remark'] ?? "-",
-            status: checkStatus(data['status']),
-            type: data['type'],
-            app: data['app'],
-            channel: data['channel'],
-            link: data['link_type'] ?? "" + data['link'],
-            handler: data['link'],
-          );
-          vDataDetails.add(vdata);
-        }
-        if (this.mounted) {
-          setState(() {
-            connection = true;
-            vDataReady = true;
-          });
-        }
-      }
-    }).catchError((err) {
-      print("Get VDataAll error: " + err.toString());
-    });
-  }
-
-  void checkConnection() async {
+  void _redirectVProfile(int index) async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
-      getData();
+      VDataDetails vdata = new VDataDetails(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        level: level,
+        userType: userType,
+        name:  vDataDetails[index].name,
+        phoneNo: vDataDetails[index].phoneNo,
+        email: vDataDetails[index].email,
+        status: vDataDetails[index].status,
+      );
+      Navigator.of(context).push(PageRouteTransition(
+          animationType: AnimationType.scale,
+          builder: (context) => VProfile(vdata: vdata)));
     } else {
-      // offline();
-      _toast("No Internet, the data shown is not up to date");
+      _toast("No Internet Connection!");
+    }
+  }
+
+  void _redirectWhatsApp(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
+    } else {
+      _toast("This feature need Internet connection");
     }
   }
 
@@ -609,7 +515,7 @@ class _VDataAllState extends State<VDataAll> {
       if (this.mounted) {
         setState(() {
           vDataReady = false;
-          total = null;
+          nodata = false;
         });
       }
       http.post(urlVData, body: {
@@ -631,11 +537,10 @@ class _VDataAllState extends State<VDataAll> {
         "count": "0",
         "offline": "no"
       }).then((res) {
-        // print("refresh vdataAll body: " + res.body.toString());
+        // print("Refresh vdata body: " + res.body.toString());
         if (res.body == "nodata") {
           if (this.mounted) {
             setState(() {
-              connection = true;
               nodata = true;
               vDataReady = true;
               total = 0;
@@ -668,7 +573,6 @@ class _VDataAllState extends State<VDataAll> {
           if (this.mounted) {
             setState(() {
               vDataReady = true;
-              connection = true;
             });
           }
         }
@@ -680,6 +584,64 @@ class _VDataAllState extends State<VDataAll> {
       _toast("No Internet connection, data can't load");
       _refreshController.refreshCompleted();
     }
+  }
+
+  void _onLoading() {
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": _byStatus,
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": vDataDetails.length.toString(),
+      "offline": "no"
+    }).then((res) {
+      // print("Get More VData body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            vDataReady = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataDetails.add(vdata);
+        }
+        if (this.mounted) {
+          setState(() {
+            total = jsonData[0]['total'];
+            vDataReady = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get more data error: " + (err).toString());
+    });
+    _refreshController.loadComplete();
   }
 
   String checkStatus(String status) {
@@ -792,10 +754,7 @@ class _VDataAllState extends State<VDataAll> {
         setState(() {
           status = value1;
         });
-        (connection == true)
-            ? setStatus(index, status)
-            : _toast(
-                "Status can't changed! Please enter the page again in online mode");
+        setStatus(index, status);
       },
       decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
@@ -823,7 +782,6 @@ class _VDataAllState extends State<VDataAll> {
           if (this.mounted) {
             setState(() {
               vDataDetails[index].status = newVal;
-              connection = true;
             });
           }
         } else {

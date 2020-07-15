@@ -58,10 +58,6 @@ class _VDataState extends State<VData> {
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   SharedPreferences prefs;
   double _scaleFactor = 1.0;
-  double font11 = ScreenUtil().setSp(25.3, allowFontScalingSelf: false);
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);

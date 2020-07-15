@@ -57,7 +57,6 @@ class _ProfileState extends State<Profile> {
   double _scaleFactor = 1.0;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   bool start, connection, ready;
   int addressLength, emailLength, offLineAddressLength, offLineEmailLength;

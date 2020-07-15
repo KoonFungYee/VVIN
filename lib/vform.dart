@@ -67,8 +67,6 @@ class _VFormState extends State<VForm> {
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   SharedPreferences prefs;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   String urlVForm = ip + "vform.php";
   String urlDelete = ip + "deleteResponse.php";
   String now, total, search;

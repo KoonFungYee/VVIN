@@ -59,10 +59,6 @@ class _NotiDetailState extends State<NotiDetail> {
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   UniLinksType _type = UniLinksType.string;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font13 = ScreenUtil().setSp(30, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlHandler = ip + "handler.php";
   String handlers = ip + "getHandler.php";
   String assignURL = ip + "assign.php";

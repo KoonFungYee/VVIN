@@ -22,6 +22,7 @@ import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vvin/vdataStatus.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/reminder.dart';
@@ -56,12 +57,9 @@ class _VDataState extends State<VData> {
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
+  final TextEditingController _searchController = TextEditingController();
   SharedPreferences prefs;
   double _scaleFactor = 1.0;
-  double font11 = ScreenUtil().setSp(25.3, allowFontScalingSelf: false);
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
@@ -75,10 +73,36 @@ class _VDataState extends State<VData> {
       executive,
       more,
       vtagStatus,
-      branch;
+      branch,
+      readyNew,
+      readyContacting,
+      readyContacted,
+      readyQualified,
+      readyConverted,
+      readyFollowUp,
+      readyUnqualified,
+      readyBadInfo,
+      readyNoResponse,
+      nodataNew,
+      nodataContacting,
+      nodataContacted,
+      nodataQualified,
+      nodataConverted,
+      nodataFollowUp,
+      nodataUnqualified,
+      nodataBadInfo,
+      nodataNoResponse;
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
-  List<VDataDetails> vDataDetails1 = [];
+  List<VDataDetails> vDataNew = [];
+  List<VDataDetails> vDataContacting = [];
+  List<VDataDetails> vDataContacted = [];
+  List<VDataDetails> vDataQualified = [];
+  List<VDataDetails> vDataConverted = [];
+  List<VDataDetails> vDataFollowUp = [];
+  List<VDataDetails> vDataUnqualified = [];
+  List<VDataDetails> vDataBadInfo = [];
+  List<VDataDetails> vDataNoResponse = [];
   List<VDataDetails> vDataOffline = [];
   List<Map> offlineVData;
   List<Handler> handlerList = [];
@@ -87,6 +111,15 @@ class _VDataState extends State<VData> {
   List<String> links = [];
   List vtagList = [];
   Database vdataDB;
+  VDataInfo vDataInfoNew,
+      vDataInfoContacting,
+      vDataInfoContacted,
+      vDataInfoQualified,
+      vDataInfoConverted,
+      vDataInfoFollowUp,
+      vDataInfoUnqualified,
+      vDataInfoBadInfo,
+      vDataInfoNoResponse;
   String companyID,
       branchID,
       userID,
@@ -165,9 +198,12 @@ class _VDataState extends State<VData> {
     totalNotification = "0";
     currentTabIndex = 1;
     more = true;
-    vDataReady = branch =
-        executive = link = vData = nodata = connection = vtagStatus = false;
-    checkConnection();
+    readyNew = readyContacting = readyContacted = readyQualified = readyConverted =
+        readyFollowUp = readyUnqualified = readyBadInfo = readyNoResponse =
+            nodataNew = nodataContacting = nodataContacted = nodataQualified =
+                nodataConverted = nodataFollowUp = nodataUnqualified = nodataBadInfo =
+                    nodataNoResponse = vDataReady = branch = executive =
+                        link = vData = nodata = connection = vtagStatus = false;
     _byLink = "All Links";
     _byVTag = "All VTags";
     _byStatus = "All Status";
@@ -178,6 +214,7 @@ class _VDataState extends State<VData> {
     apps = "All";
     search = "";
     minimumDate = "2017-12-01";
+    checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         prefs = await SharedPreferences.getInstance();
@@ -377,8 +414,6 @@ class _VDataState extends State<VData> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
-    double remark = MediaQuery.of(context).size.width * 0.30;
-    double cWidth = MediaQuery.of(context).size.width * 0.30;
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
@@ -503,7 +538,10 @@ class _VDataState extends State<VData> {
                           ),
                           height: ScreenUtil().setHeight(75),
                           child: TextField(
-                            onChanged: _search,
+                            controller: _searchController,
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.go,
+                            onSubmitted: (value) => _search(value),
                             style: TextStyle(
                               fontSize: font14,
                             ),
@@ -518,9 +556,15 @@ class _VDataState extends State<VData> {
                                       .requestFocus(new FocusNode());
                                 },
                               ),
-                              suffixIcon: Icon(
-                                Icons.search,
-                                size: ScreenUtil().setHeight(50),
+                              suffixIcon: BouncingWidget(
+                                scaleFactor: _scaleFactor,
+                                onPressed: () {
+                                  _search(_searchController.text);
+                                },
+                                child: Icon(
+                                  Icons.search,
+                                  size: ScreenUtil().setHeight(50),
+                                ),
                               ),
                               border: InputBorder.none,
                             ),
@@ -588,494 +632,570 @@ class _VDataState extends State<VData> {
                         ],
                       ),
               ),
-              SizedBox(
-                height: ScreenUtil().setHeight(5),
-              ),
-              (link == true && vDataReady == true && vtagStatus == true)
-                  ? (nodata == true)
-                      ? Center(
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.6,
-                            child: EmptyListWidget(
-                                packageImage: PackageImage.Image_2,
-                                // title: 'No Data',
-                                subTitle: 'No Data',
-                                titleTextStyle: Theme.of(context)
-                                    .typography
-                                    .dense
-                                    .display1
-                                    .copyWith(color: Color(0xff9da9c7)),
-                                subtitleTextStyle: Theme.of(context)
-                                    .typography
-                                    .dense
-                                    .body2
-                                    .copyWith(color: Color(0xffabb8d6))),
-                          ),
-                        )
-                      : Flexible(
-                          child: SmartRefresher(
-                            enablePullDown: (connection == true) ? true : false,
-                            enablePullUp: (connection == true)
-                                ? (vDataDetails.length != total) ? true : false
-                                : false,
-                            header: MaterialClassicHeader(),
-                            footer: CustomFooter(
-                              builder: (BuildContext context, LoadStatus mode) {
-                                Widget body;
-                                if (mode == LoadStatus.idle) {
-                                  if (more == true) {
-                                    body = SpinKitRing(
-                                      lineWidth: 2,
-                                      color: Colors.blue,
-                                      size: 20.0,
-                                      duration: Duration(milliseconds: 600),
-                                    );
-                                  }
-                                } else if (mode == LoadStatus.loading) {
-                                  if (more == true) {
-                                    body = SpinKitRing(
-                                      lineWidth: 2,
-                                      color: Colors.blue,
-                                      size: 20.0,
-                                      duration: Duration(milliseconds: 600),
-                                    );
-                                  }
-                                } else if (mode == LoadStatus.failed) {
-                                  body = Text("Load Failed!Click retry!");
-                                } else if (mode == LoadStatus.canLoading) {
-                                  body = Text("release to load more");
-                                } else {
-                                  body = Text("No more Data");
-                                }
-                                return Container(
-                                  height: 55.0,
-                                  child: Center(child: body),
-                                );
-                              },
+              Flexible(
+                child: DefaultTabController(
+                  length: 10,
+                  child: Scaffold(
+                    backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+                    appBar: PreferredSize(
+                      preferredSize: Size.fromHeight(
+                        ScreenUtil().setHeight(88),
+                      ),
+                      child: AppBar(
+                        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+                        elevation: 0,
+                        bottom: TabBar(
+                          labelPadding: EdgeInsets.fromLTRB(
+                              ScreenUtil().setHeight(10),
+                              0,
+                              ScreenUtil().setHeight(10),
+                              0),
+                          isScrollable: true,
+                          tabs: [
+                            Tab(
+                              child: Text('All',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
                             ),
-                            controller: _refreshController,
-                            onRefresh: _onRefresh,
-                            onLoading: _onLoading,
-                            child: ListView.builder(
-                              itemCount: (connection == false)
-                                  ? offlineVData.length
-                                  : vDataDetails.length,
-                              itemBuilder: (context, int index) {
-                                return WidgetANimator(
-                                  Card(
-                                    child: Container(
-                                      child: Column(
-                                        children: <Widget>[
-                                          InkWell(
-                                            onTap: () async {
-                                              _redirectVProfile(index);
-                                            },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                border: Border(
-                                                  bottom: BorderSide(
-                                                      width: ScreenUtil()
-                                                          .setHeight(2),
-                                                      color:
-                                                          Colors.grey.shade300),
-                                                ),
-                                              ),
-                                              padding: EdgeInsets.fromLTRB(
-                                                  ScreenUtil().setHeight(10),
-                                                  ScreenUtil().setHeight(10),
-                                                  ScreenUtil().setHeight(10),
-                                                  0),
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: <Widget>[
-                                                      Text(
-                                                        (connection == true)
-                                                            ? vDataDetails[
-                                                                    index]
-                                                                .date
-                                                            : offlineVData[
-                                                                index]['date'],
-                                                        style: TextStyle(
-                                                          color: Colors.grey,
-                                                          fontSize: font12,
-                                                        ),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  SizedBox(
-                                                    height: ScreenUtil()
-                                                        .setHeight(10),
-                                                  ),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: <Widget>[
-                                                      Container(
-                                                        width: cWidth,
-                                                        child: Column(
-                                                          children: <Widget>[
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .start,
-                                                              children: <
-                                                                  Widget>[
-                                                                Flexible(
-                                                                  child: Text(
-                                                                    (connection ==
-                                                                            true)
-                                                                        ? vDataDetails[index]
-                                                                            .name
-                                                                        : offlineVData[index]
-                                                                            [
-                                                                            'name'],
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    style: TextStyle(
-                                                                        color: Colors
-                                                                            .blue,
-                                                                        fontSize:
-                                                                            font14,
-                                                                        fontWeight:
-                                                                            FontWeight.w900),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            SizedBox(
-                                                              height:
-                                                                  ScreenUtil()
-                                                                      .setHeight(
-                                                                          10),
-                                                            ),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .start,
-                                                              children: <
-                                                                  Widget>[
-                                                                Flexible(
-                                                                  child: Text(
-                                                                    (connection ==
-                                                                            true)
-                                                                        ? vDataDetails[index]
-                                                                            .phoneNo
-                                                                        : offlineVData[index]
-                                                                            [
-                                                                            'phone'],
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    style:
-                                                                        TextStyle(
-                                                                      color: Colors
-                                                                          .grey,
-                                                                      fontSize:
-                                                                          font12,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                          width: ScreenUtil()
-                                                              .setWidth(10)),
-                                                      Container(
-                                                        width: cWidth,
-                                                        child: Column(
-                                                          children: <Widget>[
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .start,
-                                                              children: <
-                                                                  Widget>[
-                                                                Center(
-                                                                  child: Text(
-                                                                    "Link",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            font12,
-                                                                        fontWeight:
-                                                                            FontWeight.w600),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .start,
-                                                              children: <
-                                                                  Widget>[
-                                                                Flexible(
-                                                                  child: Text(
-                                                                    (connection ==
-                                                                            true)
-                                                                        ? vDataDetails[index]
-                                                                            .handler
-                                                                        : offlineVData[index]
-                                                                            [
-                                                                            'handler'],
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    style:
-                                                                        TextStyle(
-                                                                      color: Colors
-                                                                          .grey,
-                                                                      fontSize:
-                                                                          font12,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        width: ScreenUtil()
-                                                            .setWidth(10),
-                                                      ),
-                                                      Container(
-                                                        width: remark,
-                                                        child: Column(
-                                                          children: <Widget>[
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .start,
-                                                              children: <
-                                                                  Widget>[
-                                                                Text(
-                                                                  "Remark",
-                                                                  style: TextStyle(
-                                                                      fontSize:
-                                                                          font12,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w600),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .start,
-                                                              children: <
-                                                                  Widget>[
-                                                                Flexible(
-                                                                  child: Text(
-                                                                    (connection ==
-                                                                            true)
-                                                                        ? vDataDetails[index]
-                                                                            .remark
-                                                                        : offlineVData[index]
-                                                                            [
-                                                                            'remark'],
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            font12,
-                                                                        color: Colors
-                                                                            .grey),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  SizedBox(
-                                                    height: ScreenUtil()
-                                                        .setHeight(10),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: ScreenUtil().setHeight(10),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.all(
-                                              ScreenUtil().setHeight(8),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: <Widget>[
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    BouncingWidget(
-                                                      scaleFactor: _scaleFactor,
-                                                      onPressed: () {
-                                                        (connection == true)
-                                                            ? launch("tel:+" +
-                                                                vDataDetails[
-                                                                        index]
-                                                                    .phoneNo)
-                                                            : launch("tel:+" +
-                                                                offlineVData[
-                                                                        index]
-                                                                    ['phone']);
-                                                      },
-                                                      child: Container(
-                                                        height: ScreenUtil()
-                                                            .setHeight(60),
-                                                        width: ScreenUtil()
-                                                            .setWidth(98),
-                                                        child: Icon(
-                                                          Icons.call,
-                                                          size: ScreenUtil()
-                                                              .setHeight(32.2),
-                                                          color: Colors.white,
-                                                        ),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors.blue,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: ScreenUtil()
-                                                          .setHeight(20),
-                                                    ),
-                                                    BouncingWidget(
-                                                      scaleFactor: _scaleFactor,
-                                                      onPressed: () {
-                                                        _redirectWhatsApp(
-                                                            index);
-                                                      },
-                                                      child: Container(
-                                                        height: ScreenUtil()
-                                                            .setHeight(60),
-                                                        width: ScreenUtil()
-                                                            .setWidth(98),
-                                                        child: Icon(
-                                                          FontAwesomeIcons
-                                                              .whatsapp,
-                                                          color: Colors.white,
-                                                          size: ScreenUtil()
-                                                              .setHeight(32.2),
-                                                        ),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Color.fromRGBO(
-                                                              37, 211, 102, 1),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: ScreenUtil()
-                                                          .setHeight(20),
-                                                    ),
-                                                    BouncingWidget(
-                                                      scaleFactor: _scaleFactor,
-                                                      onPressed: () {
-                                                        (vDataDetails[index]
-                                                                    .email !=
-                                                                '')
-                                                            ? launch('mailto:' +
-                                                                vDataDetails[
-                                                                        index]
-                                                                    .email)
-                                                            : _toast(
-                                                                'No email address');
-                                                      },
-                                                      child: Container(
-                                                        height: ScreenUtil()
-                                                            .setHeight(60),
-                                                        width: ScreenUtil()
-                                                            .setWidth(98),
-                                                        child: Icon(
-                                                          Icons.email,
-                                                          color: Colors.white,
-                                                          size: ScreenUtil()
-                                                              .setHeight(32.2),
-                                                        ),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: Colors
-                                                              .grey.shade500,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                (connection == true)
-                                                    ? menuButton(
-                                                        vDataDetails[index]
-                                                            .status,
-                                                        index)
-                                                    : menuButton(
-                                                        offlineVData[index]
-                                                            ['status'],
-                                                        index),
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: ScreenUtil().setHeight(10),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
+                            Tab(
+                              child: Text('New',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
                             ),
-                          ),
-                        )
-                  : Container(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            JumpingText('Loading...'),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.02),
-                            SpinKitRing(
-                              lineWidth: 3,
-                              color: Colors.blue,
-                              size: 30.0,
-                              duration: Duration(milliseconds: 600),
+                            Tab(
+                              child: Text('Contacting',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
+                            ),
+                            Tab(
+                              child: Text('Contacted',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
+                            ),
+                            Tab(
+                              child: Text('Qualified',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
+                            ),
+                            Tab(
+                              child: Text('Converted',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
+                            ),
+                            Tab(
+                              child: Text('Followu  Up',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
+                            ),
+                            Tab(
+                              child: Text('Unqualified',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
+                            ),
+                            Tab(
+                              child: Text('Bad Information',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
+                            ),
+                            Tab(
+                              child: Text('No Response',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font15)),
                             ),
                           ],
                         ),
                       ),
                     ),
+                    body: TabBarView(
+                      children: [
+                        _all(),
+                        (readyNew == false)
+                            ? _loading()
+                            : (nodataNew == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoNew),
+                        (readyContacting == false)
+                            ? _loading()
+                            : (nodataContacting == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoContacting),
+                        (readyContacted == false)
+                            ? _loading()
+                            : (nodataContacted == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoContacted),
+                        (readyQualified == false)
+                            ? _loading()
+                            : (nodataQualified = true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoQualified),
+                        (readyConverted == false)
+                            ? _loading()
+                            : (nodataConverted == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoConverted),
+                        (readyFollowUp == false)
+                            ? _loading()
+                            : (nodataFollowUp == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoFollowUp),
+                        (readyUnqualified == false)
+                            ? _loading()
+                            : (nodataUnqualified == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoUnqualified),
+                        (readyBadInfo == false)
+                            ? _loading()
+                            : (nodataBadInfo == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoBadInfo),
+                        (readyNoResponse == false)
+                            ? _loading()
+                            : (nodataNoResponse == true)
+                                ? _empty()
+                                : VDataStatus(vdataInfo: vDataInfoNoResponse),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _empty() {
+    Widget widget;
+    widget = Center(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: EmptyListWidget(
+            packageImage: PackageImage.Image_2,
+            // title: 'No Data',
+            subTitle: 'No Data',
+            titleTextStyle: Theme.of(context)
+                .typography
+                .dense
+                .display1
+                .copyWith(color: Color(0xff9da9c7)),
+            subtitleTextStyle: Theme.of(context)
+                .typography
+                .dense
+                .body2
+                .copyWith(color: Color(0xffabb8d6))),
+      ),
+    );
+    return widget;
+  }
+
+  Widget _all() {
+    Widget widget;
+    double remark = MediaQuery.of(context).size.width * 0.30;
+    double cWidth = MediaQuery.of(context).size.width * 0.30;
+    (link == true && vDataReady == true && vtagStatus == true)
+        ? (nodata == true)
+            ? widget = _empty()
+            : widget = SmartRefresher(
+                enablePullDown: (connection == true) ? true : false,
+                enablePullUp: (connection == true)
+                    ? (vDataDetails.length != total) ? true : false
+                    : false,
+                header: MaterialClassicHeader(),
+                footer: CustomFooter(
+                  builder: (BuildContext context, LoadStatus mode) {
+                    Widget body;
+                    if (mode == LoadStatus.idle) {
+                      if (more == true) {
+                        body = SpinKitRing(
+                          lineWidth: 2,
+                          color: Colors.blue,
+                          size: 20.0,
+                          duration: Duration(milliseconds: 600),
+                        );
+                      }
+                    } else if (mode == LoadStatus.loading) {
+                      if (more == true) {
+                        body = SpinKitRing(
+                          lineWidth: 2,
+                          color: Colors.blue,
+                          size: 20.0,
+                          duration: Duration(milliseconds: 600),
+                        );
+                      }
+                    } else if (mode == LoadStatus.failed) {
+                      body = Text("Load Failed!Click retry!");
+                    } else if (mode == LoadStatus.canLoading) {
+                      body = Text("release to load more");
+                    } else {
+                      body = Text("No more Data");
+                    }
+                    return Container(
+                      height: 55.0,
+                      child: Center(child: body),
+                    );
+                  },
+                ),
+                controller: _refreshController,
+                onRefresh: _onRefresh,
+                onLoading: _onLoading,
+                child: ListView.builder(
+                  itemCount: (connection == false)
+                      ? offlineVData.length
+                      : vDataDetails.length,
+                  itemBuilder: (context, int index) {
+                    return WidgetANimator(
+                      Card(
+                        child: Container(
+                          child: Column(
+                            children: <Widget>[
+                              InkWell(
+                                onTap: () async {
+                                  _redirectVProfile(index);
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                          width: ScreenUtil().setHeight(2),
+                                          color: Colors.grey.shade300),
+                                    ),
+                                  ),
+                                  padding: EdgeInsets.fromLTRB(
+                                      ScreenUtil().setHeight(10),
+                                      ScreenUtil().setHeight(10),
+                                      ScreenUtil().setHeight(10),
+                                      0),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            (connection == true)
+                                                ? vDataDetails[index].date
+                                                : offlineVData[index]['date'],
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: font12,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: ScreenUtil().setHeight(10),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: <Widget>[
+                                          Container(
+                                            width: cWidth,
+                                            child: Column(
+                                              children: <Widget>[
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Flexible(
+                                                      child: Text(
+                                                        (connection == true)
+                                                            ? vDataDetails[
+                                                                    index]
+                                                                .name
+                                                            : offlineVData[
+                                                                index]['name'],
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            color: Colors.blue,
+                                                            fontSize: font14,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w900),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                  height: ScreenUtil()
+                                                      .setHeight(10),
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Flexible(
+                                                      child: Text(
+                                                        (connection == true)
+                                                            ? vDataDetails[
+                                                                    index]
+                                                                .phoneNo
+                                                            : offlineVData[
+                                                                index]['phone'],
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontSize: font12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(
+                                              width: ScreenUtil().setWidth(10)),
+                                          Container(
+                                            width: cWidth,
+                                            child: Column(
+                                              children: <Widget>[
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Center(
+                                                      child: Text(
+                                                        "Link",
+                                                        style: TextStyle(
+                                                            fontSize: font12,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w600),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Flexible(
+                                                      child: Text(
+                                                        (connection == true)
+                                                            ? vDataDetails[
+                                                                    index]
+                                                                .handler
+                                                            : offlineVData[
+                                                                    index]
+                                                                ['handler'],
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontSize: font12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: ScreenUtil().setWidth(10),
+                                          ),
+                                          Container(
+                                            width: remark,
+                                            child: Column(
+                                              children: <Widget>[
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Text(
+                                                      "Remark",
+                                                      style: TextStyle(
+                                                          fontSize: font12,
+                                                          fontWeight:
+                                                              FontWeight.w600),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Flexible(
+                                                      child: Text(
+                                                        (connection == true)
+                                                            ? vDataDetails[
+                                                                    index]
+                                                                .remark
+                                                            : offlineVData[
+                                                                    index]
+                                                                ['remark'],
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            fontSize: font12,
+                                                            color: Colors.grey),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: ScreenUtil().setHeight(10),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(10),
+                              ),
+                              Container(
+                                padding: EdgeInsets.all(
+                                  ScreenUtil().setHeight(8),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        BouncingWidget(
+                                          scaleFactor: _scaleFactor,
+                                          onPressed: () {
+                                            (connection == true)
+                                                ? launch("tel:+" +
+                                                    vDataDetails[index].phoneNo)
+                                                : launch("tel:+" +
+                                                    offlineVData[index]
+                                                        ['phone']);
+                                          },
+                                          child: Container(
+                                            height: ScreenUtil().setHeight(60),
+                                            width: ScreenUtil().setWidth(98),
+                                            child: Icon(
+                                              Icons.call,
+                                              size:
+                                                  ScreenUtil().setHeight(32.2),
+                                              color: Colors.white,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue,
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: ScreenUtil().setHeight(20),
+                                        ),
+                                        BouncingWidget(
+                                          scaleFactor: _scaleFactor,
+                                          onPressed: () {
+                                            _redirectWhatsApp(index);
+                                          },
+                                          child: Container(
+                                            height: ScreenUtil().setHeight(60),
+                                            width: ScreenUtil().setWidth(98),
+                                            child: Icon(
+                                              FontAwesomeIcons.whatsapp,
+                                              color: Colors.white,
+                                              size:
+                                                  ScreenUtil().setHeight(32.2),
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Color.fromRGBO(
+                                                  37, 211, 102, 1),
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: ScreenUtil().setHeight(20),
+                                        ),
+                                        BouncingWidget(
+                                          scaleFactor: _scaleFactor,
+                                          onPressed: () {
+                                            (vDataDetails[index].email != '')
+                                                ? launch('mailto:' +
+                                                    vDataDetails[index].email)
+                                                : _toast('No email address');
+                                          },
+                                          child: Container(
+                                            height: ScreenUtil().setHeight(60),
+                                            width: ScreenUtil().setWidth(98),
+                                            child: Icon(
+                                              Icons.email,
+                                              color: Colors.white,
+                                              size:
+                                                  ScreenUtil().setHeight(32.2),
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade500,
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    (connection == true)
+                                        ? menuButton(
+                                            vDataDetails[index].status, index)
+                                        : menuButton(
+                                            offlineVData[index]['status'],
+                                            index),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(10),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+        : widget = _loading();
+    return widget;
+  }
+
+  Widget _loading() {
+    Widget widget = Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          JumpingText('Loading...'),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+          SpinKitRing(
+            lineWidth: 3,
+            color: Colors.blue,
+            size: 30.0,
+            duration: Duration(milliseconds: 600),
+          ),
+        ],
+      ),
+    );
+    return widget;
   }
 
   Widget menuButton(String status, int index) {
@@ -1213,7 +1333,6 @@ class _VDataState extends State<VData> {
             });
           }
           vDataDetails.clear();
-          vDataDetails1.clear();
           for (var data in jsonData) {
             VDataDetails vdata = VDataDetails(
               date: data['date'],
@@ -1229,7 +1348,6 @@ class _VDataState extends State<VData> {
               handler: data['link'],
             );
             vDataDetails.add(vdata);
-            vDataDetails1.add(vdata);
           }
           if (this.mounted) {
             setState(() {
@@ -1359,7 +1477,6 @@ class _VDataState extends State<VData> {
             handler: data['link'],
           );
           vDataDetails.add(vdata);
-          vDataDetails1.add(vdata);
         }
         if (this.mounted) {
           setState(() {
@@ -3409,6 +3526,17 @@ class _VDataState extends State<VData> {
   }
 
   void getData() {
+    startDate = minimumDate;
+    endDate = DateTime.now().toString().substring(0, 10);
+    getNewData();
+    getContactingData();
+    getContactedData();
+    getQualifiedData();
+    getConvertedData();
+    getFollowUpData();
+    getUnqualifiedData();
+    getBadInfoData();
+    getNoResponseData();
     http.post(urlVData, body: {
       "companyID": companyID,
       "branchID": branchID,
@@ -3423,12 +3551,12 @@ class _VDataState extends State<VData> {
       "executive": _byExecutive,
       "vtag": _byVTag,
       "search": search,
-      "start_date": minimumDate,
-      "end_date": DateTime.now().toString().substring(0, 10),
+      "start_date": startDate,
+      "end_date": endDate,
       "count": "0",
       "offline": "no"
     }).then((res) {
-      print("VData body: " + res.body.toString());
+      // print("VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
           setState(() {
@@ -3459,7 +3587,6 @@ class _VDataState extends State<VData> {
           });
         }
         vDataDetails.clear();
-        vDataDetails1.clear();
         for (var data in jsonData) {
           VDataDetails vdata = VDataDetails(
             date: data['date'],
@@ -3475,7 +3602,6 @@ class _VDataState extends State<VData> {
             handler: data['link'],
           );
           vDataDetails.add(vdata);
-          vDataDetails1.add(vdata);
         }
         if (this.mounted) {
           setState(() {
@@ -3505,6 +3631,699 @@ class _VDataState extends State<VData> {
         // endTime = DateTime.now().millisecondsSinceEpoch;
         // int result = endTime - startTime;
         // print("VData loading Time: " + result.toString());
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getNewData() {
+    vDataNew.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'New',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataNew body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyNew = true;
+            nodataNew = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataNew.add(vdata);
+        }
+        vDataInfoNew = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'New',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataNew,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyNew = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getContactingData() {
+    vDataContacting.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'Contacting',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacting body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyContacting = true;
+            nodataContacting = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataContacting.add(vdata);
+        }
+        vDataInfoContacting = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacting',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataContacting,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyContacting = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getContactedData() {
+    vDataContacted.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'Contacted',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacted body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyContacted = true;
+            nodataContacted = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataContacted.add(vdata);
+        }
+        vDataInfoContacted = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacted',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataContacted,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyContacted = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getQualifiedData() {
+    vDataQualified.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'Qualified',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacted body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyQualified = true;
+            nodataQualified = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataQualified.add(vdata);
+        }
+        vDataInfoQualified = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacted',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataQualified,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyQualified = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getConvertedData() {
+    vDataConverted.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'Converted',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacted body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyConverted = true;
+            nodataConverted = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataConverted.add(vdata);
+        }
+        vDataInfoConverted = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacted',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataConverted,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyConverted = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getFollowUpData() {
+    vDataFollowUp.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'Follow-Up',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacted body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyFollowUp = true;
+            nodataFollowUp = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataFollowUp.add(vdata);
+        }
+        vDataInfoFollowUp = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacted',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataFollowUp,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyFollowUp = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getUnqualifiedData() {
+    vDataUnqualified.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'Unqualified',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacted body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyUnqualified = true;
+            nodataUnqualified = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataUnqualified.add(vdata);
+        }
+        vDataInfoUnqualified = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacted',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataUnqualified,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyUnqualified = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getBadInfoData() {
+    vDataBadInfo.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'Bad Information',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacted body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyBadInfo = true;
+            nodataBadInfo = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataBadInfo.add(vdata);
+        }
+        vDataInfoBadInfo = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacted',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataBadInfo,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyBadInfo = true;
+          });
+        }
+      }
+    }).catchError((err) {
+      print("Get data error: " + err.toString());
+    });
+  }
+
+  void getNoResponseData() {
+    vDataNoResponse.clear();
+    http.post(urlVData, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": 'No Response',
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": startDate,
+      "end_date": endDate,
+      "count": "0",
+      "offline": "no"
+    }).then((res) {
+      // print("VDataContacted body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            readyNoResponse = true;
+            nodataNoResponse = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataNoResponse.add(vdata);
+        }
+        vDataInfoNoResponse = VDataInfo(
+          companyID: companyID,
+          branchID: branchID,
+          level: level,
+          userID: userID,
+          userType: userType,
+          type: type,
+          channel: channel,
+          apps: apps,
+          link_id: link_id,
+          byStatus: 'Contacted',
+          byExecutive: _byExecutive,
+          byVTag: _byVTag,
+          search: search,
+          startDate: startDate,
+          endDate: endDate,
+          total: jsonData[0]['total'],
+          vDataList: vDataNoResponse,
+        );
+        if (this.mounted) {
+          setState(() {
+            readyNoResponse = true;
+          });
+        }
       }
     }).catchError((err) {
       print("Get data error: " + err.toString());
@@ -3761,6 +4580,186 @@ class _VDataState extends State<VData> {
   }
 
   void _done() async {
+    if (this.mounted) {
+      setState(() {
+        nodataNew = nodataContacting = nodataContacted = nodataQualified =
+            nodataConverted = nodataFollowUp =
+                nodataUnqualified = nodataBadInfo = nodataNoResponse = false;
+        readyNew = readyContacting = readyContacted = readyQualified =
+            readyConverted = readyFollowUp =
+                readyUnqualified = readyBadInfo = readyNoResponse = true;
+      });
+    }
+    if (_byStatus != 'All Status') {
+      switch (_byStatus) {
+        case 'New':
+          if (this.mounted) {
+            setState(() {
+              readyNew = false;
+              nodataContacting = true;
+              nodataContacted = true;
+              nodataQualified = true;
+              nodataConverted = true;
+              nodataFollowUp = true;
+              nodataUnqualified = true;
+              nodataBadInfo = true;
+              nodataNoResponse = true;
+            });
+          }
+
+          getNewData();
+          break;
+        case 'Contacting':
+          if (this.mounted) {
+            setState(() {
+              readyContacting = false;
+              nodataNew = true;
+              nodataContacted = true;
+              nodataQualified = true;
+              nodataConverted = true;
+              nodataFollowUp = true;
+              nodataUnqualified = true;
+              nodataBadInfo = true;
+              nodataNoResponse = true;
+            });
+          }
+          getContactingData();
+          break;
+        case 'Contacted':
+          if (this.mounted) {
+            setState(() {
+              readyContacted = false;
+              nodataNew = true;
+              nodataContacting = true;
+              nodataQualified = true;
+              nodataConverted = true;
+              nodataFollowUp = true;
+              nodataUnqualified = true;
+              nodataBadInfo = true;
+              nodataNoResponse = true;
+            });
+          }
+          getContactedData();
+          break;
+        case 'Qualified':
+          if (this.mounted) {
+            setState(() {
+              readyQualified = false;
+              nodataNew = true;
+              nodataContacting = true;
+              nodataContacted = true;
+              nodataConverted = true;
+              nodataFollowUp = true;
+              nodataUnqualified = true;
+              nodataBadInfo = true;
+              nodataNoResponse = true;
+            });
+          }
+          getQualifiedData();
+          break;
+        case 'Converted':
+          if (this.mounted) {
+            setState(() {
+              readyConverted = false;
+              nodataNew = true;
+              nodataContacting = true;
+              nodataContacted = true;
+              nodataQualified = true;
+              nodataFollowUp = true;
+              nodataUnqualified = true;
+              nodataBadInfo = true;
+              nodataNoResponse = true;
+            });
+          }
+          getConvertedData();
+          break;
+        case 'Follow-up':
+          if (this.mounted) {
+            setState(() {
+              readyFollowUp = false;
+              nodataNew = true;
+              nodataContacting = true;
+              nodataContacted = true;
+              nodataQualified = true;
+              nodataConverted = true;
+              nodataUnqualified = true;
+              nodataBadInfo = true;
+              nodataNoResponse = true;
+            });
+          }
+          getFollowUpData();
+          break;
+        case 'Unqualified':
+          if (this.mounted) {
+            setState(() {
+              readyUnqualified = false;
+              nodataNew = true;
+              nodataContacting = true;
+              nodataContacted = true;
+              nodataQualified = true;
+              nodataConverted = true;
+              nodataFollowUp = true;
+              nodataBadInfo = true;
+              nodataNoResponse = true;
+            });
+          }
+          getUnqualifiedData();
+          break;
+        case 'Bad Information':
+          if (this.mounted) {
+            setState(() {
+              readyBadInfo = false;
+              nodataNew = true;
+              nodataContacting = true;
+              nodataContacted = true;
+              nodataQualified = true;
+              nodataConverted = true;
+              nodataFollowUp = true;
+              nodataUnqualified = true;
+              nodataNoResponse = true;
+            });
+          }
+          getBadInfoData();
+          break;
+        default:
+          if (this.mounted) {
+            setState(() {
+              readyNoResponse = false;
+              nodataNew = true;
+              nodataContacting = true;
+              nodataContacted = true;
+              nodataQualified = true;
+              nodataConverted = true;
+              nodataFollowUp = true;
+              nodataUnqualified = true;
+              nodataBadInfo = true;
+            });
+          }
+          getNoResponseData();
+      }
+    } else {
+      FocusScope.of(context).requestFocus(new FocusNode());
+      if (this.mounted) {
+        setState(() {
+          total = null;
+          nodata = nodataNew = nodataContacting = nodataContacted =
+              nodataQualified = nodataConverted = nodataFollowUp =
+                  nodataUnqualified = nodataBadInfo = nodataNoResponse = false;
+          readyNew = readyContacting = readyContacted = readyQualified =
+              readyConverted = readyFollowUp =
+                  readyUnqualified = readyBadInfo = readyNoResponse = false;
+        });
+      }
+      getNewData();
+      getContactingData();
+      getContactedData();
+      getQualifiedData();
+      getConvertedData();
+      getFollowUpData();
+      getUnqualifiedData();
+      getBadInfoData();
+      getNoResponseData();
+    }
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
@@ -3771,12 +4770,6 @@ class _VDataState extends State<VData> {
         if (_byLink == linksID[i].link_type + linksID[i].link) {
           link_id = linksID[i].link_type + linksID[i].link_id;
         }
-      }
-      if (this.mounted) {
-        setState(() {
-          nodata = false;
-          total = null;
-        });
       }
       if (level == '0' && _byBranch != 'All Branch') {
         for (var branch in branchesList) {
@@ -3809,7 +4802,6 @@ class _VDataState extends State<VData> {
           if (this.mounted) {
             setState(() {
               vDataDetails.clear();
-              vDataDetails1.clear();
               connection = true;
               nodata = true;
               total = 0;
@@ -3823,7 +4815,6 @@ class _VDataState extends State<VData> {
             });
           }
           vDataDetails.clear();
-          vDataDetails1.clear();
           for (var data in jsonData) {
             VDataDetails vdata = VDataDetails(
               date: data['date'],
@@ -3839,7 +4830,6 @@ class _VDataState extends State<VData> {
               handler: data['link'],
             );
             vDataDetails.add(vdata);
-            vDataDetails1.add(vdata);
           }
           if (this.mounted) {
             setState(() {
@@ -3856,12 +4846,28 @@ class _VDataState extends State<VData> {
   }
 
   Future<void> _search(String value) async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     if (this.mounted) {
       setState(() {
+        total = null;
         search = value.toLowerCase();
-        nodata = false;
+        nodata = nodataNew = nodataContacting = nodataContacted =
+            nodataQualified = nodataConverted = nodataFollowUp =
+                nodataUnqualified = nodataBadInfo = nodataNoResponse = false;
+        readyNew = readyContacting = readyContacted = readyQualified =
+            readyConverted = readyFollowUp =
+                readyUnqualified = readyBadInfo = readyNoResponse = false;
       });
     }
+    getNewData();
+    getContactingData();
+    getContactedData();
+    getQualifiedData();
+    getConvertedData();
+    getFollowUpData();
+    getUnqualifiedData();
+    getBadInfoData();
+    getNoResponseData();
     if (connection == true) {
       var connectivityResult = await (Connectivity().checkConnectivity());
       if (connectivityResult == ConnectivityResult.wifi ||
@@ -3897,7 +4903,6 @@ class _VDataState extends State<VData> {
             if (this.mounted) {
               setState(() {
                 vDataDetails.clear();
-                vDataDetails1.clear();
                 connection = true;
                 nodata = true;
                 total = 0;
@@ -3911,7 +4916,6 @@ class _VDataState extends State<VData> {
               });
             }
             vDataDetails.clear();
-            vDataDetails1.clear();
             for (var data in jsonData) {
               VDataDetails vdata = VDataDetails(
                 date: data['date'],
@@ -3927,7 +4931,6 @@ class _VDataState extends State<VData> {
                 handler: data['link'],
               );
               vDataDetails.add(vdata);
-              vDataDetails1.add(vdata);
             }
             if (this.mounted) {
               setState(() {

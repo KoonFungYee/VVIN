@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 String ip = 'http://211.25.23.149/api/';
+double font10 = ScreenUtil().setSp(23, allowFontScalingSelf: false);
+double font11 = ScreenUtil().setSp(25.3, allowFontScalingSelf: false);
+double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
+double font13 = ScreenUtil().setSp(29.9, allowFontScalingSelf: false);
+double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
+double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
+double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
+double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
+double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
 
 class VDataInfo {
+  List<VDataDetails> vDataList;
+  int total;
   final String companyID,
       branchID,
       userID,
@@ -20,22 +32,25 @@ class VDataInfo {
       search,
       startDate,
       endDate;
-  VDataInfo(
-      {this.companyID,
-      this.branchID,
-      this.userID,
-      this.level,
-      this.userType,
-      this.type,
-      this.channel,
-      this.apps,
-      this.link_id,
-      this.byStatus,
-      this.byExecutive,
-      this.byVTag,
-      this.search,
-      this.startDate,
-      this.endDate});
+  VDataInfo({
+    this.companyID,
+    this.branchID,
+    this.userID,
+    this.level,
+    this.userType,
+    this.type,
+    this.channel,
+    this.apps,
+    this.link_id,
+    this.byStatus,
+    this.byExecutive,
+    this.byVTag,
+    this.search,
+    this.startDate,
+    this.endDate,
+    this.total,
+    this.vDataList,
+  });
 }
 
 class ReceivedNotification {

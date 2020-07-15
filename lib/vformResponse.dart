@@ -86,9 +86,6 @@ class _VFormResponseState extends State<VFormResponse> {
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlDelete = ip + "deleteResponse.php";
   List<Item1> list1 = List<Item1>();
   String now, phoneNo, name, company, email, area, state, country, industry;

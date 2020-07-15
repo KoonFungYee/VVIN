@@ -60,9 +60,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
   var _phonecontroller = MaskedTextController(mask: '000000000000');
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   double _scaleFactor = 1.0;
   String urlWhatsApp = ip + "whatsappForward.php";
   File pickedImage;

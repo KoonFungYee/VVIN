@@ -42,9 +42,6 @@ class _SettingsState extends State<Settings> {
   UniLinksType _type = UniLinksType.string;
   final ScrollController controller = ScrollController();
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlNotiChangeStatus = ip + "notificationAction.php";
   String assign, unassign, now, companyID, branchID, userID, userType;
 

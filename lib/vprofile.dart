@@ -92,11 +92,6 @@ class _VProfileState extends State<VProfile>
   UniLinksType _type = UniLinksType.string;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TabController controller;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font13 = ScreenUtil().setSp(29.9, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlVProfile = ip + "vprofile.php";
   String urlHandler = ip + "handler.php";
   String urlVTag = ip + "vtag.php";

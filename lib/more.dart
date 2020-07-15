@@ -66,8 +66,6 @@ class _MoreState extends State<More> {
   final ScrollController controller = ScrollController();
   final GlobalKey _reminders = GlobalKey();
   BuildContext myContext;
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlNoti = ip + "notiTotalNumber.php";
   String companyURL = ip + "companyProfile.php";
   String urlLogout = ip + "logout.php";

@@ -20,10 +20,6 @@ class Forgot extends StatefulWidget {
 
 class _Forgot extends State<Forgot> {
   double _scaleFactor = 1.0;
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
 
   @override
   void initState() {

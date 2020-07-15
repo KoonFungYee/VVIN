@@ -61,11 +61,6 @@ class _MyWorksState extends State<MyWorks> {
       BehaviorSubject<String>();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-  double font10 = ScreenUtil().setSp(23, allowFontScalingSelf: false);
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font13 = ScreenUtil().setSp(30, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlNoti = ip + "notiTotalNumber.php";
   String urlMyWorks = ip + "myWorks2.php";
   String urlHandler = ip + "getHandler.php";

@@ -46,9 +46,6 @@ class _ReminderListState extends State<ReminderList> {
   UniLinksType _type = UniLinksType.string;
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-  double font13 = ScreenUtil().setSp(29.9, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   SharedPreferences prefs;
   bool status = false;
   List reminderList = [];

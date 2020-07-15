@@ -17,8 +17,8 @@ import 'package:device_info/device_info.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/onBoarding.dart';
-import 'package:vvin/vanalytics.dart';
 import 'package:menu_button/menu_button.dart';
+import 'package:vvin/vanalytics.dart';
 
 final TextEditingController _emcontroller = TextEditingController();
 final TextEditingController _passcontroller = TextEditingController();
@@ -77,7 +77,7 @@ class _LoginPageState extends State<Login> {
     checkPlatform();
   }
 
-  void setup() async {
+  Future<void> setup()  async {
     prefs = await SharedPreferences.getInstance();
     _emcontroller.text = prefs.getString('email');
   }
@@ -541,8 +541,6 @@ class Default extends StatefulWidget {
 
 class _Default extends State<Default> {
   double _scaleFactor = 1.0;
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
   String system, version, manufacture, model;
   SharedPreferences prefs;
 
@@ -810,7 +808,7 @@ class _Default extends State<Default> {
     );
   }
 
-  Future<void> _onBranch() async {
+  void _onBranch() {
     for (int i = 0; i < allData.length; i++) {
       if (_companySelection == allData[i][0]['company_name']) {
         if (this.mounted) {

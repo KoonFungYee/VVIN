@@ -54,9 +54,6 @@ class _EditReminderState extends State<EditReminder> {
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   final TextEditingController _remarkcontroller = TextEditingController();
   SharedPreferences prefs;
   String date, remark, now, active;

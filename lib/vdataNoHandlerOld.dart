@@ -13,7 +13,7 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:vvin/reminder.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -21,34 +21,34 @@ import 'package:route_transitions/route_transitions.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vvin/VData/vdataAll.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
-import 'package:vvin/reminder.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vvin/more.dart';
 import 'package:vvin/myworks.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminderDB.dart';
-import 'package:vvin/vDataDB.dart';
 import 'package:vvin/vanalytics.dart';
 import 'package:vvin/vprofile.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-class VData extends StatefulWidget {
-  const VData({Key key}) : super(key: key);
+class VDataNoHandler extends StatefulWidget {
+  final VDataFilter vDataFilter;
+  const VDataNoHandler({Key key, this.vDataFilter}) : super(key: key);
 
   @override
-  _VDataState createState() => _VDataState();
+  _VDataNoHandlerState createState() => _VDataNoHandlerState();
 }
 
 enum UniLinksType { string, uri }
 
-class _VDataState extends State<VData> {
+class _VDataNoHandlerState extends State<VDataNoHandler> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   final BehaviorSubject<ReceivedNotification>
@@ -56,49 +56,34 @@ class _VDataState extends State<VData> {
       BehaviorSubject<ReceivedNotification>();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
-  NotificationAppLaunchDetails notificationAppLaunchDetails;
-  SharedPreferences prefs;
-  double _scaleFactor = 1.0;
-  double font11 = ScreenUtil().setSp(25.3, allowFontScalingSelf: false);
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+  NotificationAppLaunchDetails notificationAppLaunchDetails;
+  SharedPreferences prefs;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  bool connection,
-      nodata,
-      link,
-      vData,
-      vDataReady,
-      executive,
-      more,
-      vtagStatus,
-      branch,
-      readyNew,
-      readyContacting,
-      readyContacted,
-      readyQualified,
-      readyConverted,
-      readyFollowUp,
-      readyUnqualified,
-      readyBadInfo,
-      readyNoResponse,
-      nodataNew,
-      nodataContacting,
-      nodataContacted,
-      nodataQualified,
-      nodataConverted,
-      nodataFollowUp,
-      nodataUnqualified,
-      nodataBadInfo,
-      nodataNoResponse;
+  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
+  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
+  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
+  String urlNoti = ip + "notiTotalNumber.php";
+  String urlVData = ip + "vdata.php";
+  String urlChangeStatus = ip + "vdataChangeStatus.php";
+  String urlLinks = ip + "links.php";
+  String urlHandler = ip + "getHandler.php";
+  String urlVTag = ip + "vtag.php";
+  String urlBranches = ip + "branch.php";
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
-  List<VDataDetails> vDataDetails1 = [];
+  List<VDataDetails> vDataAll = [];
+  List<VDataDetails> vDataContacting = [];
+  List<VDataDetails> vDataContacted = [];
+  List<VDataDetails> vDataQualified = [];
+  List<VDataDetails> vDataConverted = [];
+  List<VDataDetails> vDataFollowUp = [];
+  List<VDataDetails> vDataUnqualified = [];
+  List<VDataDetails> vDataBadInfo = [];
+  List<VDataDetails> vDataNoResponse = [];
   List<VDataDetails> vDataOffline = [];
   List<Map> offlineVData;
   List<Handler> handlerList = [];
@@ -107,43 +92,45 @@ class _VDataState extends State<VData> {
   List<String> links = [];
   List vtagList = [];
   Database vdataDB;
-  VDataInfo vdataNew;
-  String companyID,
-      branchID,
-      userID,
-      _byLink,
-      _byVTag,
-      _byStatus,
-      _byExecutive,
-      _byBranch,
-      link_id,
-      type,
-      channel,
-      apps,
-      level,
-      userType,
-      search,
-      startDate,
-      endDate,
-      minimumDate,
-      maximumDate,
-      handlerStatus,
-      now,
-      totalNotification;
-  int tap, total, startTime, endTime, currentTabIndex;
+  double _scaleFactor = 1.0;
+  int tap, count, total, currentTabIndex;
   DateTime _startDate,
       _endDate,
       _startDatePicker,
       _endDatePicker,
       startDateTime,
       endDateTime;
-  String urlNoti = ip + "notiTotalNumber.php";
-  String urlVData = ip + "vdata.php";
-  String urlChangeStatus = ip + "vdataChangeStatus.php";
-  String urlLinks = ip + "links.php";
-  String urlHandler = ip + "getHandler.php";
-  String urlVTag = ip + "vtag.php";
-  String urlBranches = ip + "branch.php";
+  bool connection,
+      nodata,
+      link,
+      vData,
+      vDataReady,
+      executive,
+      more,
+      vtagStatus,
+      branch;
+  String _byLink,
+      _byStatus,
+      _byExecutive,
+      _byBranch,
+      _byVTag,
+      type,
+      channel,
+      apps,
+      companyID,
+      branchID,
+      userID,
+      level,
+      userType,
+      link_id,
+      search,
+      startDate,
+      endDate,
+      minimumDate,
+      maximumDate,
+      now,
+      handlerStatus,
+      totalNotification;
   List<String> data = [
     "New",
     "Contacting",
@@ -170,12 +157,10 @@ class _VDataState extends State<VData> {
   List<String> appsAll = [
     "All",
     "VBot",
-    "VBrochure",
     "VCard",
     "VCatalogue",
     "VFlex",
     "VHome",
-    "VForm",
   ];
 
   @override
@@ -183,26 +168,25 @@ class _VDataState extends State<VData> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     check();
     _init();
-    totalNotification = "0";
     currentTabIndex = 1;
+    totalNotification = "0";
     more = true;
-    readyNew = readyContacting = readyContacted = readyQualified = readyConverted =
-        readyFollowUp = readyUnqualified = readyBadInfo = readyNoResponse =
-            nodataNew = nodataContacting = nodataContacted = nodataQualified =
-                nodataConverted = nodataFollowUp = nodataUnqualified = nodataBadInfo =
-                    nodataNoResponse = vDataReady = branch = executive =
-                        link = vData = nodata = connection = vtagStatus = false;
+    vDataReady = branch =
+        executive = link = vData = nodata = connection = vtagStatus = false;
+    _startDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.startDate);
+    _endDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.endDate);
+    checkConnection();
     _byLink = "All Links";
-    _byVTag = "All VTags";
-    _byStatus = "All Status";
+    _byStatus = widget.vDataFilter.status;
     _byExecutive = "All Executives";
+    _byVTag = "All VTags";
     link_id = "All Links";
-    type = "all";
-    channel = "all";
-    apps = "All";
+    type = widget.vDataFilter.type;
+    channel = widget.vDataFilter.channel;
+    apps = widget.vDataFilter.app;
     search = "";
     minimumDate = "2017-12-01";
-    checkConnection();
+    count = 0;
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         prefs = await SharedPreferences.getInstance();
@@ -356,6 +340,14 @@ class _VDataState extends State<VData> {
         payload: now);
   }
 
+  @override
+  void dispose() {
+    if (_sub != null) _sub.cancel();
+    didReceiveLocalNotificationSubject.close();
+    selectNotificationSubject.close();
+    super.dispose();
+  }
+
   void onTapped(int index) {
     if (index != 1) {
       switch (index) {
@@ -392,16 +384,10 @@ class _VDataState extends State<VData> {
   }
 
   @override
-  void dispose() {
-    if (_sub != null) _sub.cancel();
-    didReceiveLocalNotificationSubject.close();
-    selectNotificationSubject.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
+    double remark = MediaQuery.of(context).size.width * 0.30;
+    double cWidth = MediaQuery.of(context).size.width * 0.30;
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
       child: Scaffold(
@@ -553,8 +539,8 @@ class _VDataState extends State<VData> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.fromLTRB(ScreenUtil().setHeight(10), 0,
-                        ScreenUtil().setHeight(0), 0),
+                    padding: EdgeInsets.fromLTRB(
+                        ScreenUtil().setHeight(10), 0, 0, 0),
                     child: Card(
                       child: InkWell(
                         borderRadius: BorderRadius.circular(100),
@@ -614,138 +600,487 @@ class _VDataState extends State<VData> {
               SizedBox(
                 height: ScreenUtil().setHeight(5),
               ),
-              Flexible(
-                child: DefaultTabController(
-                  length: 10,
-                  child: Scaffold(
-                    backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-                    appBar: PreferredSize(
-                      preferredSize: Size.fromHeight(
-                        ScreenUtil().setHeight(88),
-                      ),
-                      child: AppBar(
-                        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-                        elevation: 0,
-                        bottom: TabBar(
-                          isScrollable: true,
-                          tabs: [
-                            Tab(
-                              child: Text('All',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
+              (link == true && vDataReady == true && vtagStatus == true)
+                  ? (nodata == true)
+                      ? Center(
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: EmptyListWidget(
+                                packageImage: PackageImage.Image_2,
+                                // title: 'No Data',
+                                subTitle: 'No Data',
+                                titleTextStyle: Theme.of(context)
+                                    .typography
+                                    .dense
+                                    .display1
+                                    .copyWith(color: Color(0xff9da9c7)),
+                                subtitleTextStyle: Theme.of(context)
+                                    .typography
+                                    .dense
+                                    .body2
+                                    .copyWith(color: Color(0xffabb8d6))),
+                          ),
+                        )
+                      : Flexible(
+                          child: SmartRefresher(
+                            enablePullDown: (connection == true) ? true : false,
+                            enablePullUp: (connection == true)
+                                ? (vDataDetails.length != total) ? true : false
+                                : false,
+                            header: MaterialClassicHeader(),
+                            footer: CustomFooter(
+                              builder: (BuildContext context, LoadStatus mode) {
+                                Widget body;
+                                if (mode == LoadStatus.idle) {
+                                  if (more == true) {
+                                    body = SpinKitRing(
+                                      lineWidth: 2,
+                                      color: Colors.blue,
+                                      size: 20.0,
+                                      duration: Duration(milliseconds: 600),
+                                    );
+                                  }
+                                } else if (mode == LoadStatus.loading) {
+                                  if (more == true) {
+                                    body = SpinKitRing(
+                                      lineWidth: 2,
+                                      color: Colors.blue,
+                                      size: 20.0,
+                                      duration: Duration(milliseconds: 600),
+                                    );
+                                  }
+                                } else if (mode == LoadStatus.failed) {
+                                  body = Text("Load Failed!Click retry!");
+                                } else if (mode == LoadStatus.canLoading) {
+                                  body = Text("release to load more");
+                                } else {
+                                  body = Text("No more Data");
+                                }
+                                return Container(
+                                  height: 55.0,
+                                  child: Center(child: body),
+                                );
+                              },
                             ),
-                            Tab(
-                              child: Text('New',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
+                            controller: _refreshController,
+                            onRefresh: _onRefresh,
+                            onLoading: _onLoading,
+                            child: ListView.builder(
+                              itemCount: (connection == true)
+                                  ? vDataDetails.length
+                                  : offlineVData.length,
+                              itemBuilder: (context, int index) {
+                                return WidgetANimator(
+                                  Card(
+                                    child: Container(
+                                      child: Column(
+                                        children: <Widget>[
+                                          InkWell(
+                                            onTap: () async {
+                                              _redirectVProfile(index);
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                      width: ScreenUtil()
+                                                          .setHeight(2),
+                                                      color:
+                                                          Colors.grey.shade300),
+                                                ),
+                                              ),
+                                              padding: EdgeInsets.fromLTRB(
+                                                  ScreenUtil().setHeight(10),
+                                                  ScreenUtil().setHeight(10),
+                                                  ScreenUtil().setHeight(10),
+                                                  0),
+                                              child: Column(
+                                                children: <Widget>[
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Text(
+                                                        (connection == true)
+                                                            ? _dateFormat(
+                                                                vDataDetails[
+                                                                        index]
+                                                                    .date)
+                                                            : _dateFormat(
+                                                                offlineVData[
+                                                                        index]
+                                                                    ['date']),
+                                                        style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontSize: font12,
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: ScreenUtil()
+                                                        .setHeight(10),
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Container(
+                                                        width: cWidth,
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: <
+                                                                  Widget>[
+                                                                Flexible(
+                                                                  child: Text(
+                                                                    (connection ==
+                                                                            true)
+                                                                        ? vDataDetails[index]
+                                                                            .name
+                                                                        : offlineVData[index]
+                                                                            [
+                                                                            'name'],
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            font14,
+                                                                        fontWeight:
+                                                                            FontWeight.w900),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            SizedBox(
+                                                              height:
+                                                                  ScreenUtil()
+                                                                      .setHeight(
+                                                                          10),
+                                                            ),
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: <
+                                                                  Widget>[
+                                                                Flexible(
+                                                                  child: Text(
+                                                                    (connection ==
+                                                                            true)
+                                                                        ? vDataDetails[index]
+                                                                            .phoneNo
+                                                                        : offlineVData[index]
+                                                                            [
+                                                                            'phone'],
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      fontSize:
+                                                                          font12,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                          width: ScreenUtil()
+                                                              .setWidth(10)),
+                                                      Container(
+                                                        width: cWidth,
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: <
+                                                                  Widget>[
+                                                                Center(
+                                                                  child: Text(
+                                                                    "Link",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            font12,
+                                                                        fontWeight:
+                                                                            FontWeight.w600),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: <
+                                                                  Widget>[
+                                                                Flexible(
+                                                                  child: Text(
+                                                                    (connection ==
+                                                                            true)
+                                                                        ? vDataDetails[index]
+                                                                            .handler
+                                                                        : offlineVData[index]
+                                                                            [
+                                                                            'handler'],
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      fontSize:
+                                                                          font12,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                        width: ScreenUtil()
+                                                            .setWidth(10),
+                                                      ),
+                                                      Container(
+                                                        width: remark,
+                                                        child: Column(
+                                                          children: <Widget>[
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: <
+                                                                  Widget>[
+                                                                Text(
+                                                                  "Remark",
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          font12,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: <
+                                                                  Widget>[
+                                                                Flexible(
+                                                                  child: Text(
+                                                                    (connection ==
+                                                                            true)
+                                                                        ? vDataDetails[index]
+                                                                            .remark
+                                                                        : offlineVData[index]
+                                                                            [
+                                                                            'remark'],
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            font12,
+                                                                        color: Colors
+                                                                            .grey),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            )
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: ScreenUtil()
+                                                        .setHeight(10),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(10),
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.all(
+                                              ScreenUtil().setHeight(8),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: <Widget>[
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    BouncingWidget(
+                                                      scaleFactor: _scaleFactor,
+                                                      onPressed: () {
+                                                        (connection == true)
+                                                            ? launch("tel:+" +
+                                                                vDataDetails[
+                                                                        index]
+                                                                    .phoneNo)
+                                                            : launch("tel:+" +
+                                                                offlineVData[
+                                                                        index]
+                                                                    ['phone']);
+                                                      },
+                                                      child: Container(
+                                                        height: ScreenUtil()
+                                                            .setHeight(60),
+                                                        width: ScreenUtil()
+                                                            .setWidth(98),
+                                                        child: Icon(
+                                                          Icons.call,
+                                                          size: ScreenUtil()
+                                                              .setHeight(32.2),
+                                                          color: Colors.white,
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors.blue,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: ScreenUtil()
+                                                          .setHeight(20),
+                                                    ),
+                                                    BouncingWidget(
+                                                      scaleFactor: _scaleFactor,
+                                                      onPressed: () {
+                                                        _redirectWhatsApp(
+                                                            index);
+                                                      },
+                                                      child: Container(
+                                                        height: ScreenUtil()
+                                                            .setHeight(60),
+                                                        width: ScreenUtil()
+                                                            .setWidth(98),
+                                                        child: Icon(
+                                                          FontAwesomeIcons
+                                                              .whatsapp,
+                                                          color: Colors.white,
+                                                          size: ScreenUtil()
+                                                              .setHeight(32.2),
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Color.fromRGBO(
+                                                              37, 211, 102, 1),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: ScreenUtil()
+                                                          .setHeight(20),
+                                                    ),
+                                                    BouncingWidget(
+                                                      scaleFactor: _scaleFactor,
+                                                      onPressed: () {
+                                                        (vDataDetails[index]
+                                                                    .email !=
+                                                                '')
+                                                            ? launch('mailto:' +
+                                                                vDataDetails[
+                                                                        index]
+                                                                    .email)
+                                                            : _toast(
+                                                                'No email address');
+                                                      },
+                                                      child: Container(
+                                                        height: ScreenUtil()
+                                                            .setHeight(60),
+                                                        width: ScreenUtil()
+                                                            .setWidth(98),
+                                                        child: Icon(
+                                                          Icons.email,
+                                                          color: Colors.white,
+                                                          size: ScreenUtil()
+                                                              .setHeight(32.2),
+                                                        ),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: Colors
+                                                              .grey.shade500,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(5),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                (connection == true)
+                                                    ? menuButton(
+                                                        vDataDetails[index]
+                                                            .status,
+                                                        index)
+                                                    : menuButton(
+                                                        offlineVData[index]
+                                                            ['status'],
+                                                        index),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: ScreenUtil().setHeight(10),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                            Tab(
-                              child: Text('Contacting',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
-                            ),
-                            Tab(
-                              child: Text('Contacted',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
-                            ),
-                            Tab(
-                              child: Text('Qualified',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
-                            ),
-                            Tab(
-                              child: Text('Converted',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
-                            ),
-                            Tab(
-                              child: Text('Follow-up',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
-                            ),
-                            Tab(
-                              child: Text('Unqualified',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
-                            ),
-                            Tab(
-                              child: Text('Bad Information',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
-                            ),
-                            Tab(
-                              child: Text('No Response',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: font15)),
+                          ),
+                        )
+                  : Container(
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            JumpingText('Loading...'),
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.02),
+                            SpinKitRing(
+                              lineWidth: 3,
+                              color: Colors.blue,
+                              size: 30.0,
+                              duration: Duration(milliseconds: 600),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    body: TabBarView(
-                      children: [
-                        _all(),
-                        (readyNew == false)
-                            ? _loading()
-                            : (nodataNew == true)
-                                ? _empty()
-                                : VDataAll(vdataInfo: vdataNew),
-                        (readyContacting == false)
-                            ? _loading()
-                            : (nodataContacting == true)
-                                ? _empty()
-                                : Icon(Icons.directions_bike),
-                        (readyContacted == false)
-                            ? _loading()
-                            : (nodataContacted == true)
-                                ? _empty()
-                                : Icon(Icons.directions_car),
-                        (readyQualified == false)
-                            ? _loading()
-                            : (nodataQualified = true)
-                                ? _empty()
-                                : Icon(Icons.directions_transit),
-                        (readyConverted == false)
-                            ? _loading()
-                            : (nodataConverted == true)
-                                ? _empty()
-                                : Icon(Icons.directions_bike),
-                        (readyFollowUp == false)
-                            ? _loading()
-                            : (nodataFollowUp == true)
-                                ? _empty()
-                                : Icon(Icons.directions_car),
-                        (readyUnqualified == false)
-                            ? _loading()
-                            : (nodataUnqualified == true)
-                                ? _empty()
-                                : Icon(Icons.directions_transit),
-                        (readyBadInfo == false)
-                            ? _loading()
-                            : (nodataBadInfo == true)
-                                ? _empty()
-                                : Icon(Icons.directions_bike),
-                        (readyNoResponse == false)
-                            ? _loading()
-                            : (nodataNoResponse == true)
-                                ? _empty()
-                                : Icon(Icons.directions_car),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -753,426 +1088,28 @@ class _VDataState extends State<VData> {
     );
   }
 
-  Widget _empty() {
-    Widget widget;
-    widget = Center(
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        child: EmptyListWidget(
-            packageImage: PackageImage.Image_2,
-            // title: 'No Data',
-            subTitle: 'No Data',
-            titleTextStyle: Theme.of(context)
-                .typography
-                .dense
-                .display1
-                .copyWith(color: Color(0xff9da9c7)),
-            subtitleTextStyle: Theme.of(context)
-                .typography
-                .dense
-                .body2
-                .copyWith(color: Color(0xffabb8d6))),
-      ),
-    );
-    return widget;
-  }
-
-  Widget _all() {
-    Widget widget;
-    double remark = MediaQuery.of(context).size.width * 0.30;
-    double cWidth = MediaQuery.of(context).size.width * 0.30;
-    (link == true && vDataReady == true && vtagStatus == true)
-        ? (nodata == true)
-            ? widget = _empty()
-            : widget = SmartRefresher(
-                enablePullDown: (connection == true) ? true : false,
-                enablePullUp: (connection == true)
-                    ? (vDataDetails.length != total) ? true : false
-                    : false,
-                header: MaterialClassicHeader(),
-                footer: CustomFooter(
-                  builder: (BuildContext context, LoadStatus mode) {
-                    Widget body;
-                    if (mode == LoadStatus.idle) {
-                      if (more == true) {
-                        body = SpinKitRing(
-                          lineWidth: 2,
-                          color: Colors.blue,
-                          size: 20.0,
-                          duration: Duration(milliseconds: 600),
-                        );
-                      }
-                    } else if (mode == LoadStatus.loading) {
-                      if (more == true) {
-                        body = SpinKitRing(
-                          lineWidth: 2,
-                          color: Colors.blue,
-                          size: 20.0,
-                          duration: Duration(milliseconds: 600),
-                        );
-                      }
-                    } else if (mode == LoadStatus.failed) {
-                      body = Text("Load Failed!Click retry!");
-                    } else if (mode == LoadStatus.canLoading) {
-                      body = Text("release to load more");
-                    } else {
-                      body = Text("No more Data");
-                    }
-                    return Container(
-                      height: 55.0,
-                      child: Center(child: body),
-                    );
-                  },
-                ),
-                controller: _refreshController,
-                onRefresh: _onRefresh,
-                onLoading: _onLoading,
-                child: ListView.builder(
-                  itemCount: (connection == false)
-                      ? offlineVData.length
-                      : vDataDetails.length,
-                  itemBuilder: (context, int index) {
-                    return WidgetANimator(
-                      Card(
-                        child: Container(
-                          child: Column(
-                            children: <Widget>[
-                              InkWell(
-                                onTap: () async {
-                                  _redirectVProfile(index);
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                          width: ScreenUtil().setHeight(2),
-                                          color: Colors.grey.shade300),
-                                    ),
-                                  ),
-                                  padding: EdgeInsets.fromLTRB(
-                                      ScreenUtil().setHeight(10),
-                                      ScreenUtil().setHeight(10),
-                                      ScreenUtil().setHeight(10),
-                                      0),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            (connection == true)
-                                                ? vDataDetails[index].date
-                                                : offlineVData[index]['date'],
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: font12,
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: ScreenUtil().setHeight(10),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: <Widget>[
-                                          Container(
-                                            width: cWidth,
-                                            child: Column(
-                                              children: <Widget>[
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Flexible(
-                                                      child: Text(
-                                                        (connection == true)
-                                                            ? vDataDetails[
-                                                                    index]
-                                                                .name
-                                                            : offlineVData[
-                                                                index]['name'],
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                            color: Colors.blue,
-                                                            fontSize: font14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w900),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                  height: ScreenUtil()
-                                                      .setHeight(10),
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Flexible(
-                                                      child: Text(
-                                                        (connection == true)
-                                                            ? vDataDetails[
-                                                                    index]
-                                                                .phoneNo
-                                                            : offlineVData[
-                                                                index]['phone'],
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                          color: Colors.grey,
-                                                          fontSize: font12,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(
-                                              width: ScreenUtil().setWidth(10)),
-                                          Container(
-                                            width: cWidth,
-                                            child: Column(
-                                              children: <Widget>[
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Center(
-                                                      child: Text(
-                                                        "Link",
-                                                        style: TextStyle(
-                                                            fontSize: font12,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w600),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Flexible(
-                                                      child: Text(
-                                                        (connection == true)
-                                                            ? vDataDetails[
-                                                                    index]
-                                                                .handler
-                                                            : offlineVData[
-                                                                    index]
-                                                                ['handler'],
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                          color: Colors.grey,
-                                                          fontSize: font12,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: ScreenUtil().setWidth(10),
-                                          ),
-                                          Container(
-                                            width: remark,
-                                            child: Column(
-                                              children: <Widget>[
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      "Remark",
-                                                      style: TextStyle(
-                                                          fontSize: font12,
-                                                          fontWeight:
-                                                              FontWeight.w600),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Flexible(
-                                                      child: Text(
-                                                        (connection == true)
-                                                            ? vDataDetails[
-                                                                    index]
-                                                                .remark
-                                                            : offlineVData[
-                                                                    index]
-                                                                ['remark'],
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                            fontSize: font12,
-                                                            color: Colors.grey),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: ScreenUtil().setHeight(10),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                height: ScreenUtil().setHeight(10),
-                              ),
-                              Container(
-                                padding: EdgeInsets.all(
-                                  ScreenUtil().setHeight(8),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      children: <Widget>[
-                                        BouncingWidget(
-                                          scaleFactor: _scaleFactor,
-                                          onPressed: () {
-                                            (connection == true)
-                                                ? launch("tel:+" +
-                                                    vDataDetails[index].phoneNo)
-                                                : launch("tel:+" +
-                                                    offlineVData[index]
-                                                        ['phone']);
-                                          },
-                                          child: Container(
-                                            height: ScreenUtil().setHeight(60),
-                                            width: ScreenUtil().setWidth(98),
-                                            child: Icon(
-                                              Icons.call,
-                                              size:
-                                                  ScreenUtil().setHeight(32.2),
-                                              color: Colors.white,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blue,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: ScreenUtil().setHeight(20),
-                                        ),
-                                        BouncingWidget(
-                                          scaleFactor: _scaleFactor,
-                                          onPressed: () {
-                                            _redirectWhatsApp(index);
-                                          },
-                                          child: Container(
-                                            height: ScreenUtil().setHeight(60),
-                                            width: ScreenUtil().setWidth(98),
-                                            child: Icon(
-                                              FontAwesomeIcons.whatsapp,
-                                              color: Colors.white,
-                                              size:
-                                                  ScreenUtil().setHeight(32.2),
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Color.fromRGBO(
-                                                  37, 211, 102, 1),
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: ScreenUtil().setHeight(20),
-                                        ),
-                                        BouncingWidget(
-                                          scaleFactor: _scaleFactor,
-                                          onPressed: () {
-                                            (vDataDetails[index].email != '')
-                                                ? launch('mailto:' +
-                                                    vDataDetails[index].email)
-                                                : _toast('No email address');
-                                          },
-                                          child: Container(
-                                            height: ScreenUtil().setHeight(60),
-                                            width: ScreenUtil().setWidth(98),
-                                            child: Icon(
-                                              Icons.email,
-                                              color: Colors.white,
-                                              size:
-                                                  ScreenUtil().setHeight(32.2),
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade500,
-                                              borderRadius:
-                                                  BorderRadius.circular(5),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    (connection == true)
-                                        ? menuButton(
-                                            vDataDetails[index].status, index)
-                                        : menuButton(
-                                            offlineVData[index]['status'],
-                                            index),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(
-                                height: ScreenUtil().setHeight(10),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              )
-        : widget = _loading();
-    return widget;
-  }
-
-  Widget _loading() {
-    Widget widget = Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          JumpingText('Loading...'),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-          SpinKitRing(
-            lineWidth: 3,
-            color: Colors.blue,
-            size: 30.0,
-            duration: Duration(milliseconds: 600),
-          ),
-        ],
-      ),
-    );
-    return widget;
+  void _redirectVProfile(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      VDataDetails vdata = new VDataDetails(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        level: level,
+        userType: userType,
+        date: vDataDetails[index].date,
+        name: vDataDetails[index].name,
+        phoneNo: vDataDetails[index].phoneNo,
+        status: vDataDetails[index].status,
+        email: vDataDetails[index].email,
+      );
+      Navigator.of(context).push(PageRouteTransition(
+          animationType: AnimationType.scale,
+          builder: (context) => VProfile(vdata: vdata)));
+    } else {
+      _toast("No Internet Connection!");
+    }
   }
 
   Widget menuButton(String status, int index) {
@@ -1241,284 +1178,6 @@ class _VDataState extends State<VData> {
     );
   }
 
-  void _onRefresh() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      if (this.mounted) {
-        setState(() {
-          vData = false;
-          link = false;
-          total = null;
-        });
-      }
-      if (level == '0' && _byBranch != 'All Branch') {
-        for (var branch in branchesList) {
-          if (_byBranch == branch.branchName) {
-            branchID = branch.branchID;
-          }
-        }
-      }
-      http.post(urlVData, body: {
-        "companyID": companyID,
-        "branchID": branchID,
-        "level": level,
-        "userID": userID,
-        "user_type": userType,
-        "type": type,
-        "channel": channel,
-        "apps": apps,
-        "link_id": link_id,
-        "status": _byStatus,
-        "executive": _byExecutive,
-        "vtag": _byVTag,
-        "search": search,
-        "start_date": minimumDate,
-        "end_date": DateTime.now().toString().substring(0, 10),
-        "count": "0",
-        "offline": "no"
-      }).then((res) {
-        // print("search body: " + res.body.toString());
-        if (res.body == "nodata") {
-          if (this.mounted) {
-            setState(() {
-              vData = true;
-              connection = true;
-              nodata = true;
-              vDataReady = true;
-              total = 0;
-            });
-          }
-          if (level == "0" && branch == true) {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          } else {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          }
-        } else {
-          var jsonData = json.decode(res.body);
-          if (this.mounted) {
-            setState(() {
-              total = jsonData[0]['total'];
-            });
-          }
-          vDataDetails.clear();
-          vDataDetails1.clear();
-          for (var data in jsonData) {
-            VDataDetails vdata = VDataDetails(
-              date: data['date'],
-              name: data['name'] ?? "",
-              phoneNo: data['phone_number'],
-              email: data['email'] ?? '',
-              remark: data['remark'] ?? "-",
-              status: checkStatus(data['status']),
-              type: data['type'],
-              app: data['app'],
-              channel: data['channel'],
-              link: data['link_type'] ?? "" + data['link'],
-              handler: data['link'],
-            );
-            vDataDetails.add(vdata);
-            vDataDetails1.add(vdata);
-          }
-          if (this.mounted) {
-            setState(() {
-              vData = true;
-              connection = true;
-            });
-          }
-          if (level == "0" && branch == true) {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          } else {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          }
-        }
-      }).catchError((err) {
-        print("Get data error: " + (err).toString());
-      });
-
-      http.post(urlLinks, body: {
-        "companyID": companyID,
-        "branchID": branchID,
-        "level": level,
-        "userID": userID,
-        "user_type": userType,
-      }).then((res) {
-        links.clear();
-        links.add("All Links");
-        if (res.body != "nodata") {
-          var jsonData = json.decode(res.body);
-          Links allLinks = Links(
-            link_type: "",
-            link: "All Links",
-            link_id: "All Links",
-            position: 0,
-          );
-          linksID.add(allLinks);
-          for (int i = 0; i < jsonData.length; i++) {
-            Links linkID = Links(
-              link_type: jsonData[i]['link_type'],
-              link: jsonData[i]['link'] ?? "",
-              link_id: jsonData[i]['link_id'],
-              position: i + 1,
-            );
-            linksID.add(linkID);
-            String link = jsonData[i]['link_type'].toString() +
-                jsonData[i]['link'].toString();
-            links.add(link);
-          }
-        }
-        _startDate = DateFormat("yyyy-MM-dd").parse(minimumDate);
-        _endDate = DateTime.now();
-        if (this.mounted) {
-          setState(() {
-            link = true;
-          });
-        }
-      }).catchError((err) {
-        print("Get link error: " + (err).toString());
-      });
-      _refreshController.refreshCompleted();
-    } else {
-      _toast("No Internet connection, data can't load");
-      _refreshController.refreshCompleted();
-    }
-  }
-
-  void _onLoading() {
-    if (level == '0' && _byBranch != 'All Branch') {
-      for (var branch in branchesList) {
-        if (_byBranch == branch.branchName) {
-          branchID = branch.branchID;
-        }
-      }
-    }
-    http.post(urlVData, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "level": level,
-      "userID": userID,
-      "user_type": userType,
-      "type": type,
-      "channel": channel,
-      "apps": apps,
-      "link_id": link_id,
-      "status": _byStatus,
-      "executive": _byExecutive,
-      "vtag": _byVTag,
-      "search": search,
-      "start_date": _startDate.toString().substring(0, 10),
-      "end_date": _endDate.toString().substring(0, 10),
-      "count": vDataDetails.length.toString(),
-      "offline": "no"
-    }).then((res) {
-      // print("Get More VData body: " + res.body.toString());
-      if (res.body == "nodata") {
-        if (this.mounted) {
-          setState(() {
-            connection = true;
-          });
-        }
-      } else {
-        var jsonData = json.decode(res.body);
-        if (this.mounted) {
-          setState(() {
-            total = jsonData[0]['total'];
-          });
-        }
-        for (var data in jsonData) {
-          VDataDetails vdata = VDataDetails(
-            date: data['date'],
-            name: data['name'] ?? "",
-            phoneNo: data['phone_number'],
-            email: data['email'] ?? '',
-            remark: data['remark'] ?? "-",
-            status: checkStatus(data['status']),
-            type: data['type'],
-            app: data['app'],
-            channel: data['channel'],
-            link: data['link_type'] ?? "" + data['link'],
-            handler: data['link'],
-          );
-          vDataDetails.add(vdata);
-          vDataDetails1.add(vdata);
-        }
-        if (this.mounted) {
-          setState(() {
-            connection = true;
-          });
-        }
-      }
-    }).catchError((err) {
-      print("Get more data error: " + (err).toString());
-    });
-    _refreshController.loadComplete();
-  }
-
-  void _redirectVProfile(int index) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      String name, phoneNo, status, email;
-      if (connection == true) {
-        name = vDataDetails[index].name;
-        phoneNo = vDataDetails[index].phoneNo;
-        email = vDataDetails[index].email;
-        status = vDataDetails[index].status;
-      } else {
-        name = offlineVData[index]['name'];
-        phoneNo = offlineVData[index]['phone'];
-        email = offlineVData[index]['email'];
-        status = offlineVData[index]['status'];
-      }
-      VDataDetails vdata = new VDataDetails(
-        companyID: companyID,
-        branchID: branchID,
-        userID: userID,
-        level: level,
-        userType: userType,
-        name: name,
-        phoneNo: phoneNo,
-        email: email,
-        status: status,
-      );
-      Navigator.of(context).push(PageRouteTransition(
-          animationType: AnimationType.scale,
-          builder: (context) => VProfile(vdata: vdata)));
-    } else {
-      _toast("No Internet Connection!");
-    }
-  }
-
-  void _redirectWhatsApp(int index) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      if (connection == true) {
-        FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
-      } else {
-        FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
-      }
-    } else {
-      _toast("This feature need Internet connection");
-    }
-  }
-
   Future<bool> _onBackPressAppBar() async {
     showDialog(
         barrierDismissible: false,
@@ -1546,6 +1205,25 @@ class _VDataState extends State<VData> {
               ],
             ));
     return Future.value(false);
+  }
+
+  void notification() {
+    http.post(urlNoti, body: {
+      "userID": userID,
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "user_type": userType,
+    }).then((res) async {
+      if (this.mounted) {
+        setState(() {
+          totalNotification = res.body;
+        });
+      }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
+    }).catchError((err) {
+      print("Notification error: " + err.toString());
+    });
   }
 
   void _filter() async {
@@ -1692,209 +1370,181 @@ class _VDataState extends State<VData> {
                               SizedBox(
                                 height: ScreenUtil().setHeight(15),
                               ),
-                              Column(
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                        "By Type",
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: font14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: ScreenUtil().setHeight(10),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Flexible(
-                                        child: Wrap(
-                                          children: <Widget>[
-                                            Container(
-                                              width: ScreenUtil().setWidth(115),
-                                              height:
-                                                  ScreenUtil().setHeight(60),
-                                              margin: EdgeInsets.fromLTRB(0, 0,
-                                                  ScreenUtil().setWidth(20), 0),
-                                              decoration: BoxDecoration(
-                                                color: (type == "all")
-                                                    ? Colors.blue
-                                                    : Colors.white,
-                                                border: Border(
-                                                  top: BorderSide(
-                                                      width: 1,
-                                                      color: (type == "all")
-                                                          ? Colors.blue
-                                                          : Colors
-                                                              .grey.shade300),
-                                                  right: BorderSide(
-                                                      width: 1,
-                                                      color: (type == "all")
-                                                          ? Colors.blue
-                                                          : Colors
-                                                              .grey.shade300),
-                                                  bottom: BorderSide(
-                                                      width: 1,
-                                                      color: (type == "all")
-                                                          ? Colors.blue
-                                                          : Colors
-                                                              .grey.shade300),
-                                                  left: BorderSide(
-                                                      width: 1,
-                                                      color: (type == "all")
-                                                          ? Colors.blue
-                                                          : Colors
-                                                              .grey.shade300),
-                                                ),
-                                              ),
-                                              child: FlatButton(
-                                                onPressed: () {
-                                                  setModalState(() {
-                                                    type = "all";
-                                                  });
-                                                },
-                                                child: Text(
-                                                  'All',
-                                                  style: TextStyle(
-                                                    fontSize: font12,
-                                                    color: (type == "all")
-                                                        ? Colors.white
-                                                        : Colors.grey,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              width: ScreenUtil().setWidth(220),
-                                              height:
-                                                  ScreenUtil().setHeight(60),
-                                              margin: EdgeInsets.fromLTRB(0, 0,
-                                                  ScreenUtil().setWidth(20), 0),
-                                              decoration: BoxDecoration(
-                                                color: (type == "assigned")
-                                                    ? Colors.blue
-                                                    : Colors.white,
-                                                border: Border(
-                                                  top: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "assigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                  right: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "assigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                  bottom: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "assigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                  left: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "assigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                ),
-                                              ),
-                                              child: FlatButton(
-                                                onPressed: () {
-                                                  setModalState(() {
-                                                    type = "assigned";
-                                                  });
-                                                },
-                                                child: Text(
-                                                  'Assigned',
-                                                  style: TextStyle(
-                                                    fontSize: font12,
-                                                    color: (type == "assigned")
-                                                        ? Colors.white
-                                                        : Colors.grey,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              width: ScreenUtil().setWidth(250),
-                                              height:
-                                                  ScreenUtil().setHeight(60),
-                                              margin: EdgeInsets.fromLTRB(0, 0,
-                                                  ScreenUtil().setWidth(10), 0),
-                                              decoration: BoxDecoration(
-                                                color: (type == "unassigned")
-                                                    ? Colors.blue
-                                                    : Colors.white,
-                                                border: Border(
-                                                  top: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "unassigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                  right: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "unassigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                  bottom: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "unassigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                  left: BorderSide(
-                                                      width: 1,
-                                                      color:
-                                                          (type == "unassigned")
-                                                              ? Colors.blue
-                                                              : Colors.grey
-                                                                  .shade300),
-                                                ),
-                                              ),
-                                              child: FlatButton(
-                                                onPressed: () {
-                                                  setModalState(() {
-                                                    type = "unassigned";
-                                                  });
-                                                },
-                                                child: Text(
-                                                  'Unassigned',
-                                                  style: TextStyle(
-                                                    fontSize: font12,
-                                                    color:
-                                                        (type == "unassigned")
-                                                            ? Colors.white
-                                                            : Colors.grey,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: ScreenUtil().setHeight(30),
+                                  Text(
+                                    "By Type",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: font14,
+                                    ),
                                   ),
                                 ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(10),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Flexible(
+                                    child: Wrap(
+                                      children: <Widget>[
+                                        Container(
+                                          width: ScreenUtil().setWidth(115),
+                                          height: ScreenUtil().setHeight(60),
+                                          margin: EdgeInsets.fromLTRB(0, 0,
+                                              ScreenUtil().setWidth(20), 0),
+                                          decoration: BoxDecoration(
+                                            color: (type == "all")
+                                                ? Colors.blue
+                                                : Colors.white,
+                                            border: Border(
+                                              top: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "all")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              right: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "all")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              bottom: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "all")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              left: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "all")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                            ),
+                                          ),
+                                          child: FlatButton(
+                                            onPressed: () {
+                                              setModalState(() {
+                                                type = "all";
+                                              });
+                                            },
+                                            child: Text(
+                                              'All',
+                                              style: TextStyle(
+                                                fontSize: font12,
+                                                color: (type == "all")
+                                                    ? Colors.white
+                                                    : Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: ScreenUtil().setWidth(220),
+                                          height: ScreenUtil().setHeight(60),
+                                          margin: EdgeInsets.fromLTRB(0, 0,
+                                              ScreenUtil().setWidth(20), 0),
+                                          decoration: BoxDecoration(
+                                            color: (type == "assigned")
+                                                ? Colors.blue
+                                                : Colors.white,
+                                            border: Border(
+                                              top: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "assigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              right: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "assigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              bottom: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "assigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              left: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "assigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                            ),
+                                          ),
+                                          child: FlatButton(
+                                            onPressed: () {
+                                              setModalState(() {
+                                                type = "assigned";
+                                              });
+                                            },
+                                            child: Text(
+                                              'Assigned',
+                                              style: TextStyle(
+                                                fontSize: font12,
+                                                color: (type == "assigned")
+                                                    ? Colors.white
+                                                    : Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: ScreenUtil().setWidth(250),
+                                          height: ScreenUtil().setHeight(60),
+                                          margin: EdgeInsets.fromLTRB(0, 0,
+                                              ScreenUtil().setWidth(10), 0),
+                                          decoration: BoxDecoration(
+                                            color: (type == "unassigned")
+                                                ? Colors.blue
+                                                : Colors.white,
+                                            border: Border(
+                                              top: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "unassigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              right: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "unassigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              bottom: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "unassigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              left: BorderSide(
+                                                  width: 1,
+                                                  color: (type == "unassigned")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                            ),
+                                          ),
+                                          child: FlatButton(
+                                            onPressed: () {
+                                              setModalState(() {
+                                                type = "unassigned";
+                                              });
+                                            },
+                                            child: Text(
+                                              'Unassigned',
+                                              style: TextStyle(
+                                                fontSize: font12,
+                                                color: (type == "unassigned")
+                                                    ? Colors.white
+                                                    : Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: ScreenUtil().setHeight(30),
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -1959,7 +1609,7 @@ class _VDataState extends State<VData> {
                                             child: Text(
                                               'All',
                                               style: TextStyle(
-                                                fontSize: font11,
+                                                fontSize: font12,
                                                 color: (channel == "all")
                                                     ? Colors.white
                                                     : Colors.grey,
@@ -1967,63 +1617,63 @@ class _VDataState extends State<VData> {
                                             ),
                                           ),
                                         ),
-                                        // Container(
-                                        //   width: ScreenUtil().setWidth(250),
-                                        //   height: ScreenUtil().setHeight(60),
-                                        //   margin: EdgeInsets.fromLTRB(
-                                        //       0,
-                                        //       ScreenUtil().setHeight(10),
-                                        //       ScreenUtil().setWidth(15),
-                                        //       ScreenUtil().setHeight(10)),
-                                        //   decoration: BoxDecoration(
-                                        //     color: (channel == "contact form")
-                                        //         ? Colors.blue
-                                        //         : Colors.white,
-                                        //     border: Border(
-                                        //       top: BorderSide(
-                                        //           width: 1,
-                                        //           color: (channel ==
-                                        //                   "contact form")
-                                        //               ? Colors.blue
-                                        //               : Colors.grey.shade300),
-                                        //       right: BorderSide(
-                                        //           width: 1,
-                                        //           color: (channel ==
-                                        //                   "contact form")
-                                        //               ? Colors.blue
-                                        //               : Colors.grey.shade300),
-                                        //       bottom: BorderSide(
-                                        //           width: 1,
-                                        //           color: (channel ==
-                                        //                   "contact form")
-                                        //               ? Colors.blue
-                                        //               : Colors.grey.shade300),
-                                        //       left: BorderSide(
-                                        //           width: 1,
-                                        //           color: (channel ==
-                                        //                   "contact form")
-                                        //               ? Colors.blue
-                                        //               : Colors.grey.shade300),
-                                        //     ),
-                                        //   ),
-                                        //   child: FlatButton(
-                                        //     onPressed: () {
-                                        //       setModalState(() {
-                                        //         channel = "contact form";
-                                        //       });
-                                        //     },
-                                        //     child: Text(
-                                        //       'Contact Form',
-                                        //       style: TextStyle(
-                                        //         fontSize: font11,
-                                        //         color:
-                                        //             (channel == "contact form")
-                                        //                 ? Colors.white
-                                        //                 : Colors.grey,
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // ),
+                                        Container(
+                                          width: ScreenUtil().setWidth(250),
+                                          height: ScreenUtil().setHeight(60),
+                                          margin: EdgeInsets.fromLTRB(
+                                              0,
+                                              ScreenUtil().setHeight(10),
+                                              ScreenUtil().setWidth(15),
+                                              ScreenUtil().setHeight(10)),
+                                          decoration: BoxDecoration(
+                                            color: (channel == "contact form")
+                                                ? Colors.blue
+                                                : Colors.white,
+                                            border: Border(
+                                              top: BorderSide(
+                                                  width: 1,
+                                                  color: (channel ==
+                                                          "contact form")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              right: BorderSide(
+                                                  width: 1,
+                                                  color: (channel ==
+                                                          "contact form")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              bottom: BorderSide(
+                                                  width: 1,
+                                                  color: (channel ==
+                                                          "contact form")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                              left: BorderSide(
+                                                  width: 1,
+                                                  color: (channel ==
+                                                          "contact form")
+                                                      ? Colors.blue
+                                                      : Colors.grey.shade300),
+                                            ),
+                                          ),
+                                          child: FlatButton(
+                                            onPressed: () {
+                                              setModalState(() {
+                                                channel = "contact form";
+                                              });
+                                            },
+                                            child: Text(
+                                              'Contact Form',
+                                              style: TextStyle(
+                                                fontSize: font12,
+                                                color:
+                                                    (channel == "contact form")
+                                                        ? Colors.white
+                                                        : Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                         Container(
                                           width: ScreenUtil().setWidth(320),
                                           height: ScreenUtil().setHeight(60),
@@ -2073,7 +1723,7 @@ class _VDataState extends State<VData> {
                                             child: Text(
                                               'WhatsApp Forward',
                                               style: TextStyle(
-                                                fontSize: font11,
+                                                fontSize: font12,
                                                 color: (channel ==
                                                         "whatsapp forward")
                                                     ? Colors.white
@@ -2130,7 +1780,7 @@ class _VDataState extends State<VData> {
                                             child: Text(
                                               'Messenger',
                                               style: TextStyle(
-                                                fontSize: font11,
+                                                fontSize: font12,
                                                 color: (channel == "messenger")
                                                     ? Colors.white
                                                     : Colors.grey,
@@ -2182,7 +1832,7 @@ class _VDataState extends State<VData> {
                                             child: Text(
                                               'Import',
                                               style: TextStyle(
-                                                fontSize: font11,
+                                                fontSize: font12,
                                                 color: (channel == "import")
                                                     ? Colors.white
                                                     : Colors.grey,
@@ -3316,11 +2966,11 @@ class _VDataState extends State<VData> {
     }
   }
 
-  List<Widget> _link(List<Links> linksID) {
+  List<Widget> _branch(List<Branch> branches) {
     List widgetList = <Widget>[];
-    for (var each in linksID) {
+    for (var each in branches) {
       Widget widget1 = Text(
-        each.link_type + each.link,
+        each.branchName,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: font14,
@@ -3331,11 +2981,11 @@ class _VDataState extends State<VData> {
     return widgetList;
   }
 
-  List<Widget> _branch(List<Branch> branches) {
+  List<Widget> _link(List<Links> linksID) {
     List widgetList = <Widget>[];
-    for (var each in branches) {
+    for (var each in linksID) {
       Widget widget1 = Text(
-        each.branchName,
+        each.link_type + each.link,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: font14,
@@ -3360,8 +3010,28 @@ class _VDataState extends State<VData> {
     return widgetList;
   }
 
+  void _redirectWhatsApp(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      if (connection == true) {
+        FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
+      } else {
+        FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
+      }
+    } else {
+      _toast("This feature need Internet connection");
+    }
+  }
+
   void checkConnection() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
+    userID = prefs.getString('userID');
+    level = prefs.getString('level');
+    _byBranch = (level == "0") ? "All Branch" : "";
+    userType = prefs.getString('user_type');
     if (prefs.getString("noti") != null) {
       if (this.mounted) {
         setState(() {
@@ -3370,41 +3040,62 @@ class _VDataState extends State<VData> {
       }
       FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }
-    companyID = prefs.getString('companyID');
-    branchID = prefs.getString('branchID');
-    userID = prefs.getString('userID');
-    level = prefs.getString('level');
-    _byBranch = (level == "0") ? "All Branch" : "";
-    userType = prefs.getString('user_type');
-    vdataNew = VDataInfo(
-      companyID: companyID,
-      branchID: branchID,
-      userID: userID,
-      level: level,
-      userType: userType,
-      type: type,
-      channel: channel,
-      apps: apps,
-      link_id: link_id,
-      byStatus: _byStatus,
-      byExecutive: _byExecutive,
-      byVTag: _byVTag,
-      search: search,
-      startDate: minimumDate,
-      endDate: DateTime.now().toString().substring(0, 10),
-    );
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
       getPreference();
     } else {
-      offline();
-      _toast("No Internet, the data shown is not up to date");
+      _toast("Please connect to Internet!");
     }
   }
 
-  void getPreference() {
-    startTime = (DateTime.now()).millisecondsSinceEpoch;
+  String checkStatus(String status) {
+    String realStatus;
+    switch (status.toLowerCase()) {
+      case "new":
+        realStatus = "New";
+        break;
+
+      case "contacting":
+        realStatus = "Contacting";
+        break;
+
+      case "contacted":
+        realStatus = "Contacted";
+        break;
+
+      case "qualified":
+        realStatus = "Qualified";
+        break;
+
+      case "converted":
+        realStatus = "Converted";
+        break;
+
+      case "follow-up":
+        realStatus = "Follow-up";
+        break;
+
+      case "unqualified":
+        realStatus = "Unqualified";
+        break;
+
+      case "new":
+        realStatus = "New";
+        break;
+
+      case "bad information":
+        realStatus = "Bad Information";
+        break;
+
+      case "no response":
+        realStatus = "No Response";
+        break;
+    }
+    return realStatus;
+  }
+
+  Future<void> getPreference() async {
     if (level == "0" || level == "4") {
       getExecutive();
     }
@@ -3457,69 +3148,29 @@ class _VDataState extends State<VData> {
     });
   }
 
-  void notification() {
-    http.post(urlNoti, body: {
-      "userID": userID,
+  void getVTag() {
+    http.post(urlVTag, body: {
       "companyID": companyID,
       "branchID": branchID,
+      "userID": userID,
       "level": level,
       "user_type": userType,
-    }).then((res) async {
+      "phone_number": "all",
+    }).then((res) {
+      // print("VTag body: " + res.body);
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        vtagList = jsonData;
+        vtagList.insert(0, "-");
+      }
       if (this.mounted) {
         setState(() {
-          totalNotification = res.body;
+          vtagStatus = true;
         });
       }
-      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }).catchError((err) {
-      print("Notification error: " + err.toString());
+      print("Get Link error: " + (err).toString());
     });
-  }
-
-  String checkStatus(String status) {
-    String realStatus;
-    switch (status.toLowerCase()) {
-      case "new":
-        realStatus = "New";
-        break;
-
-      case "contacting":
-        realStatus = "Contacting";
-        break;
-
-      case "contacted":
-        realStatus = "Contacted";
-        break;
-
-      case "qualified":
-        realStatus = "Qualified";
-        break;
-
-      case "converted":
-        realStatus = "Converted";
-        break;
-
-      case "follow-up":
-        realStatus = "Follow-up";
-        break;
-
-      case "unqualified":
-        realStatus = "Unqualified";
-        break;
-
-      case "new":
-        realStatus = "New";
-        break;
-
-      case "bad information":
-        realStatus = "Bad Information";
-        break;
-
-      case "no response":
-        realStatus = "No Response";
-        break;
-    }
-    return realStatus;
   }
 
   void getData() {
@@ -3537,12 +3188,12 @@ class _VDataState extends State<VData> {
       "executive": _byExecutive,
       "vtag": _byVTag,
       "search": search,
-      "start_date": minimumDate,
-      "end_date": DateTime.now().toString().substring(0, 10),
+      "start_date": widget.vDataFilter.startDate,
+      "end_date": widget.vDataFilter.endDate,
       "count": "0",
       "offline": "no"
     }).then((res) {
-      print("VData body: " + res.body.toString());
+      // print("VData body: " + res.body.toString());
       if (res.body == "nodata") {
         if (this.mounted) {
           setState(() {
@@ -3573,15 +3224,14 @@ class _VDataState extends State<VData> {
           });
         }
         vDataDetails.clear();
-        vDataDetails1.clear();
         for (var data in jsonData) {
           VDataDetails vdata = VDataDetails(
             date: data['date'],
             name: data['name'] ?? "",
             phoneNo: data['phone_number'],
-            email: data['email'] ?? '',
             remark: data['remark'] ?? "-",
             status: checkStatus(data['status']),
+            email: data['email'] ?? '',
             type: data['type'],
             app: data['app'],
             channel: data['channel'],
@@ -3589,7 +3239,6 @@ class _VDataState extends State<VData> {
             handler: data['link'],
           );
           vDataDetails.add(vdata);
-          vDataDetails1.add(vdata);
         }
         if (this.mounted) {
           setState(() {
@@ -3611,21 +3260,19 @@ class _VDataState extends State<VData> {
           }
         }
       }
-      if (link == true &&
-          vData == true &&
-          executive == true &&
-          vtagStatus == true) {
-        getOfflineData();
-        // endTime = DateTime.now().millisecondsSinceEpoch;
-        // int result = endTime - startTime;
-        // print("VData loading Time: " + result.toString());
-      }
     }).catchError((err) {
       print("Get data error: " + err.toString());
     });
   }
 
-  void getOfflineData() {
+  void _onLoading() {
+    if (level == '0' && _byBranch != 'All Branch') {
+      for (var branch in branchesList) {
+        if (_byBranch == branch.branchName) {
+          branchID = branch.branchID;
+        }
+      }
+    }
     http.post(urlVData, body: {
       "companyID": companyID,
       "branchID": branchID,
@@ -3635,40 +3282,56 @@ class _VDataState extends State<VData> {
       "type": type,
       "channel": channel,
       "apps": apps,
-      "link_id": "All Links",
+      "link_id": link_id,
       "status": _byStatus,
       "executive": _byExecutive,
       "vtag": _byVTag,
       "search": search,
-      "start_date": minimumDate,
-      "end_date": DateTime.now().toString().substring(0, 10),
-      "count": "0",
-      "offline": "yes"
+      "start_date": _startDate.toString().substring(0, 10),
+      "end_date": _endDate.toString().substring(0, 10),
+      "count": vDataDetails.length.toString(),
+      "offline": "no"
     }).then((res) {
-      // print("Save VData body: " + res.body.toString());
-      if (res.body != "nodata") {
+      // print("Get More VData body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            connection = true;
+          });
+        }
+      } else {
         var jsonData = json.decode(res.body);
+        if (this.mounted) {
+          setState(() {
+            total = jsonData[0]['total'];
+          });
+        }
         for (var data in jsonData) {
           VDataDetails vdata = VDataDetails(
             date: data['date'],
             name: data['name'] ?? "",
             phoneNo: data['phone_number'],
-            email: data['email'] ?? '',
             remark: data['remark'] ?? "-",
             status: checkStatus(data['status']),
+            email: data['email'] ?? '',
             type: data['type'],
             app: data['app'],
             channel: data['channel'],
             link: data['link_type'] ?? "" + data['link'],
             handler: data['link'],
           );
-          vDataOffline.add(vdata);
+          vDataDetails.add(vdata);
         }
-        setData();
+        if (this.mounted) {
+          setState(() {
+            connection = true;
+          });
+        }
       }
     }).catchError((err) {
-      print("Get offline data error: " + (err).toString());
+      print("Get more data error: " + (err).toString());
     });
+    _refreshController.loadComplete();
   }
 
   void getLinks() {
@@ -3703,21 +3366,10 @@ class _VDataState extends State<VData> {
           links.add(link);
         }
       }
-      _startDate = DateFormat("yyyy-MM-dd").parse(minimumDate);
-      _endDate = DateTime.now();
       if (this.mounted) {
         setState(() {
           link = true;
         });
-      }
-      if (link == true &&
-          vData == true &&
-          executive == true &&
-          vtagStatus == true) {
-        getOfflineData();
-        // endTime = DateTime.now().millisecondsSinceEpoch;
-        // int result = endTime - startTime;
-        // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       print("Get link error: " + (err).toString());
@@ -3753,135 +3405,62 @@ class _VDataState extends State<VData> {
           executive = true;
         });
       }
-      if (link == true &&
-          vData == true &&
-          executive == true &&
-          vtagStatus == true) {
-        getOfflineData();
-        // endTime = DateTime.now().millisecondsSinceEpoch;
-        // int result = endTime - startTime;
-        // print("VData loading Time: " + result.toString());
-      }
     }).catchError((err) {
       _toast(err.toString());
       print("Get Executive error: " + (err).toString());
     });
   }
 
-  void getVTag() {
-    http.post(urlVTag, body: {
+  void setStatus(int index, String newVal) {
+    vDataDetails[index].status = newVal;
+    http.post(urlChangeStatus, body: {
+      "phone_number": vDataDetails[index].phoneNo,
       "companyID": companyID,
       "branchID": branchID,
-      "userID": userID,
       "level": level,
+      "status": newVal,
+      "userID": userID,
       "user_type": userType,
-      "phone_number": "all",
     }).then((res) {
-      // print("VTag body: " + res.body);
-      if (res.body != "nodata") {
-        var jsonData = json.decode(res.body);
-        vtagList = jsonData;
-        vtagList.insert(0, "-");
-      }
-      if (this.mounted) {
-        setState(() {
-          vtagStatus = true;
-        });
-      }
-      if (link == true &&
-          vData == true &&
-          executive == true &&
-          vtagStatus == true) {
-        getOfflineData();
-        // endTime = DateTime.now().millisecondsSinceEpoch;
-        // int result = endTime - startTime;
-        // print("VData loading Time: " + result.toString());
+      if (res.body == "success") {
+        _toast("Status changed");
+      } else {
+        _toast("Status can't change, please contact VVIN help desk");
       }
     }).catchError((err) {
-      print("Get Link error: " + (err).toString());
+      _toast("Status can't change, please check your Internet connection");
+      print("Set status error: " + (err).toString());
     });
-  }
-
-  Future<void> setData() async {
-    Database db = await VDataDB.instance.database;
-    await db.rawInsert('DELETE FROM vdata WHERE id > 0');
-    for (int index = 0; index < vDataOffline.length; index++) {
-      await db.rawInsert(
-          'INSERT INTO vdata (date, name, phone, handler, remark, status, total) VALUES("' +
-              vDataOffline[index].date +
-              '","' +
-              vDataOffline[index].name +
-              '","' +
-              vDataOffline[index].phoneNo +
-              '","' +
-              vDataOffline[index].handler +
-              '","' +
-              vDataOffline[index].remark +
-              '","' +
-              vDataOffline[index].status +
-              '","' +
-              total.toString() +
-              '")');
-    }
-  }
-
-  Future<void> offline() async {
-    vdataDB = await VDataDB.instance.database;
-    offlineVData = await vdataDB.query(VDataDB.table);
     if (this.mounted) {
       setState(() {
-        link = true;
-        vDataReady = true;
-        vtagStatus = true;
+        connection = true;
       });
-    }
-  }
-
-  void setStatus(int index, String newVal) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      http.post(urlChangeStatus, body: {
-        "phone_number": vDataDetails[index].phoneNo.toString(),
-        "companyID": companyID,
-        "branchID": branchID,
-        "userID": userID,
-        "level": level,
-        "user_type": userType,
-        "status": newVal,
-      }).then((res) {
-        if (res.body == "success") {
-          _toast("Status changed");
-          if (this.mounted) {
-            setState(() {
-              vDataDetails[index].status = newVal;
-              connection = true;
-            });
-          }
-        } else {
-          _toast("Status can't change, please contact VVIN help desk");
-        }
-      }).catchError((err) {
-        _toast("Status can't change, please check your Internet connection");
-        print("Set status error: " + (err).toString());
-      });
-    } else {
-      _toast("This feature need Internet connection");
     }
   }
 
   void _noInternet() {
-    _toast("You are in offline mode, filter feature is not allow");
+    showToast(
+      "You are in offline mode, filter feature is not allow",
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
+  }
+
+  void _toast(String message) {
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
+      ),
+    );
   }
 
   void _done() async {
-    if (_byStatus != 'All Status') {
-      if (this.mounted) {
-        setState(() {
-          nodataNew = true;
-        });
-      }
-    }
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
@@ -3930,7 +3509,6 @@ class _VDataState extends State<VData> {
           if (this.mounted) {
             setState(() {
               vDataDetails.clear();
-              vDataDetails1.clear();
               connection = true;
               nodata = true;
               total = 0;
@@ -3944,15 +3522,14 @@ class _VDataState extends State<VData> {
             });
           }
           vDataDetails.clear();
-          vDataDetails1.clear();
           for (var data in jsonData) {
             VDataDetails vdata = VDataDetails(
               date: data['date'],
               name: data['name'] ?? "",
               phoneNo: data['phone_number'],
-              email: data['email'] ?? '',
               remark: data['remark'] ?? "-",
               status: checkStatus(data['status']),
+              email: data['email'] ?? '',
               type: data['type'],
               app: data['app'],
               channel: data['channel'],
@@ -3960,7 +3537,6 @@ class _VDataState extends State<VData> {
               handler: data['link'],
             );
             vDataDetails.add(vdata);
-            vDataDetails1.add(vdata);
           }
           if (this.mounted) {
             setState(() {
@@ -4018,7 +3594,6 @@ class _VDataState extends State<VData> {
             if (this.mounted) {
               setState(() {
                 vDataDetails.clear();
-                vDataDetails1.clear();
                 connection = true;
                 nodata = true;
                 total = 0;
@@ -4032,15 +3607,14 @@ class _VDataState extends State<VData> {
               });
             }
             vDataDetails.clear();
-            vDataDetails1.clear();
             for (var data in jsonData) {
               VDataDetails vdata = VDataDetails(
                 date: data['date'],
                 name: data['name'] ?? "",
                 phoneNo: data['phone_number'],
-                email: data['email'] ?? '',
                 remark: data['remark'] ?? "-",
                 status: checkStatus(data['status']),
+                email: data['email'] ?? '',
                 type: data['type'],
                 app: data['app'],
                 channel: data['channel'],
@@ -4048,7 +3622,6 @@ class _VDataState extends State<VData> {
                 handler: data['link'],
               );
               vDataDetails.add(vdata);
-              vDataDetails1.add(vdata);
             }
             if (this.mounted) {
               setState(() {
@@ -4082,14 +3655,169 @@ class _VDataState extends State<VData> {
     }
   }
 
-  void _toast(String message) {
-    BotToast.showText(
-      text: message,
-      wrapToastAnimation: (controller, cancel, Widget child) =>
-          CustomAnimationWidget(
-        controller: controller,
-        child: child,
-      ),
-    );
+  String _dateFormat(String fullDate) {
+    String result, date, month, year;
+    date = fullDate.substring(8, 10);
+    month = fullDate.substring(5, 7);
+    year = fullDate.substring(0, 4);
+    result = date + "/" + month + "/" + year;
+    return result;
+  }
+
+  void _onRefresh() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      if (this.mounted) {
+        setState(() {
+          vData = false;
+          link = false;
+          total = null;
+        });
+      }
+      if (level == '0' && _byBranch != 'All Branch') {
+        for (var branch in branchesList) {
+          if (_byBranch == branch.branchName) {
+            branchID = branch.branchID;
+          }
+        }
+      }
+      http.post(urlVData, body: {
+        "companyID": companyID,
+        "branchID": branchID,
+        "level": level,
+        "userID": userID,
+        "user_type": userType,
+        "type": type,
+        "channel": channel,
+        "apps": apps,
+        "link_id": link_id,
+        "status": _byStatus,
+        "executive": _byExecutive,
+        "vtag": _byVTag,
+        "search": search,
+        "start_date": minimumDate,
+        "end_date": DateTime.now().toString().substring(0, 10),
+        "count": "0",
+        "offline": "no"
+      }).then((res) {
+        // print("search body: " + res.body.toString());
+        if (res.body == "nodata") {
+          if (this.mounted) {
+            setState(() {
+              vData = true;
+              connection = true;
+              nodata = true;
+              vDataReady = true;
+              total = 0;
+            });
+          }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          }
+        } else {
+          var jsonData = json.decode(res.body);
+          if (this.mounted) {
+            setState(() {
+              total = jsonData[0]['total'];
+            });
+          }
+          vDataDetails.clear();
+          for (var data in jsonData) {
+            VDataDetails vdata = VDataDetails(
+              date: data['date'],
+              name: data['name'] ?? "",
+              phoneNo: data['phone_number'],
+              remark: data['remark'] ?? "-",
+              status: checkStatus(data['status']),
+              email: data['email'] ?? '',
+              type: data['type'],
+              app: data['app'],
+              channel: data['channel'],
+              link: data['link_type'] ?? "" + data['link'],
+              handler: data['link'],
+            );
+            vDataDetails.add(vdata);
+          }
+          if (this.mounted) {
+            setState(() {
+              vData = true;
+              connection = true;
+            });
+          }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          }
+        }
+      }).catchError((err) {
+        print("Get data error: " + (err).toString());
+      });
+
+      http.post(urlLinks, body: {
+        "companyID": companyID,
+        "branchID": branchID,
+        "level": level,
+        "userID": userID,
+        "user_type": userType,
+      }).then((res) {
+        links.clear();
+        links.add("All Links");
+        if (res.body != "nodata") {
+          var jsonData = json.decode(res.body);
+          Links allLinks = Links(
+            link_type: "",
+            link: "All Links",
+            link_id: "All Links",
+            position: 0,
+          );
+          linksID.add(allLinks);
+          for (int i = 0; i < jsonData.length; i++) {
+            Links linkID = Links(
+              link_type: jsonData[i]['link_type'],
+              link: jsonData[i]['link'] ?? "",
+              link_id: jsonData[i]['link_id'],
+              position: i + 1,
+            );
+            linksID.add(linkID);
+            String link = jsonData[i]['link_type'].toString() +
+                jsonData[i]['link'].toString();
+            links.add(link);
+          }
+        }
+        _startDate = DateFormat("yyyy-MM-dd").parse(minimumDate);
+        _endDate = DateTime.now();
+        if (this.mounted) {
+          setState(() {
+            link = true;
+          });
+        }
+      }).catchError((err) {
+        print("Get link error: " + (err).toString());
+      });
+      _refreshController.refreshCompleted();
+    } else {
+      _toast("No Internet connection, data can't load");
+      _refreshController.refreshCompleted();
+    }
   }
 }

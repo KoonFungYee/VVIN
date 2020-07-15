@@ -57,11 +57,6 @@ class _EditCompanyState extends State<EditCompany> {
   StreamSubscription _sub;
   SharedPreferences prefs;
   UniLinksType _type = UniLinksType.string;
-  double font13 = ScreenUtil().setSp(29.9, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
-  double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   String urlEditCompany = ip + "editCompanyProfile.php";
   String urlUploadImage = ip + "uploadImage.php";

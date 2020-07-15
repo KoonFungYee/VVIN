@@ -68,9 +68,6 @@ class _EditVProfileState extends State<EditVProfile> {
   double _scaleFactor = 1.0;
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
-  double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
   String urlDetails = ip + "cardDetails.php";
   String urlHandler = ip + "getHandler.php";
   String urlVTag = ip + "vtag.php";

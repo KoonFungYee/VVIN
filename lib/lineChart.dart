@@ -18,7 +18,6 @@ class LineChart extends StatefulWidget {
 enum UniLinksType { string, uri }
 
 class _LineChartState extends State<LineChart> {
-  double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
 
