@@ -4,6 +4,40 @@ import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 
 String ip = 'http://211.25.23.149/api/';
 
+class VDataInfo {
+  final String companyID,
+      branchID,
+      userID,
+      level,
+      userType,
+      type,
+      channel,
+      apps,
+      link_id,
+      byStatus,
+      byExecutive,
+      byVTag,
+      search,
+      startDate,
+      endDate;
+  VDataInfo(
+      {this.companyID,
+      this.branchID,
+      this.userID,
+      this.level,
+      this.userType,
+      this.type,
+      this.channel,
+      this.apps,
+      this.link_id,
+      this.byStatus,
+      this.byExecutive,
+      this.byVTag,
+      this.search,
+      this.startDate,
+      this.endDate});
+}
+
 class ReceivedNotification {
   final int id;
   final String title;
@@ -98,6 +132,7 @@ class VDataDetails {
       date,
       name,
       phoneNo,
+      email,
       handler,
       remark,
       status,
@@ -115,6 +150,7 @@ class VDataDetails {
       this.date,
       this.name,
       this.phoneNo,
+      this.email,
       this.handler,
       this.remark,
       this.status,

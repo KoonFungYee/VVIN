@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
-import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_awesome_buttons/flutter_awesome_buttons.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:route_transitions/route_transitions.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vvin/reminder.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:map_launcher/map_launcher.dart';
@@ -356,7 +355,6 @@ class _VProfileState extends State<VProfile>
 
   @override
   void dispose() {
-    _addRemark.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();
@@ -562,40 +560,121 @@ class _VProfileState extends State<VProfile>
                     height: ScreenUtil().setHeight(10),
                   ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: <Widget>[
-                      BouncingWidget(
-                        scaleFactor: _scaleFactor,
-                        onPressed: () async {
+                      InkWell(
+                        onTap: () async {
                           var connectivityResult =
                               await (Connectivity().checkConnectivity());
                           if (connectivityResult == ConnectivityResult.wifi ||
                               connectivityResult == ConnectivityResult.mobile) {
-                            FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
+                            launch('tel:' + widget.vdata.phoneNo);
                           } else {
-                            _toast("This feature need Internet connection");
+                            _toast("No Internet Connection");
                           }
                         },
-                        child: ButttonWithIcon(
-                          icon: FontAwesomeIcons.whatsapp,
-                          title: "WhatsApp",
-                          buttonColor: Color.fromRGBO(37, 211, 102, 1),
-                          onPressed: () async {
-                            var connectivityResult =
-                                await (Connectivity().checkConnectivity());
-                            if (connectivityResult == ConnectivityResult.wifi ||
-                                connectivityResult ==
-                                    ConnectivityResult.mobile) {
-                              FlutterOpenWhatsapp.sendSingleMessage(
-                                  phoneNo, "");
-                            } else {
-                              _toast("This feature need Internet connection");
-                            }
-                          },
+                        child: Container(
+                          width: ScreenUtil().setWidth(90),
+                          height: ScreenUtil().setHeight(90),
+                          decoration: BoxDecoration(
+                            color: Colors.lightBlueAccent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.call,
+                            size: ScreenUtil().setHeight(50),
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          var connectivityResult =
+                              await (Connectivity().checkConnectivity());
+                          if (connectivityResult == ConnectivityResult.wifi ||
+                              connectivityResult == ConnectivityResult.mobile) {
+                            FlutterOpenWhatsapp.sendSingleMessage(
+                                widget.vdata.phoneNo, "");
+                          } else {
+                            _toast("No Internet Connection");
+                          }
+                        },
+                        child: Container(
+                          width: ScreenUtil().setWidth(90),
+                          height: ScreenUtil().setHeight(90),
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(37, 211, 102, 1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            FontAwesomeIcons.whatsapp,
+                            size: ScreenUtil().setHeight(50),
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () async {
+                          var connectivityResult =
+                              await (Connectivity().checkConnectivity());
+                          if (connectivityResult == ConnectivityResult.wifi ||
+                              connectivityResult == ConnectivityResult.mobile) {
+                            launch('mailto:' + widget.vdata.email);
+                          } else {
+                            _toast("No Internet Connection");
+                          }
+                        },
+                        child: Container(
+                          width: ScreenUtil().setWidth(90),
+                          height: ScreenUtil().setHeight(90),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade500,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.mail,
+                            size: ScreenUtil().setHeight(50),
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
                   ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: <Widget>[
+                  //     BouncingWidget(
+                  //       scaleFactor: _scaleFactor,
+                  //       onPressed: () async {
+                  //         var connectivityResult =
+                  //             await (Connectivity().checkConnectivity());
+                  //         if (connectivityResult == ConnectivityResult.wifi ||
+                  //             connectivityResult == ConnectivityResult.mobile) {
+                  //           FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
+                  //         } else {
+                  //           _toast("This feature need Internet connection");
+                  //         }
+                  //       },
+                  //       child: ButttonWithIcon(
+                  //         icon: FontAwesomeIcons.whatsapp,
+                  //         title: "WhatsApp",
+                  //         buttonColor: Color.fromRGBO(37, 211, 102, 1),
+                  //         onPressed: () async {
+                  //           var connectivityResult =
+                  //               await (Connectivity().checkConnectivity());
+                  //           if (connectivityResult == ConnectivityResult.wifi ||
+                  //               connectivityResult ==
+                  //                   ConnectivityResult.mobile) {
+                  //             FlutterOpenWhatsapp.sendSingleMessage(
+                  //                 phoneNo, "");
+                  //           } else {
+                  //             _toast("This feature need Internet connection");
+                  //           }
+                  //         },
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                   SizedBox(
                     height: ScreenUtil().setHeight(10),
                   ),
@@ -782,6 +861,7 @@ class _VProfileState extends State<VProfile>
                           (remarksData == true)
                               ? Remark(
                                   vProfileRemarks: vProfileRemarks,
+                                  vdata: widget.vdata,
                                 )
                               : Container(
                                   color: Colors.white,
@@ -1939,6 +2019,7 @@ class _VProfileState extends State<VProfile>
                 name: widget.vdata.name,
                 phoneNo: widget.vdata.phoneNo,
                 status: widget.vdata.status,
+                email: widget.vdata.email,
               );
               Navigator.pop(context);
               Navigator.pop(context);
@@ -2368,6 +2449,27 @@ class _DetailsState extends State<Details> {
               color: Colors.white,
               child: Column(
                 children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      InkWell(
+                        onTap: () {
+                          _editVProfile();
+                        },
+                        child: Container(
+                          padding: EdgeInsets.fromLTRB(
+                              0, 0, ScreenUtil().setHeight(20), 0),
+                          child: Text(
+                            "Edit",
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: font16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   Flexible(
                     child: SingleChildScrollView(
                       physics: ScrollPhysics(),
@@ -3459,6 +3561,61 @@ class _DetailsState extends State<Details> {
     return widgetList;
   }
 
+  void _editVProfile() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      VProfileData vprofile = VProfileData(
+        name: widget.vProfileDetails[0].name,
+        email: widget.vProfileDetails[0].email,
+        company: widget.vProfileDetails[0].company,
+        ic: widget.vProfileDetails[0].ic,
+        dob: widget.vProfileDetails[0].dob,
+        gender: (widget.vProfileDetails[0].gender == "")
+            ? ""
+            : _gender(widget.vProfileDetails[0].gender),
+        position: widget.vProfileDetails[0].position,
+        industry: widget.vProfileDetails[0].industry,
+        occupation: widget.vProfileDetails[0].occupation,
+        country: widget.vProfileDetails[0].country,
+        state: widget.vProfileDetails[0].state,
+        area: widget.vProfileDetails[0].area,
+        created: widget.vProfileDetails[0].created,
+        lastActive: widget.vProfileDetails[0].lastActive,
+      );
+      Navigator.of(context).push(PageTransition(
+        type: PageTransitionType.rippleRightDown,
+        child: (isScan == false)
+            ? EditVProfile(
+                vprofileData: vprofile,
+                handler: widget.handler,
+                vdata: widget.vdata,
+                vtag: widget.vtag,
+              )
+            : EditVProfile(
+                vprofileData: vprofile,
+                handler: widget.handler,
+                vdata: widget.vdata,
+                vtag: widget.vtag,
+                details: full,
+              ),
+      ));
+    } else {
+      _toast("Please check your Internet connection");
+    }
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
+    );
+  }
+
   String _dateFormat(String fullDate) {
     String result, date, month, year;
     date = fullDate.substring(8, 10);
@@ -3652,7 +3809,8 @@ class _ViewsState extends State<Views> {
 
 class Remark extends StatefulWidget {
   final List<Remarks> vProfileRemarks;
-  const Remark({Key key, this.vProfileRemarks}) : super(key: key);
+  final VDataDetails vdata;
+  const Remark({Key key, this.vProfileRemarks, this.vdata}) : super(key: key);
 
   @override
   _RemarkState createState() => _RemarkState();
@@ -3661,6 +3819,10 @@ class Remark extends StatefulWidget {
 class _RemarkState extends State<Remark> {
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
+  double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
+  final TextEditingController _addRemark = TextEditingController();
+  String urlSaveRemark = ip + "saveRemark.php";
+  bool isSend = false;
 
   @override
   Widget build(BuildContext context) {
@@ -3668,8 +3830,29 @@ class _RemarkState extends State<Remark> {
     return Scaffold(
       body: Container(
         color: Colors.white,
-        child: Row(
+        child: Column(
           children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                InkWell(
+                  onTap: () {
+                    _addRemarks();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(20),
+                        ScreenUtil().setHeight(20), 0),
+                    child: Text(
+                      "Add Remark",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: font14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             Flexible(
               child: SingleChildScrollView(
                 physics: ScrollPhysics(),
@@ -3751,6 +3934,171 @@ class _RemarkState extends State<Remark> {
           ],
         ),
       ),
+    );
+  }
+
+  void _addRemarks() {
+    showGeneralDialog(
+        barrierDismissible: false,
+        barrierColor: Colors.grey.withOpacity(0.5),
+        transitionBuilder: (context, a1, a2, widget) {
+          final curvedValue = Curves.easeInOutBack.transform(a1.value) - 1.0;
+          return Transform(
+            transform: Matrix4.translationValues(0.0, curvedValue * 200, 0.0),
+            child: Opacity(
+              opacity: a1.value,
+              child: AlertDialog(
+                shape: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0)),
+                elevation: 1.0,
+                title: Text(
+                  "Add new remark",
+                  style: TextStyle(
+                    fontSize: font16,
+                  ),
+                ),
+                content: Container(
+                  decoration: BoxDecoration(
+                      color: Color.fromRGBO(235, 235, 255, 1),
+                      borderRadius: BorderRadius.all(Radius.circular(10))),
+                  height: MediaQuery.of(context).size.height * 0.2,
+                  child: TextField(
+                    style: TextStyle(
+                      fontSize: font14,
+                    ),
+                    maxLines: 5,
+                    controller: _addRemark,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                actions: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      // FloatingActionButton(
+                      //   child: Icon(
+                      //     Icons.mic,
+                      //     // color: (start == false) ? Colors.pink : Colors.grey,
+                      //   ),
+                      //   mini: true,
+                      //   onPressed: () {
+                      //     initSpeechState();
+                      //     startListening();
+                      //     // setState(() {
+                      //     //   start = true;
+                      //     // });
+                      //   },
+                      //   backgroundColor:
+                      //   // Colors.pink,
+                      //   (start == false)
+                      //   ? Colors.pink
+                      //   : Colors.grey,
+                      // ),
+                      // SizedBox(
+                      //   width: MediaQuery.of(context).size.width * 0.2,
+                      // ),
+                      FlatButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                            fontSize: font14,
+                          ),
+                        ),
+                      ),
+                      FlatButton(
+                        onPressed: _onSubmit,
+                        child: Text(
+                          "Submit",
+                          style: TextStyle(
+                            fontSize: font14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        transitionDuration: Duration(milliseconds: 300),
+        context: context,
+        pageBuilder: (context, animation1, animation2) {});
+  }
+
+  void _onSubmit() async {
+    if (isSend == false) {
+      if (_addRemark.text == "") {
+        _toast("Please key in something");
+      } else {
+        var connectivityResult = await (Connectivity().checkConnectivity());
+        if (connectivityResult == ConnectivityResult.wifi ||
+            connectivityResult == ConnectivityResult.mobile) {
+          if (this.mounted) {
+            setState(() {
+              isSend = true;
+            });
+          }
+          http.post(urlSaveRemark, body: {
+            "companyID": widget.vdata.companyID,
+            "branchID": widget.vdata.branchID,
+            "userID": widget.vdata.userID,
+            "level": widget.vdata.level,
+            "user_type": widget.vdata.userType,
+            "phone_number": widget.vdata.phoneNo,
+            "remark": _addRemark.text,
+          }).then((res) async {
+            if (res.body == "success") {
+              VDataDetails vdata = new VDataDetails(
+                companyID: widget.vdata.companyID,
+                branchID: widget.vdata.branchID,
+                userID: widget.vdata.userID,
+                level: widget.vdata.level,
+                userType: widget.vdata.userType,
+                name: widget.vdata.name,
+                phoneNo: widget.vdata.phoneNo,
+                status: widget.vdata.status,
+                email: widget.vdata.email,
+              );
+              Navigator.pop(context);
+              Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => VProfile(vdata: vdata)));
+              _addRemark.text = "";
+            } else {
+              Navigator.pop(context);
+              _addRemark.text = "";
+              _toast("Please contact VVIN help desk");
+            }
+          }).catchError((err) {
+            Navigator.pop(context);
+            _addRemark.text = "";
+            _toast("No Internet Connection, data can't save");
+            print("On submit error: " + err.toString());
+          });
+        } else {
+          _toast("Please check your Internet connection");
+        }
+      }
+    }
+  }
+
+  void _toast(String message) {
+    showToast(
+      message,
+      context: context,
+      animation: StyledToastAnimation.slideFromBottomFade,
+      reverseAnimation: StyledToastAnimation.slideToBottom,
+      position: StyledToastPosition.bottom,
+      duration: Duration(milliseconds: 3500),
     );
   }
 }

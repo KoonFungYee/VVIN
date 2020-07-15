@@ -233,7 +233,6 @@ class _EditReminderState extends State<EditReminder> {
 
   @override
   void dispose() {
-    _remarkcontroller.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();

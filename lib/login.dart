@@ -83,13 +83,6 @@ class _LoginPageState extends State<Login> {
   }
 
   @override
-  void dispose() {
-    _emcontroller.dispose();
-    _passcontroller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: true);
     return WillPopScope(

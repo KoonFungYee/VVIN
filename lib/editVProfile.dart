@@ -549,13 +549,6 @@ class _EditVProfileState extends State<EditVProfile> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _companyController.dispose();
-    _icController.dispose();
-    _positionController.dispose();
-    _occupationController.dispose();
-    _areaController.dispose();
     if (_sub != null) _sub.cancel();
     didReceiveLocalNotificationSubject.close();
     selectNotificationSubject.close();
@@ -3498,6 +3491,7 @@ class _EditVProfileState extends State<EditVProfile> {
         name: _nameController.text,
         phoneNo: widget.vdata.phoneNo,
         status: widget.vdata.status,
+        email: widget.vdata.email,
       );
       Navigator.of(context).pop();
       Navigator.of(context).push(PageTransition(
@@ -3531,6 +3525,7 @@ class _EditVProfileState extends State<EditVProfile> {
                   name: _nameController.text,
                   phoneNo: widget.vdata.phoneNo,
                   status: widget.vdata.status,
+                  email: widget.vdata.email,
                 );
                 Navigator.of(context).pop();
                 Navigator.of(context).push(PageTransition(
