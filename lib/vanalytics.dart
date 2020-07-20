@@ -10,6 +10,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
+import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:intl/intl.dart';
@@ -383,6 +384,7 @@ class _VAnalyticsState extends State<VAnalytics>
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
     final deviceWidth = MediaQuery.of(context).size.width;
+    YYDialog.init(context);
     return AnimatedBuilder(
         animation: animatedController,
         builder: (BuildContext context, Widget child) {
@@ -2521,31 +2523,7 @@ class _VAnalyticsState extends State<VAnalytics>
   }
 
   Future<bool> _onBackPressAppBar() async {
-    showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (BuildContext context) => CupertinoAlertDialog(
-              title: Text(
-                "Are you sure you want to close application?",
-                style: TextStyle(
-                  fontSize: font14,
-                ),
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text("NO"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                FlatButton(
-                  child: Text("YES"),
-                  onPressed: () {
-                    SystemNavigator.pop();
-                  },
-                )
-              ],
-            ));
+    YYAlertDialogWithScaleIn();
     return Future.value(false);
   }
 

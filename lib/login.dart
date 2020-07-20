@@ -19,6 +19,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:vvin/onBoarding.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:vvin/vanalytics.dart';
+import 'package:device_unlock/device_unlock.dart';
 
 final TextEditingController _emcontroller = TextEditingController();
 final TextEditingController _passcontroller = TextEditingController();
@@ -49,12 +50,13 @@ class Login extends StatefulWidget {
 }
 
 class _LoginPageState extends State<Login> {
-  String system, version, manufacture, model;
+  String system, version, manufacture, model, lastPassword;
   SharedPreferences prefs;
   double _scaleFactor = 1.0;
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font15 = ScreenUtil().setSp(34.5, allowFontScalingSelf: false);
   double font25 = ScreenUtil().setSp(57.5, allowFontScalingSelf: false);
+  DeviceUnlock deviceUnlock;
 
   @override
   void initState() {
@@ -71,15 +73,17 @@ class _LoginPageState extends State<Login> {
       token = fbtoken;
       // print(fbtoken);
     });
+    deviceUnlock = DeviceUnlock();
     token = _email = _password = _passcontroller.text = '';
     login = visible = gotbranch = gotcompany = false;
     setup();
     checkPlatform();
   }
 
-  Future<void> setup()  async {
+  Future<void> setup() async {
     prefs = await SharedPreferences.getInstance();
     _emcontroller.text = prefs.getString('email');
+    lastPassword = prefs.getString('lastPassword');
   }
 
   @override
@@ -221,6 +225,16 @@ class _LoginPageState extends State<Login> {
                               keyboardType: TextInputType.text,
                               controller: _passcontroller,
                               decoration: InputDecoration(
+                                suffix: IconButton(
+                                  padding: const EdgeInsets.all(0.5),
+                                  alignment: Alignment.centerRight,
+                                  onPressed: _lastPassword,
+                                  icon: Icon(
+                                    FontAwesomeIcons.key,
+                                    color: Colors.blue,
+                                    size: ScreenUtil().setHeight(30),
+                                  ),
+                                ),
                                 suffixIcon: (visible == false)
                                     ? IconButton(
                                         onPressed: () {
@@ -242,9 +256,11 @@ class _LoginPageState extends State<Login> {
                                             });
                                           }
                                         },
-                                        icon: Icon(FontAwesomeIcons.eye,
-                                            color: Colors.blue,
-                                            size: ScreenUtil().setHeight(30)),
+                                        icon: Icon(
+                                          FontAwesomeIcons.eye,
+                                          color: Colors.blue,
+                                          size: ScreenUtil().setHeight(30),
+                                        ),
                                       ),
                                 contentPadding: EdgeInsets.fromLTRB(
                                     ScreenUtil().setHeight(10),
@@ -289,6 +305,33 @@ class _LoginPageState extends State<Login> {
         ),
       ),
     );
+  }
+
+  void _lastPassword() async {
+    var unlocked = false;
+    try {
+      unlocked = await deviceUnlock.request(
+        localizedReason: "Use your last password",
+      );
+    } on DeviceUnlockUnavailable {
+      unlocked = true;
+    } on RequestInProgress {
+      unlocked = true;
+    }catch (e) {
+      _toast('This feature is not support for your device');
+    }
+    if (unlocked) {
+      if (prefs.getString('email') == null) {
+        _toast('No password saved');
+      } else if (_emcontroller.text == prefs.getString('email') &&
+          prefs.getString('email') != null) {
+        (lastPassword != null)
+            ? _passcontroller.text = lastPassword
+            : _toast('No password saved');
+      } else {
+        _toast('Email address not same as previous login');
+      }
+    }
   }
 
   void _onLogin() async {
@@ -413,6 +456,7 @@ class _LoginPageState extends State<Login> {
           await prefs.setString('level', level);
           await prefs.setString('user_type', userType);
           await prefs.setString('branchID', branchID);
+          await prefs.setString('lastPassword', _passcontroller.text);
           companyList.clear();
           branchList.clear();
           branchDetails.clear();
@@ -879,6 +923,7 @@ class _Default extends State<Default> {
           await prefs.setString('level', level);
           await prefs.setString('user_type', userType);
           await prefs.setString('branchID', branchID);
+          await prefs.setString('lastPassword', _passcontroller.text);
           companyList.clear();
           branchList.clear();
           branchDetails.clear();

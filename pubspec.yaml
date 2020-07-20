@@ -74,6 +74,12 @@ dependencies:
   sk_onboarding_screen: ^1.0.1
   advance_pdf_viewer: ^1.1.6
   floating_menu: ^0.1.0+hotfix.1
+  table_calendar: ^2.2.3
+  some_calendar: ^1.2.5
+  device_unlock: ^1.1.2
+  flutter_lock_screen: ^1.0.6
+  local_auth: ^0.6.2+3
+  easy_dialog: ^1.0.5
   flutter:
     sdk: flutter
 

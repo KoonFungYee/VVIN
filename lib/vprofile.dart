@@ -563,7 +563,10 @@ class _VProfileState extends State<VProfile>
                               await (Connectivity().checkConnectivity());
                           if (connectivityResult == ConnectivityResult.wifi ||
                               connectivityResult == ConnectivityResult.mobile) {
-                            launch('tel:' + widget.vdata.phoneNo);
+                            launch('tel:+' +
+                                widget.vdata.phoneNo.substring(0, 2) +
+                                ' ' +
+                                widget.vdata.phoneNo.substring(2));
                           } else {
                             _toast("No Internet Connection");
                           }
@@ -614,7 +617,9 @@ class _VProfileState extends State<VProfile>
                               await (Connectivity().checkConnectivity());
                           if (connectivityResult == ConnectivityResult.wifi ||
                               connectivityResult == ConnectivityResult.mobile) {
-                            launch('mailto:' + widget.vdata.email);
+                            (widget.vdata.email != '')
+                                ? launch('mailto:' + widget.vdata.email)
+                                : _toast('No email address');
                           } else {
                             _toast("No Internet Connection");
                           }
@@ -635,41 +640,6 @@ class _VProfileState extends State<VProfile>
                       ),
                     ],
                   ),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.center,
-                  //   children: <Widget>[
-                  //     BouncingWidget(
-                  //       scaleFactor: _scaleFactor,
-                  //       onPressed: () async {
-                  //         var connectivityResult =
-                  //             await (Connectivity().checkConnectivity());
-                  //         if (connectivityResult == ConnectivityResult.wifi ||
-                  //             connectivityResult == ConnectivityResult.mobile) {
-                  //           FlutterOpenWhatsapp.sendSingleMessage(phoneNo, "");
-                  //         } else {
-                  //           _toast("This feature need Internet connection");
-                  //         }
-                  //       },
-                  //       child: ButttonWithIcon(
-                  //         icon: FontAwesomeIcons.whatsapp,
-                  //         title: "WhatsApp",
-                  //         buttonColor: Color.fromRGBO(37, 211, 102, 1),
-                  //         onPressed: () async {
-                  //           var connectivityResult =
-                  //               await (Connectivity().checkConnectivity());
-                  //           if (connectivityResult == ConnectivityResult.wifi ||
-                  //               connectivityResult ==
-                  //                   ConnectivityResult.mobile) {
-                  //             FlutterOpenWhatsapp.sendSingleMessage(
-                  //                 phoneNo, "");
-                  //           } else {
-                  //             _toast("This feature need Internet connection");
-                  //           }
-                  //         },
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
                   SizedBox(
                     height: ScreenUtil().setHeight(10),
                   ),
@@ -1270,8 +1240,9 @@ class _VProfileState extends State<VProfile>
     TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
     VisionText readText = await recognizeText.processImage(image);
 
-    String patttern = r'[0-9]';
-    RegExp regExp = new RegExp(patttern);
+    RegExp patternNum = new RegExp(r'[0-9]');
+    RegExp patternAlpa = new RegExp(r'[a-z]');
+    RegExp patternBigAlpa = new RegExp(r'[A-Z]');
     for (TextBlock block in readText.blocks) {
       for (TextLine line in block.lines) {
         String temPhone = "";
@@ -1280,23 +1251,27 @@ class _VProfileState extends State<VProfile>
         int endIndex = 0;
         bool save = true;
         for (int i = 0; i < line.text.length; i++) {
-          if (regExp.hasMatch(line.text[i])) {
-            endIndex = i + 1;
-            if (number != 'string') {
-              number = 'num';
-              temPhone = temPhone + line.text[i];
-            } else if (temPhone.length == 0) {
-              number = 'num';
-              temPhone = temPhone + line.text[i];
+          if (patternNum.hasMatch(line.text[i]) ||
+              patternAlpa.hasMatch(line.text[i]) ||
+              patternBigAlpa.hasMatch(line.text[i])) {
+            if (patternNum.hasMatch(line.text[i])) {
+              endIndex = i + 1;
+              if (number != 'string') {
+                number = 'num';
+                temPhone = temPhone + line.text[i];
+              } else if (temPhone.length == 0) {
+                number = 'num';
+                temPhone = temPhone + line.text[i];
+              } else {
+                temPhone = '';
+                endIndex = 0;
+              }
             } else {
-              temPhone = '';
-              endIndex = 0;
-            }
-          } else {
-            if (number == 'num') {
-              number = 'notNum';
-            } else if (number == 'notNum') {
-              number = 'string';
+              if (number == 'num') {
+                number = 'notNum';
+              } else if (number == 'notNum') {
+                number = 'string';
+              }
             }
           }
           if (temPhone.length > 9 && number == 'string') {

@@ -317,7 +317,7 @@ class WhatsappForward {
 
 YYDialog YYAlertDialogWithScaleIn() {
   return YYDialog().build()
-    ..width = 240
+    ..width = ScreenUtil().setHeight(450)
     ..borderRadius = 4.0
     ..duration = Duration(milliseconds: 200)
     ..animatedFunc = (child, animation) {
@@ -327,13 +327,15 @@ YYDialog YYAlertDialogWithScaleIn() {
       );
     }
     ..text(
+      alignment: Alignment.center,
       padding: EdgeInsets.all(18.0),
-      text: "Are you sure you want to close application?",
+      text: "Close application?",
       color: Colors.black,
       fontSize: 14.0,
     )
+    ..divider(color: Colors.grey)
     ..doubleButton(
-      padding: EdgeInsets.only(top: 24.0),
+      withDivider: true,
       gravity: Gravity.center,
       text1: "NO",
       onTap1: () {},

@@ -7,6 +7,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
+import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
@@ -23,6 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vvin/calendar.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/reminder.dart';
@@ -64,7 +66,7 @@ class _MoreState extends State<More> {
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
   final ScrollController controller = ScrollController();
-  final GlobalKey _reminders = GlobalKey();
+  final GlobalKey calender = GlobalKey();
   BuildContext myContext;
   String urlNoti = ip + "notiTotalNumber.php";
   String companyURL = ip + "companyProfile.php";
@@ -104,7 +106,7 @@ class _MoreState extends State<More> {
     initialize();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(Duration(milliseconds: 200),
-          () => ShowCaseWidget.of(myContext).startShowCase([_reminders]));
+          () => ShowCaseWidget.of(myContext).startShowCase([calender]));
     });
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
@@ -314,6 +316,7 @@ class _MoreState extends State<More> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
+    YYDialog.init(context);
     return ShowCaseWidget(
       builder: Builder(
         builder: (context) {
@@ -597,8 +600,9 @@ class _MoreState extends State<More> {
                     ),
                     (isFirst == true)
                         ? Showcase(
-                            key: _reminders,
-                            description: 'Click to view reminder listing',
+                            key: calender,
+                            description:
+                                'Click to view calender events listing',
                             disposeOnTap: true,
                             onTargetClick: () {
                               Navigator.push(
@@ -607,8 +611,8 @@ class _MoreState extends State<More> {
                                   transitionDuration:
                                       Duration(milliseconds: 600),
                                   exitPage: widget,
-                                  enterPage: ReminderList(),
-                                  transition: ParallaxTransition(),
+                                  enterPage: Calendar(),
+                                  transition: ZoomOutSlideTransition(),
                                 ),
                               );
                             },
@@ -620,8 +624,8 @@ class _MoreState extends State<More> {
                                     transitionDuration:
                                         Duration(milliseconds: 600),
                                     exitPage: widget,
-                                    enterPage: ReminderList(),
-                                    transition: ParallaxTransition(),
+                                    enterPage: Calendar(),
+                                    transition: ZoomOutSlideTransition(),
                                   ),
                                 );
                               },
@@ -642,7 +646,7 @@ class _MoreState extends State<More> {
                                         Container(
                                           width: ScreenUtil().setWidth(40),
                                           child: Icon(
-                                            Icons.notifications_active,
+                                            FontAwesomeIcons.calendarAlt,
                                             color: Colors.grey,
                                             size: ScreenUtil().setWidth(40),
                                           ),
@@ -652,7 +656,7 @@ class _MoreState extends State<More> {
                                         ),
                                         Expanded(
                                           child: Text(
-                                            "Reminders",
+                                            "Calender",
                                             style: TextStyle(
                                                 fontSize: font14,
                                                 fontWeight: FontWeight.bold),
@@ -669,7 +673,7 @@ class _MoreState extends State<More> {
                                         ),
                                         Flexible(
                                           child: Text(
-                                            "View all your reminders here",
+                                            "View all your calender events here",
                                             style: TextStyle(
                                               color: Colors.grey.shade600,
                                               fontSize: font14,
@@ -691,8 +695,8 @@ class _MoreState extends State<More> {
                                   transitionDuration:
                                       Duration(milliseconds: 600),
                                   exitPage: widget,
-                                  enterPage: ReminderList(),
-                                  transition: ParallaxTransition(),
+                                  enterPage: Calendar(),
+                                  transition: ZoomOutSlideTransition(),
                                 ),
                               );
                             },
@@ -713,7 +717,7 @@ class _MoreState extends State<More> {
                                       Container(
                                         width: ScreenUtil().setWidth(40),
                                         child: Icon(
-                                          Icons.notifications_active,
+                                          FontAwesomeIcons.calendarAlt,
                                           color: Colors.grey,
                                           size: ScreenUtil().setWidth(40),
                                         ),
@@ -723,7 +727,7 @@ class _MoreState extends State<More> {
                                       ),
                                       Expanded(
                                         child: Text(
-                                          "Reminders",
+                                          "Calender",
                                           style: TextStyle(
                                               fontSize: font14,
                                               fontWeight: FontWeight.bold),
@@ -739,7 +743,7 @@ class _MoreState extends State<More> {
                                       ),
                                       Flexible(
                                         child: Text(
-                                          "View all your reminders here",
+                                          "View all your calender events here",
                                           style: TextStyle(
                                             color: Colors.grey.shade600,
                                             fontSize: font14,
@@ -752,6 +756,73 @@ class _MoreState extends State<More> {
                               ),
                             ),
                           ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          AwesomePageRoute(
+                            transitionDuration: Duration(milliseconds: 600),
+                            exitPage: widget,
+                            enterPage: ReminderList(),
+                            transition: ParallaxTransition(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(ScreenUtil().setWidth(30)),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                                width: ScreenUtil().setHeight(2),
+                                color: Colors.grey.shade300),
+                          ),
+                        ),
+                        child: Column(
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Container(
+                                  width: ScreenUtil().setWidth(40),
+                                  child: Icon(
+                                    Icons.notifications_active,
+                                    color: Colors.grey,
+                                    size: ScreenUtil().setWidth(40),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: ScreenUtil().setWidth(20),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    "Reminders",
+                                    style: TextStyle(
+                                        fontSize: font14,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  width: ScreenUtil().setWidth(60),
+                                ),
+                                Flexible(
+                                  child: Text(
+                                    "View all your reminders here",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: font14,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
                     InkWell(
                       onTap: () {
                         setting();
@@ -1174,8 +1245,7 @@ class _MoreState extends State<More> {
       Database vdataDB = await VDataDB.instance.database;
       vdataDB.rawInsert('DELETE FROM vdata WHERE id > 0');
       FlutterAppBadger.removeBadge();
-      Navigator.push(
-                context, MaterialPageRoute(builder: (context) => Login()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Login()));
     } else {
       _toast("Please connect to Internet");
     }
@@ -1219,31 +1289,7 @@ class _MoreState extends State<More> {
   }
 
   Future<bool> _onBackPressAppBar() async {
-    showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (BuildContext context) => CupertinoAlertDialog(
-              title: Text(
-                "Are you sure you want to close application?",
-                style: TextStyle(
-                  fontSize: font14,
-                ),
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text("NO"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                FlatButton(
-                  child: Text("YES"),
-                  onPressed: () {
-                    SystemNavigator.pop();
-                  },
-                )
-              ],
-            ));
+    YYAlertDialogWithScaleIn();
     return Future.value(false);
   }
 

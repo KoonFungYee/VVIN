@@ -1585,8 +1585,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     TextRecognizer recognizeText = FirebaseVision.instance.textRecognizer();
     VisionText readText = await recognizeText.processImage(ourImage);
 
-    String patttern = r'[0-9]';
-    RegExp regExp = new RegExp(patttern);
+    RegExp patternNum = new RegExp(r'[0-9]');
+    RegExp patternAlpa = new RegExp(r'[a-z]');
+    RegExp patternBigAlpa = new RegExp(r'[A-Z]');
     for (TextBlock block in readText.blocks) {
       for (TextLine line in block.lines) {
         String temPhone = "";
@@ -1595,23 +1596,27 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         int endIndex = 0;
         bool save = true;
         for (int i = 0; i < line.text.length; i++) {
-          if (regExp.hasMatch(line.text[i])) {
-            endIndex = i + 1;
-            if (number != 'string') {
-              number = 'num';
-              temPhone = temPhone + line.text[i];
-            } else if (temPhone.length == 0) {
-              number = 'num';
-              temPhone = temPhone + line.text[i];
+          if (patternNum.hasMatch(line.text[i]) ||
+              patternAlpa.hasMatch(line.text[i]) ||
+              patternBigAlpa.hasMatch(line.text[i])) {
+            if (patternNum.hasMatch(line.text[i])) {
+              endIndex = i + 1;
+              if (number != 'string') {
+                number = 'num';
+                temPhone = temPhone + line.text[i];
+              } else if (temPhone.length == 0) {
+                number = 'num';
+                temPhone = temPhone + line.text[i];
+              } else {
+                temPhone = '';
+                endIndex = 0;
+              }
             } else {
-              temPhone = '';
-              endIndex = 0;
-            }
-          } else {
-            if (number == 'num') {
-              number = 'notNum';
-            } else if (number == 'notNum') {
-              number = 'string';
+              if (number == 'num') {
+                number = 'notNum';
+              } else if (number == 'notNum') {
+                number = 'string';
+              }
             }
           }
           if (temPhone.length > 9 && number == 'string') {
