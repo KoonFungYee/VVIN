@@ -67,7 +67,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   final TextEditingController _namecontroller = TextEditingController();
   final TextEditingController _companycontroller = TextEditingController();
   final TextEditingController _remarkcontroller = TextEditingController();
-  final TextEditingController _searchController = TextEditingController();
   final ScrollController whatsappController = ScrollController();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
@@ -83,7 +82,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   List<String> otherList = [];
   List seletedVTag = [];
   List<ContactInfo> contactList = [];
-  List<ContactInfo> contactList1 = [];
   List<Item1> list = List<Item1>();
   List<RadioItem> radioItems = [];
   String pathName,
@@ -927,10 +925,8 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
       );
       radioItems.add(widget);
     }
-    try {
-      selectedName = contactList[0].name;
-      selectedPhone = contactList[0].phone;
-    } catch (e) {}
+    selectedName = contactList[0].name;
+    selectedPhone = contactList[0].phone;
     YYListViewDialogListRadio();
   }
 
@@ -947,52 +943,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         fontWeight: FontWeight.w500,
       )
       ..divider()
-      ..widget(
-        Container(
-          child: Card(
-            child: Container(
-              margin: EdgeInsets.only(
-                right: ScreenUtil().setHeight(20),
-                left: ScreenUtil().setHeight(30),
-              ),
-              height: ScreenUtil().setHeight(75),
-              child: TextField(
-                controller: _searchController,
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.go,
-                onSubmitted: (value) => _search(value),
-                style: TextStyle(
-                  fontSize: font14,
-                ),
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.fromLTRB(10, 3, 0, 3),
-                  hintText: "Search",
-                  suffix: IconButton(
-                    iconSize: ScreenUtil().setHeight(40),
-                    icon: Icon(Icons.keyboard_hide),
-                    onPressed: () {
-                      FocusScope.of(context).requestFocus(new FocusNode());
-                    },
-                  ),
-                  suffixIcon: BouncingWidget(
-                    scaleFactor: _scaleFactor,
-                    onPressed: () {
-                      _search(_searchController.text);
-                    },
-                    child: Icon(
-                      Icons.search,
-                      size: ScreenUtil().setHeight(50),
-                    ),
-                  ),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ),
-        ),
-      )
       ..listViewOfRadioButton(
-          height: 500,
           items: radioItems,
           intialValue: 0,
           color: Colors.white,
@@ -1011,9 +962,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
           color1: Colors.deepPurpleAccent,
           fontSize1: font14,
           fontWeight1: FontWeight.bold,
-          onTap1: () {
-            _searchController.text = '';
-          },
           text2: "OK",
           color2: Colors.deepPurpleAccent,
           fontSize2: font14,
@@ -1023,29 +971,10 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
               setState(() {
                 _namecontroller.text = selectedName;
                 _phonecontroller.text = selectedPhone;
-                _searchController.text = '';
               });
             }
           })
       ..show();
-  }
-
-  Future<void> _search(String value) async {
-    FocusScope.of(context).requestFocus(new FocusNode());
-    Navigator.pop(context);
-    print(value);
-    contactList.clear();
-    for (int i = 0; i < contactList1.length; i++) {
-      if (contactList1[i].name.toLowerCase().contains(value.toLowerCase()) ||
-          contactList1[i].phone.contains(value)) {
-        ContactInfo info = ContactInfo(
-          name: contactList1[i].name,
-          phone: contactList1[i].phone,
-        );
-        contactList.add(info);
-      }
-    }
-    radioList();
   }
 
   List<Widget> _selectedVTag() {
@@ -1765,7 +1694,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
               phone: phoneNo,
             );
             contactList.add(info);
-            contactList1.add(info);
           }
         }
       } catch (e) {}
