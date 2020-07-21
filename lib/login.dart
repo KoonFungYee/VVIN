@@ -308,19 +308,19 @@ class _LoginPageState extends State<Login> {
   }
 
   void _lastPassword() async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     var unlocked = false;
     try {
       unlocked = await deviceUnlock.request(
         localizedReason: "Use your last password",
       );
     } on DeviceUnlockUnavailable {
-      unlocked = true;
+      unlocked = false;
+      _toast('This feature is not support for your device');
     } on RequestInProgress {
       unlocked = true;
-    }catch (e) {
-      _toast('This feature is not support for your device');
     }
-    if (unlocked) {
+    if (unlocked == true) {
       if (prefs.getString('email') == null) {
         _toast('No password saved');
       } else if (_emcontroller.text == prefs.getString('email') &&
