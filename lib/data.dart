@@ -14,6 +14,11 @@ double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
 double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
 double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
 
+class ContactInfo {
+  ContactInfo({this.name, this.phone});
+  String name, phone;
+}
+
 class VDataInfo {
   List<VDataDetails> vDataList;
   int total;

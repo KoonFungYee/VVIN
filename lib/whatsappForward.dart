@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:contacts_service/contacts_service.dart';
 import 'package:fake_whatsapp/fake_whatsapp.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:vvin/reminder.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -31,12 +34,23 @@ import 'package:vvin/reminderDB.dart';
 import 'package:vvin/vdata.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 
+_WhatsAppForwardState pageState;
+
+class Item1 {
+  Item1(this.group, this.status);
+  PermissionGroup group;
+  PermissionStatus status;
+}
+
 class WhatsAppForward extends StatefulWidget {
   final WhatsappForward whatsappForward;
   WhatsAppForward({Key key, this.whatsappForward}) : super(key: key);
 
   @override
-  _WhatsAppForwardState createState() => _WhatsAppForwardState();
+  _WhatsAppForwardState createState() {
+    pageState = _WhatsAppForwardState();
+    return pageState;
+  }
 }
 
 enum UniLinksType { string, uri }
@@ -67,14 +81,25 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   List<String> phoneList = [];
   List<String> otherList = [];
   List seletedVTag = [];
-  String pathName, base64Image, tempText, number, platform;
+  List<ContactInfo> contactList = [];
+  List<Item1> list = List<Item1>();
+  List<RadioItem> radioItems = [];
+  String pathName,
+      base64Image,
+      tempText,
+      number,
+      platform,
+      selectedName,
+      selectedPhone;
 
   @override
   void initState() {
     check();
     _init();
+    list.clear();
+    list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     isSend = isImageLoaded = false;
-    tempText = base64Image = number = "";
+    selectedName = selectedPhone = tempText = base64Image = number = "";
     initialise();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
@@ -235,6 +260,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
 
   @override
   Widget build(BuildContext context) {
+    YYDialog.init(context);
     ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
     return WillPopScope(
       onWillPop: _onBackPressAppBar,
@@ -405,17 +431,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                               Row(
                                                 mainAxisAlignment:
                                                     MainAxisAlignment.start,
-                                                children: <Widget>[],
-                                              ),
-                                              SizedBox(
-                                                height:
-                                                    ScreenUtil().setHeight(20),
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
                                                 children: <Widget>[
-                                                  InkWell(
+                                                  Flexible(
+                                                    child: InkWell(
                                                       onTap: () {
                                                         FocusScope.of(context)
                                                             .requestFocus(
@@ -423,11 +441,13 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                                         _scanner();
                                                       },
                                                       child: Text(
-                                                        "Take Photo",
+                                                        "Take Photo / Choose from contact book",
                                                         style: TextStyle(
                                                             color: Colors.blue,
                                                             fontSize: font14),
-                                                      )),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             ],
@@ -889,6 +909,72 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         ),
       ),
     );
+  }
+
+  void radioList() {
+    RadioItem widget;
+    radioItems.clear();
+    for (var contact in contactList) {
+      widget = RadioItem(
+        padding: EdgeInsets.only(
+          left: ScreenUtil().setHeight(12),
+        ),
+        text: contact.name + ' (' + contact.phone + ')',
+        color: Colors.black,
+        fontSize: font14,
+      );
+      radioItems.add(widget);
+    }
+    selectedName = contactList[0].name;
+    selectedPhone = contactList[0].phone;
+    YYListViewDialogListRadio();
+  }
+
+  YYDialog YYListViewDialogListRadio() {
+    return YYDialog().build()
+      ..width = ScreenUtil().setHeight(600)
+      ..borderRadius = ScreenUtil().setHeight(8)
+      ..text(
+        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+        alignment: Alignment.center,
+        text: "Select Contact",
+        color: Colors.black,
+        fontSize: font18,
+        fontWeight: FontWeight.w500,
+      )
+      ..divider()
+      ..listViewOfRadioButton(
+          items: radioItems,
+          intialValue: 0,
+          color: Colors.white,
+          activeColor: Colors.deepPurpleAccent,
+          onClickItemListener: (index) {
+            selectedName = contactList[index].name;
+            selectedPhone = contactList[index].phone;
+          })
+      ..divider()
+      ..doubleButton(
+          padding: EdgeInsets.only(
+              top: ScreenUtil().setHeight(16),
+              bottom: ScreenUtil().setHeight(16)),
+          gravity: Gravity.right,
+          text1: "CANCEL",
+          color1: Colors.deepPurpleAccent,
+          fontSize1: font14,
+          fontWeight1: FontWeight.bold,
+          text2: "OK",
+          color2: Colors.deepPurpleAccent,
+          fontSize2: font14,
+          fontWeight2: FontWeight.bold,
+          onTap2: () {
+            if (this.mounted) {
+              setState(() {
+                _namecontroller.text = selectedName;
+                _phonecontroller.text = selectedPhone;
+              });
+            }
+          })
+      ..show();
   }
 
   List<Widget> _selectedVTag() {
@@ -1507,6 +1593,18 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
               CupertinoActionSheetAction(
                 onPressed: () async {
                   Navigator.of(context).pop();
+                  requestPermission();
+                },
+                child: Text(
+                  "Choose from contact book",
+                  style: TextStyle(
+                    fontSize: font18,
+                  ),
+                ),
+              ),
+              CupertinoActionSheetAction(
+                onPressed: () async {
+                  Navigator.of(context).pop();
                   var tempStore =
                       await ImagePicker.pickImage(source: ImageSource.gallery);
                   if (tempStore != null) {
@@ -1551,6 +1649,56 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
             ],
           );
         });
+  }
+
+  Future requestPermission() async {
+    var status =
+        await PermissionHandler().requestPermissions([pageState.list[0].group]);
+    if (status.toString() ==
+        "{PermissionGroup.contacts: PermissionStatus.granted}") {
+      getContact();
+    }
+  }
+
+  Future<void> getContact() async {
+    var contacts =
+        (await ContactsService.getContacts(withThumbnails: false)).toList();
+    contactList.clear();
+    for (var contact in contacts) {
+      try {
+        RegExp patternNum = new RegExp(r'[0-9]');
+        for (int i = 0; i < contact.phones.length; i++) {
+          String phone = contact.phones.elementAt(i).value;
+          String phoneNo = '';
+          bool add = true;
+          for (int j = 0; j < phone.length; j++) {
+            if (j != 0) {
+              if (patternNum.hasMatch(phone[j])) {
+                phoneNo += phone[j];
+              }
+            } else {
+              if (patternNum.hasMatch(phone[j])) {
+                phoneNo = '6' + phone[j];
+              }
+            }
+          }
+          for (var list in contactList) {
+            if (phoneNo == list.phone) {
+              add = false;
+              break;
+            }
+          }
+          if (add == true && phoneNo.substring(0, 3) == '601') {
+            ContactInfo info = ContactInfo(
+              name: contact.displayName,
+              phone: phoneNo,
+            );
+            contactList.add(info);
+          }
+        }
+      } catch (e) {}
+    }
+    radioList();
   }
 
   Future readText() async {
