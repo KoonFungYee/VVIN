@@ -1735,6 +1735,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     var contacts =
         (await ContactsService.getContacts(withThumbnails: false)).toList();
     contactList.clear();
+    contactList1.clear();
     for (var contact in contacts) {
       try {
         RegExp patternNum = new RegExp(r'[0-9]');
