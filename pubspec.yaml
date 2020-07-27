@@ -80,6 +80,7 @@ dependencies:
   flutter_lock_screen: ^1.0.6
   local_auth: ^0.6.2+3
   easy_dialog: ^1.0.5
+  amazingneoicons: ^0.0.3
   flutter:
     sdk: flutter
 

@@ -3,16 +3,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:jiffy/jiffy.dart';
-import 'package:some_calendar/some_calendar.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/data.dart';
@@ -21,7 +16,9 @@ import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
 
 class CalendarEvent extends StatefulWidget {
-  CalendarEvent({Key key}) : super(key: key);
+  final List data;
+  final List<UserData> userData;
+  CalendarEvent({Key key, this.data, this.userData}) : super(key: key);
 
   @override
   _CalendarEventState createState() => _CalendarEventState();
@@ -39,25 +36,10 @@ class _CalendarEventState extends State<CalendarEvent> {
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
+  final ScrollController controller = ScrollController();
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   UniLinksType _type = UniLinksType.string;
-  DateTime selectedDate = DateTime.now();
-  String now, duration;
-
-  var durationList = [
-    RadioItem(
-      padding: EdgeInsets.only(left: 6.0),
-      text: "Single day",
-      color: Colors.black,
-      fontSize: 16.0,
-    ),
-    RadioItem(
-      padding: EdgeInsets.only(left: 6.0),
-      text: "Multiple days",
-      color: Colors.black,
-      fontSize: 16.0,
-    ),
-  ];
+  String now;
 
   @override
   void initState() {
@@ -81,9 +63,6 @@ class _CalendarEventState extends State<CalendarEvent> {
         }
       },
     );
-    duration = '';
-    initializeDateFormatting();
-    Intl.systemLocale = 'en_En';
     super.initState();
   }
 
@@ -251,7 +230,7 @@ class _CalendarEventState extends State<CalendarEvent> {
             elevation: 1,
             centerTitle: true,
             title: Text(
-              "New Event",
+              "Event Details",
               style: TextStyle(
                   color: Colors.black,
                   fontSize: font18,
@@ -259,78 +238,258 @@ class _CalendarEventState extends State<CalendarEvent> {
             ),
           ),
         ),
-        body: Column(),
-      ),
-    );
-  }
-
-  YYDialog YYListViewDialogListRadio() {
-    return YYDialog().build()
-      ..gravityAnimationEnable = true
-      ..width = ScreenUtil().setHeight(560)
-      ..borderRadius = ScreenUtil().setHeight(8)
-      ..text(
-        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-        alignment: Alignment.center,
-        text: "Event Duration",
-        color: Colors.black,
-        fontSize: 18.0,
-        fontWeight: FontWeight.w500,
-      )
-      ..divider()
-      ..listViewOfRadioButton(
-          items: durationList,
-          height: 150,
-          intialValue: 2,
-          color: Colors.white,
-          activeColor: Colors.deepPurpleAccent,
-          onClickItemListener: (index) {
-            setState(() {
-              duration = durationList[index].text;
-            });
-          })
-      ..divider()
-      ..doubleButton(
-          padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-          gravity: Gravity.right,
-          text1: "CANCEL",
-          color1: Colors.deepPurpleAccent,
-          fontSize1: 14.0,
-          fontWeight1: FontWeight.bold,
-          text2: "OK",
-          color2: Colors.deepPurpleAccent,
-          fontSize2: 14.0,
-          fontWeight2: FontWeight.bold,
-          onTap2: () {
-            print(duration);
-            if (duration != '') {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => CalendarEvent()));
-            }
-          })
-      ..show();
-  }
-
-  void showSingDateDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => SomeCalendar(
-        primaryColor: Colors.blue,
-        mode: (duration == 'Single day') ? SomeMode.Single : SomeMode.Range,
-        labels: Labels(
-          dialogDone: 'Done',
-          dialogCancel: 'Cancel',
+        body: SingleChildScrollView(
+          controller: controller,
+          child: Container(
+            padding: EdgeInsets.all(ScreenUtil().setHeight(10)),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(10), 0,
+                      ScreenUtil().setHeight(10)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Created on ' + widget.data[10],
+                        style: TextStyle(
+                            color: Color.fromRGBO(135, 152, 173, 1),
+                            fontSize: font12),
+                      )
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(bottom: ScreenUtil().setHeight(20)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          widget.data[2],
+                          style: TextStyle(
+                              color: Color.fromRGBO(46, 56, 77, 1),
+                              fontSize: font18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(bottom: ScreenUtil().setHeight(40)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          widget.data[3],
+                          style: TextStyle(
+                            color: Color.fromRGBO(105, 112, 127, 1),
+                            fontSize: font14,
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Date',
+                        style: TextStyle(
+                          color: Color.fromRGBO(105, 112, 127, 1),
+                          fontSize: font14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              widget.data[4],
+                              style: TextStyle(
+                                color: Color.fromRGBO(90, 90, 90, 1),
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Time',
+                        style: TextStyle(
+                          color: Color.fromRGBO(105, 112, 127, 1),
+                          fontSize: font14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              (widget.data[5] == 'allDay')
+                              ? 'Full day'
+                              : widget.data[5] + ' - ' + widget.data[6],
+                              style: TextStyle(
+                                color: Color.fromRGBO(90, 90, 90, 1),
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Handler',
+                        style: TextStyle(
+                          color: Color.fromRGBO(105, 112, 127, 1),
+                          fontSize: font14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              widget.data[0],
+                              style: TextStyle(
+                                color: Color.fromRGBO(90, 90, 90, 1),
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Meeting with',
+                        style: TextStyle(
+                          color: Color.fromRGBO(105, 112, 127, 1),
+                          fontSize: font14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              widget.data[7],
+                              style: TextStyle(
+                                color: Color.fromRGBO(90, 90, 90, 1),
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Location',
+                        style: TextStyle(
+                          color: Color.fromRGBO(105, 112, 127, 1),
+                          fontSize: font14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              widget.data[8],
+                              style: TextStyle(
+                                color: Color.fromRGBO(90, 90, 90, 1),
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Divider(),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        'Notification',
+                        style: TextStyle(
+                          color: Color.fromRGBO(105, 112, 127, 1),
+                          fontSize: font14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 7,
+                      child: Row(
+                        children: <Widget>[
+                          Flexible(
+                            child: Text(
+                              widget.data[9],
+                              style: TextStyle(
+                                color: Color.fromRGBO(90, 90, 90, 1),
+                                fontSize: font14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-        isWithoutDialog: false,
-        selectedDate: selectedDate,
-        startDate: DateTime.now(),
-        lastDate: Jiffy().add(months: 6),
-        done: (date) {
-          print(date);
-          // setState(() {
-          //   selectedDate = date;
-          // });
-        },
       ),
     );
   }

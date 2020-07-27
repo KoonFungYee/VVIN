@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:amazingneoicons/amazingneoicons.dart';
 import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:badges/badges.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -81,6 +82,7 @@ class _MoreState extends State<More> {
       branchID,
       userID,
       userType,
+      handlerName,
       name,
       phone,
       email,
@@ -568,13 +570,24 @@ class _MoreState extends State<More> {
                                       children: <Widget>[
                                         InkWell(
                                             onTap: () {
+                                              UserData userData = UserData(
+                                                companyID: companyID,
+                                                branchID: branchID,
+                                                userID: userID,
+                                                userType: userType,
+                                                level: level,
+                                              );
+                                              List<UserData> list = [];
+                                              list.add(userData);
                                               Navigator.push(
                                                 context,
                                                 AwesomePageRoute(
                                                   transitionDuration: Duration(
                                                       milliseconds: 600),
                                                   exitPage: widget,
-                                                  enterPage: Profile(),
+                                                  enterPage: Profile(
+                                                    userData: list,
+                                                  ),
                                                   transition: CubeTransition(),
                                                 ),
                                               );
@@ -605,26 +618,46 @@ class _MoreState extends State<More> {
                                 'Click to view calender events listing',
                             disposeOnTap: true,
                             onTargetClick: () {
+                              UserData userData = UserData(
+                                companyID: companyID,
+                                branchID: branchID,
+                                userID: userID,
+                                userType: userType,
+                                level: level,
+                                name: handlerName,
+                              );
+                              List<UserData> list = [];
+                              list.add(userData);
                               Navigator.push(
                                 context,
                                 AwesomePageRoute(
                                   transitionDuration:
                                       Duration(milliseconds: 600),
                                   exitPage: widget,
-                                  enterPage: Calendar(),
+                                  enterPage: Calendar(userData: list),
                                   transition: ZoomOutSlideTransition(),
                                 ),
                               );
                             },
                             child: InkWell(
                               onTap: () {
+                                UserData userData = UserData(
+                                companyID: companyID,
+                                branchID: branchID,
+                                userID: userID,
+                                userType: userType,
+                                level: level,
+                                name: handlerName,
+                              );
+                              List<UserData> list = [];
+                              list.add(userData);
                                 Navigator.push(
                                   context,
                                   AwesomePageRoute(
                                     transitionDuration:
                                         Duration(milliseconds: 600),
                                     exitPage: widget,
-                                    enterPage: Calendar(),
+                                    enterPage: Calendar(userData: list),
                                     transition: ZoomOutSlideTransition(),
                                   ),
                                 );
@@ -647,7 +680,8 @@ class _MoreState extends State<More> {
                                           width: ScreenUtil().setWidth(40),
                                           child: Icon(
                                             FontAwesomeIcons.calendarAlt,
-                                            color: Colors.grey,
+                                            color: Color.fromRGBO(
+                                                165, 165, 165, 1),
                                             size: ScreenUtil().setWidth(40),
                                           ),
                                         ),
@@ -689,13 +723,25 @@ class _MoreState extends State<More> {
                           )
                         : InkWell(
                             onTap: () {
+                              UserData userData = UserData(
+                                companyID: companyID,
+                                branchID: branchID,
+                                userID: userID,
+                                userType: userType,
+                                level: level,
+                                name: handlerName,
+                              );
+                              List<UserData> list = [];
+                              list.add(userData);
                               Navigator.push(
                                 context,
                                 AwesomePageRoute(
                                   transitionDuration:
                                       Duration(milliseconds: 600),
                                   exitPage: widget,
-                                  enterPage: Calendar(),
+                                  enterPage: Calendar(
+                                    userData: list,
+                                  ),
                                   transition: ZoomOutSlideTransition(),
                                 ),
                               );
@@ -718,7 +764,8 @@ class _MoreState extends State<More> {
                                         width: ScreenUtil().setWidth(40),
                                         child: Icon(
                                           FontAwesomeIcons.calendarAlt,
-                                          color: Colors.grey,
+                                          color:
+                                              Color.fromRGBO(165, 165, 165, 1),
                                           size: ScreenUtil().setWidth(40),
                                         ),
                                       ),
@@ -784,8 +831,8 @@ class _MoreState extends State<More> {
                                 Container(
                                   width: ScreenUtil().setWidth(40),
                                   child: Icon(
-                                    Icons.notifications_active,
-                                    color: Colors.grey,
+                                    AmazingNeoIcons.alarm_clock,
+                                    color: Color.fromRGBO(165, 165, 165, 1),
                                     size: ScreenUtil().setWidth(40),
                                   ),
                                 ),
@@ -844,7 +891,7 @@ class _MoreState extends State<More> {
                                   width: ScreenUtil().setWidth(40),
                                   child: Icon(
                                     Icons.settings,
-                                    color: Colors.grey,
+                                    color: Color.fromRGBO(165, 165, 165, 1),
                                     size: ScreenUtil().setWidth(40),
                                   ),
                                 ),
@@ -901,7 +948,7 @@ class _MoreState extends State<More> {
                                   width: ScreenUtil().setWidth(40),
                                   child: Icon(
                                     FontAwesomeIcons.graduationCap,
-                                    color: Colors.grey,
+                                    color: Color.fromRGBO(165, 165, 165, 1),
                                     size: ScreenUtil().setWidth(35),
                                   ),
                                 ),
@@ -956,7 +1003,7 @@ class _MoreState extends State<More> {
                               width: ScreenUtil().setWidth(40),
                               child: Icon(
                                 FontAwesomeIcons.signOutAlt,
-                                color: Colors.grey,
+                                color: Color.fromRGBO(165, 165, 165, 1),
                                 size: ScreenUtil().setWidth(35),
                               ),
                             ),
@@ -1077,6 +1124,7 @@ class _MoreState extends State<More> {
     userID = prefs.getString('userID');
     level = prefs.getString('level');
     userType = prefs.getString('user_type');
+    handlerName = prefs.getString('name');
     http.post(companyURL, body: {
       "companyID": companyID,
       "branchID": branchID,

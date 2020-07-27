@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:badges/badges.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
@@ -39,6 +40,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:vvin/whatsappForward.dart';
 
 class VData extends StatefulWidget {
   const VData({Key key}) : super(key: key);
@@ -59,6 +61,7 @@ class _VDataState extends State<VData> {
       BehaviorSubject<String>();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _dialogSearchController = TextEditingController();
   SharedPreferences prefs;
   double _scaleFactor = 1.0;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
@@ -92,7 +95,9 @@ class _VDataState extends State<VData> {
       nodataFollowUp,
       nodataUnqualified,
       nodataBadInfo,
-      nodataNoResponse;
+      nodataNoResponse,
+      myworksReady,
+      vTagData;
   List<Links> linksID = [];
   List<VDataDetails> vDataDetails = [];
   List<VDataDetails> vDataNew = [];
@@ -105,12 +110,16 @@ class _VDataState extends State<VData> {
   List<VDataDetails> vDataBadInfo = [];
   List<VDataDetails> vDataNoResponse = [];
   List<VDataDetails> vDataOffline = [];
+  List<Myworks> myWorks = [];
+  List<Myworks> myWorks1 = [];
   List<Map> offlineVData;
   List<Handler> handlerList = [];
   List<Branch> branchesList = [];
   List<String> executiveList = [];
   List<String> links = [];
+  List<RadioItem> radioItems = [];
   List vtagList = [];
+  List vTag;
   Database vdataDB;
   VDataInfo vDataInfoNew,
       vDataInfoContacting,
@@ -143,7 +152,7 @@ class _VDataState extends State<VData> {
       handlerStatus,
       now,
       totalNotification;
-  int tap, total, startTime, endTime, currentTabIndex;
+  int tap, total, startTime, endTime, currentTabIndex, totalLink;
   DateTime _startDate,
       _endDate,
       _startDatePicker,
@@ -157,6 +166,7 @@ class _VDataState extends State<VData> {
   String urlHandler = ip + "getHandler.php";
   String urlVTag = ip + "vtag.php";
   String urlBranches = ip + "branch.php";
+  String urlMyWorks = ip + "myWorks2.php";
   List<String> data = [
     "New",
     "Contacting",
@@ -191,6 +201,21 @@ class _VDataState extends State<VData> {
     "VForm",
   ];
 
+  var radioSelections = [
+    RadioItem(
+      padding: EdgeInsets.only(left: ScreenUtil().setHeight(12)),
+      text: "WhatApps",
+      color: Colors.black,
+      fontSize: font16,
+    ),
+    RadioItem(
+      padding: EdgeInsets.only(left: ScreenUtil().setHeight(12)),
+      text: "WhatApps Forward Link",
+      color: Colors.black,
+      fontSize: font16,
+    ),
+  ];
+
   @override
   void initState() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -198,13 +223,14 @@ class _VDataState extends State<VData> {
     _init();
     totalNotification = "0";
     currentTabIndex = 1;
+    totalLink = 0;
     more = true;
-    readyNew = readyContacting = readyContacted = readyQualified = readyConverted =
-        readyFollowUp = readyUnqualified = readyBadInfo = readyNoResponse =
-            nodataNew = nodataContacting = nodataContacted = nodataQualified =
-                nodataConverted = nodataFollowUp = nodataUnqualified = nodataBadInfo =
-                    nodataNoResponse = vDataReady = branch = executive =
-                        link = vData = nodata = connection = vtagStatus = false;
+    vTagData = myworksReady = readyNew = readyContacting = readyContacted =
+        readyQualified = readyConverted = readyFollowUp = readyUnqualified =
+            readyBadInfo = readyNoResponse = nodataNew = nodataContacting =
+                nodataContacted = nodataQualified = nodataConverted = nodataFollowUp =
+                    nodataUnqualified = nodataBadInfo = nodataNoResponse = vDataReady =
+                        branch = executive = link = vData = nodata = connection = vtagStatus = false;
     _byLink = "All Links";
     _byVTag = "All VTags";
     _byStatus = "All Status";
@@ -525,7 +551,7 @@ class _VDataState extends State<VData> {
               )),
         ),
         body: Container(
-          padding: EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(20), 0, 0),
+          padding: EdgeInsets.fromLTRB(0, ScreenUtil().setHeight(10), 0, 0),
           child: Column(
             children: <Widget>[
               Row(
@@ -1109,7 +1135,7 @@ class _VDataState extends State<VData> {
                                         BouncingWidget(
                                           scaleFactor: _scaleFactor,
                                           onPressed: () {
-                                            _redirectWhatsApp(index);
+                                            _selection(index);
                                           },
                                           child: Container(
                                             height: ScreenUtil().setHeight(60),
@@ -1527,6 +1553,70 @@ class _VDataState extends State<VData> {
     }
   }
 
+  void _selection(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      if (myworksReady == true) {
+        _whatsappType(index);
+      } else {
+        _toast('Data loading, please try again');
+      }
+    } else {
+      _toast('No Internet Connection');
+    }
+  }
+
+  YYDialog _whatsappType(int index) {
+    int type = 0;
+    return YYDialog().build()
+      ..width = ScreenUtil().setHeight(560)
+      ..borderRadius = ScreenUtil().setHeight(8)
+      ..text(
+        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+        alignment: Alignment.center,
+        text: "Select WhatsApp Type",
+        color: Colors.black,
+        fontSize: font18,
+        fontWeight: FontWeight.w500,
+      )
+      ..divider()
+      ..listViewOfRadioButton(
+          height: ScreenUtil().setHeight(240),
+          items: radioSelections,
+          intialValue: 0,
+          color: Colors.white,
+          activeColor: Colors.blue,
+          onClickItemListener: (index) {
+            type = index;
+          })
+      ..divider()
+      ..doubleButton(
+          padding: EdgeInsets.only(
+              top: ScreenUtil().setHeight(16),
+              bottom: ScreenUtil().setHeight(16)),
+          gravity: Gravity.right,
+          text1: "CANCEL",
+          color1: Colors.blue,
+          fontSize1: font14,
+          fontWeight1: FontWeight.bold,
+          text2: "OK",
+          color2: Colors.blue,
+          fontSize2: font14,
+          fontWeight2: FontWeight.bold,
+          onTap2: () {
+            if (type == 0) {
+              _redirectWhatsApp(index);
+            } else {
+              getVTagData(vDataDetails[index].phoneNo);
+              Future.delayed(const Duration(milliseconds: 50), () {
+                _myworksLink(index);
+              });
+            }
+          })
+      ..show();
+  }
+
   void _redirectWhatsApp(int index) async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
@@ -1539,6 +1629,157 @@ class _VDataState extends State<VData> {
     } else {
       _toast("This feature need Internet connection");
     }
+  }
+
+  void _myworksLink(int index) {
+    RadioItem widget;
+    radioItems.clear();
+    for (var link in myWorks) {
+      widget = RadioItem(
+        padding: EdgeInsets.only(
+          left: ScreenUtil().setHeight(12),
+        ),
+        text: link.title,
+        color: Colors.black,
+        fontSize: font14,
+      );
+      radioItems.add(widget);
+    }
+    YYListViewDialogListRadio(index);
+  }
+
+  YYDialog YYListViewDialogListRadio(int index) {
+    int index1 = 0;
+    return YYDialog().build()
+      ..width = ScreenUtil().setHeight(600)
+      ..borderRadius = ScreenUtil().setHeight(8)
+      ..text(
+        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+        alignment: Alignment.center,
+        text: "Select MyWorks Link",
+        color: Colors.black,
+        fontSize: font18,
+        fontWeight: FontWeight.w500,
+      )
+      ..divider()
+      ..widget(
+        Container(
+          child: Card(
+            child: Container(
+              margin: EdgeInsets.only(
+                right: ScreenUtil().setHeight(20),
+                left: ScreenUtil().setHeight(30),
+              ),
+              height: ScreenUtil().setHeight(75),
+              child: TextField(
+                controller: _dialogSearchController,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.go,
+                onSubmitted: (value) => _dialogSearch(value, index),
+                style: TextStyle(
+                  fontSize: font14,
+                ),
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.fromLTRB(10, 3, 0, 3),
+                  hintText: "Search",
+                  suffix: IconButton(
+                    iconSize: ScreenUtil().setHeight(40),
+                    icon: Icon(Icons.keyboard_hide),
+                    onPressed: () {
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                    },
+                  ),
+                  suffixIcon: BouncingWidget(
+                    scaleFactor: _scaleFactor,
+                    onPressed: () {
+                      _dialogSearch(_dialogSearchController.text, index);
+                    },
+                    child: Icon(
+                      Icons.search,
+                      size: ScreenUtil().setHeight(50),
+                    ),
+                  ),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+      ..listViewOfRadioButton(
+          height: ScreenUtil().setHeight(1000),
+          items: radioItems,
+          intialValue: 0,
+          color: Colors.white,
+          activeColor: Colors.blue,
+          onClickItemListener: (index) {
+            index1 = index;
+          })
+      ..divider()
+      ..doubleButton(
+          padding: EdgeInsets.only(
+              top: ScreenUtil().setHeight(16),
+              bottom: ScreenUtil().setHeight(16)),
+          gravity: Gravity.right,
+          text1: "CANCEL",
+          color1: Colors.blue,
+          fontSize1: font14,
+          fontWeight1: FontWeight.bold,
+          onTap1: () {
+            _dialogSearchController.text = '';
+          },
+          text2: "OK",
+          color2: Colors.blue,
+          fontSize2: font14,
+          fontWeight2: FontWeight.bold,
+          onTap2: () {
+            _checking(index1, index);
+          })
+      ..show();
+  }
+
+  void _checking(int index1, int index) {
+    if (vTagData == true) {
+      WhatsappForward whatsapp = WhatsappForward(
+        url: myWorks[index1].link,
+        userID: userID,
+        userType: userType,
+        companyID: companyID,
+        branchID: branchID,
+        level: level,
+        vtagList: vtagList,
+        vtag: vTag,
+        name: vDataDetails[index].name,
+        phone: vDataDetails[index].phoneNo,
+      );
+      Future.delayed(const Duration(milliseconds: 50), () {
+        Navigator.push(
+          context,
+          AwesomePageRoute(
+            transitionDuration: Duration(milliseconds: 600),
+            exitPage: widget,
+            enterPage: WhatsAppForward(whatsappForward: whatsapp),
+            transition: StackTransition(),
+          ),
+        );
+      });
+    } else {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _checking(index1, index);
+      });
+    }
+  }
+
+  Future<void> _dialogSearch(String value, int index) async {
+    FocusScope.of(context).requestFocus(new FocusNode());
+    Navigator.pop(context);
+    myWorks.clear();
+    for (int i = 0; i < myWorks1.length; i++) {
+      if (myWorks1[i].title.toLowerCase().contains(value.toLowerCase())) {
+        myWorks.add(myWorks1[i]);
+      }
+    }
+    _myworksLink(index);
   }
 
   Future<bool> _onBackPressAppBar() async {
@@ -3389,6 +3630,7 @@ class _VDataState extends State<VData> {
     if (level == "0" || level == "4") {
       getExecutive();
     }
+    getLink();
     getData();
     getLinks();
     getVTag();
@@ -3396,6 +3638,33 @@ class _VDataState extends State<VData> {
       getBranches();
     }
     notification();
+  }
+
+  void getVTagData(String phoneNo) {
+    http.post(urlVTag, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "userID": userID,
+      "level": level,
+      "user_type": userType,
+      "phone_number": phoneNo,
+    }).then((res) {
+      // print("getVTag body: " + res.body);
+      if (res.body == "nodata") {
+        vTag = [];
+      } else {
+        var jsonData = json.decode(res.body);
+        vTag = jsonData;
+      }
+      if (this.mounted) {
+        setState(() {
+          vTagData = true;
+        });
+      }
+    }).catchError((err) {
+      _toast(err.toString());
+      print("Get VTag error: " + err.toString());
+    });
   }
 
   void getBranches() {
@@ -4351,6 +4620,84 @@ class _VDataState extends State<VData> {
       }
     }).catchError((err) {
       print("Get offline data error: " + (err).toString());
+    });
+  }
+
+  void getLink() {
+    http.post(urlMyWorks, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "userID": userID,
+      "level": level,
+      "user_type": userType,
+      "count": myWorks.length.toString(),
+    }).then((res) {
+      // print("MyWorks body: " + res.body);
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            myworksReady = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        if (totalLink == 0) {
+          totalLink = int.parse(jsonData[0]);
+          for (int i = 1; i < jsonData.length; i++) {
+            Myworks mywork = Myworks(
+                date: jsonData[i]['date'],
+                title: jsonData[i]['title'],
+                urlName: jsonData[i]['urlName'],
+                link: jsonData[i]['link'],
+                category: jsonData[i]['category'],
+                qr: jsonData[i]['qr'],
+                id: jsonData[i]['id'],
+                handlers: jsonData[i]['handler'],
+                branchID: jsonData[i]['branchID'] ?? '',
+                branchName: jsonData[i]['branchName'] ?? '',
+                offLine: false);
+            myWorks.add(mywork);
+            myWorks1.add(mywork);
+          }
+          if (myWorks.length != totalLink) {
+            getLink();
+          } else {
+            if (this.mounted) {
+              setState(() {
+                myworksReady = true;
+              });
+            }
+          }
+        } else {
+          for (int i = 0; i < jsonData.length; i++) {
+            Myworks mywork = Myworks(
+                date: jsonData[i]['date'],
+                title: jsonData[i]['title'],
+                urlName: jsonData[i]['urlName'],
+                link: jsonData[i]['link'],
+                category: jsonData[i]['category'],
+                qr: jsonData[i]['qr'],
+                id: jsonData[i]['id'],
+                handlers: jsonData[i]['handlers'],
+                branchID: jsonData[i]['branchID'] ?? '',
+                branchName: jsonData[i]['branchName'] ?? '',
+                offLine: false);
+            myWorks.add(mywork);
+            myWorks1.add(mywork);
+          }
+          if (myWorks.length != totalLink) {
+            getLink();
+          } else {
+            if (this.mounted) {
+              setState(() {
+                myworksReady = true;
+              });
+            }
+          }
+        }
+      }
+    }).catchError((err) {
+      print("Get Link error: " + (err).toString());
     });
   }
 

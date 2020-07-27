@@ -591,10 +591,21 @@ class _EditCompanyState extends State<EditCompany> {
   }
 
   Future<bool> _onBackPressAppBar() async {
+    UserData userData = UserData(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        userType: userType,
+        level: level,
+      );
+      List<UserData> list = [];
+      list.add(userData);
     Navigator.pop(
         context,
         MaterialPageRoute(
-          builder: (context) => Profile(),
+          builder: (context) => Profile(
+            userData: list,
+          ),
         ));
     return Future.value(false);
   }

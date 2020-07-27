@@ -98,6 +98,11 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   void initState() {
     check();
     _init();
+    try {
+      _namecontroller.text = widget.whatsappForward.name;
+      _phonecontroller.text = widget.whatsappForward.phone;
+      seletedVTag = widget.whatsappForward.vtag;
+    } catch (e) {}
     list.clear();
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     isSend = isImageLoaded = false;
@@ -992,7 +997,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         ),
       )
       ..listViewOfRadioButton(
-          height: 500,
+          height: ScreenUtil().setHeight(1000),
           items: radioItems,
           intialValue: 0,
           color: Colors.white,
@@ -1033,7 +1038,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   Future<void> _search(String value) async {
     FocusScope.of(context).requestFocus(new FocusNode());
     Navigator.pop(context);
-    print(value);
     contactList.clear();
     for (int i = 0; i < contactList1.length; i++) {
       if (contactList1[i].name.toLowerCase().contains(value.toLowerCase()) ||
@@ -1370,6 +1374,12 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                 setState(() {
                                   selectedTag =
                                       widget.whatsappForward.vtagList[index];
+                                });
+                              }
+                            } else {
+                              if (this.mounted) {
+                                setState(() {
+                                  selectedTag = '';
                                 });
                               }
                             }

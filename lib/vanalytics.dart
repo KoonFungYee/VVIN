@@ -2472,10 +2472,20 @@ class _VAnalyticsState extends State<VAnalytics>
           status: "All Status",
           app: app,
           channel: "all");
+      UserData userData = UserData(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        userType: userType,
+        level: level,
+      );
+      List<UserData> list = [];
+      list.add(userData);
       Navigator.of(context).pushReplacement(PageTransition(
         duration: Duration(milliseconds: 1),
         type: PageTransitionType.transferUp,
         child: VDataNoHandler(
+          userData: list,
           vDataFilter: vDataFilter,
         ),
       ));
@@ -2510,10 +2520,20 @@ class _VAnalyticsState extends State<VAnalytics>
           status: "All Status",
           app: "All",
           channel: channel);
+      UserData userData = UserData(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        userType: userType,
+        level: level,
+      );
+      List<UserData> list = [];
+      list.add(userData);
       Navigator.of(context).pushReplacement(PageTransition(
         duration: Duration(milliseconds: 1),
         type: PageTransitionType.transferUp,
         child: VDataNoHandler(
+          userData: list,
           vDataFilter: vDataFilter,
         ),
       ));
@@ -2535,10 +2555,20 @@ class _VAnalyticsState extends State<VAnalytics>
         status: "All Status",
         app: "All",
         channel: "all");
+    UserData userData = UserData(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        userType: userType,
+        level: level,
+      );
+      List<UserData> list = [];
+      list.add(userData);
     Navigator.of(context).pushReplacement(PageTransition(
       duration: Duration(milliseconds: 1),
       type: PageTransitionType.transferUp,
       child: VDataNoHandler(
+        userData: list,
         vDataFilter: vDataFilter,
       ),
     ));
@@ -2555,10 +2585,20 @@ class _VAnalyticsState extends State<VAnalytics>
           status: "All Status",
           app: "All",
           channel: "all");
+      UserData userData = UserData(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        userType: userType,
+        level: level,
+      );
+      List<UserData> list = [];
+      list.add(userData);
       Navigator.of(context).pushReplacement(PageTransition(
         duration: Duration(milliseconds: 1),
         type: PageTransitionType.transferUp,
         child: VDataNoHandler(
+          userData: list,
           vDataFilter: vDataFilter,
         ),
       ));
@@ -2575,10 +2615,20 @@ class _VAnalyticsState extends State<VAnalytics>
         status: status,
         app: "All",
         channel: "all");
+    UserData userData = UserData(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        userType: userType,
+        level: level,
+      );
+      List<UserData> list = [];
+      list.add(userData);
     Navigator.of(context).pushReplacement(PageTransition(
       duration: Duration(milliseconds: 1),
       type: PageTransitionType.transferUp,
       child: VDataNoHandler(
+        userData: list,
         vDataFilter: vDataFilter,
       ),
     ));

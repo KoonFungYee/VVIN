@@ -14,9 +14,15 @@ double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
 double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
 double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
 
+class UserData {
+  String companyID, branchID, userID, level, userType, name;
+  UserData(
+      {this.companyID, this.branchID, this.userID, this.userType, this.level, this.name});
+}
+
 class ContactInfo {
-  ContactInfo({this.name, this.phone});
   String name, phone;
+  ContactInfo({this.name, this.phone});
 }
 
 class VDataInfo {
@@ -307,8 +313,9 @@ class Setting {
 }
 
 class WhatsappForward {
-  String url, userID, companyID, branchID, level, userType, branch;
+  String url, userID, companyID, branchID, level, userType, branch, name, phone;
   List vtagList;
+  List vtag;
   WhatsappForward(
       {this.url,
       this.userID,
@@ -317,7 +324,10 @@ class WhatsappForward {
       this.level,
       this.userType,
       this.branch,
-      this.vtagList});
+      this.vtagList,
+      this.name,
+      this.phone,
+      this.vtag});
 }
 
 YYDialog YYAlertDialogWithScaleIn() {

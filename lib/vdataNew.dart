@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:badges/badges.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
@@ -15,7 +14,7 @@ import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:intl/intl.dart';
-import 'package:vvin/reminder.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -23,38 +22,34 @@ import 'package:route_transitions/route_transitions.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vvin/vdataStatus.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:vvin/reminder.dart';
 import 'package:vvin/more.dart';
 import 'package:vvin/myworks.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminderDB.dart';
+import 'package:vvin/vDataDB.dart';
 import 'package:vvin/vanalytics.dart';
-import 'package:vvin/vdataStatus.dart';
 import 'package:vvin/vprofile.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:vvin/whatsappForward.dart';
 
-class VDataNoHandler extends StatefulWidget {
-  final VDataFilter vDataFilter;
-  final List<UserData> userData;
-  const VDataNoHandler({Key key, this.vDataFilter, this.userData})
-      : super(key: key);
+class VData extends StatefulWidget {
+  const VData({Key key}) : super(key: key);
 
   @override
-  _VDataNoHandlerState createState() => _VDataNoHandlerState();
+  _VDataState createState() => _VDataState();
 }
 
 enum UniLinksType { string, uri }
 
-class _VDataNoHandlerState extends State<VDataNoHandler> {
+class _VDataState extends State<VData> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   final BehaviorSubject<ReceivedNotification>
@@ -62,64 +57,15 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       BehaviorSubject<ReceivedNotification>();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _dialogSearchController = TextEditingController();
   SharedPreferences prefs;
+  double _scaleFactor = 1.0;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  String urlNoti = ip + "notiTotalNumber.php";
-  String urlVData = ip + "vdata.php";
-  String urlChangeStatus = ip + "vdataChangeStatus.php";
-  String urlLinks = ip + "links.php";
-  String urlHandler = ip + "getHandler.php";
-  String urlVTag = ip + "vtag.php";
-  String urlBranches = ip + "branch.php";
-  String urlMyWorks = ip + "myWorks2.php";
-  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  List<Links> linksID = [];
-  List<VDataDetails> vDataDetails = [];
-  List<VDataDetails> vDataNew = [];
-  List<VDataDetails> vDataContacting = [];
-  List<VDataDetails> vDataContacted = [];
-  List<VDataDetails> vDataQualified = [];
-  List<VDataDetails> vDataConverted = [];
-  List<VDataDetails> vDataFollowUp = [];
-  List<VDataDetails> vDataUnqualified = [];
-  List<VDataDetails> vDataBadInfo = [];
-  List<VDataDetails> vDataNoResponse = [];
-  List<VDataDetails> vDataAll = [];
-  List<VDataDetails> vDataOffline = [];
-  List<Map> offlineVData;
-  List<Handler> handlerList = [];
-  List<Branch> branchesList = [];
-  List<String> executiveList = [];
-  List<String> links = [];
-  List<Myworks> myWorks = [];
-  List<Myworks> myWorks1 = [];
-  List<RadioItem> radioItems = [];
-  List vTag;
-  List vtagList = [];
-  Database vdataDB;
-  double _scaleFactor = 1.0;
-  int tap, count, total, currentTabIndex, totalLink;
-  VDataInfo vDataInfoNew,
-      vDataInfoContacting,
-      vDataInfoContacted,
-      vDataInfoQualified,
-      vDataInfoConverted,
-      vDataInfoFollowUp,
-      vDataInfoUnqualified,
-      vDataInfoBadInfo,
-      vDataInfoNoResponse;
-  DateTime _startDate,
-      _endDate,
-      _startDatePicker,
-      _endDatePicker,
-      startDateTime,
-      endDateTime;
   bool connection,
       nodata,
       link,
@@ -146,31 +92,71 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       nodataFollowUp,
       nodataUnqualified,
       nodataBadInfo,
-      nodataNoResponse,
-      myworksReady,
-      vTagData;
-  String _byLink,
+      nodataNoResponse;
+  List<Links> linksID = [];
+  List<VDataDetails> vDataDetails = [];
+  List<VDataDetails> vDataNew = [];
+  List<VDataDetails> vDataContacting = [];
+  List<VDataDetails> vDataContacted = [];
+  List<VDataDetails> vDataQualified = [];
+  List<VDataDetails> vDataConverted = [];
+  List<VDataDetails> vDataFollowUp = [];
+  List<VDataDetails> vDataUnqualified = [];
+  List<VDataDetails> vDataBadInfo = [];
+  List<VDataDetails> vDataNoResponse = [];
+  List<VDataDetails> vDataOffline = [];
+  List<Map> offlineVData;
+  List<Handler> handlerList = [];
+  List<Branch> branchesList = [];
+  List<String> executiveList = [];
+  List<String> links = [];
+  List vtagList = [];
+  Database vdataDB;
+  VDataInfo vDataInfoNew,
+      vDataInfoContacting,
+      vDataInfoContacted,
+      vDataInfoQualified,
+      vDataInfoConverted,
+      vDataInfoFollowUp,
+      vDataInfoUnqualified,
+      vDataInfoBadInfo,
+      vDataInfoNoResponse;
+  String companyID,
+      branchID,
+      userID,
+      _byLink,
+      _byVTag,
       _byStatus,
       _byExecutive,
       _byBranch,
-      _byVTag,
+      link_id,
       type,
       channel,
       apps,
-      companyID,
-      branchID,
-      userID,
       level,
       userType,
-      link_id,
       search,
       startDate,
       endDate,
       minimumDate,
       maximumDate,
-      now,
       handlerStatus,
+      now,
       totalNotification;
+  int tap, total, startTime, endTime, currentTabIndex;
+  DateTime _startDate,
+      _endDate,
+      _startDatePicker,
+      _endDatePicker,
+      startDateTime,
+      endDateTime;
+  String urlNoti = ip + "notiTotalNumber.php";
+  String urlVData = ip + "vdata.php";
+  String urlChangeStatus = ip + "vdataChangeStatus.php";
+  String urlLinks = ip + "links.php";
+  String urlHandler = ip + "getHandler.php";
+  String urlVTag = ip + "vtag.php";
+  String urlBranches = ip + "branch.php";
   List<String> data = [
     "New",
     "Contacting",
@@ -197,25 +183,12 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
   List<String> appsAll = [
     "All",
     "VBot",
+    "VBrochure",
     "VCard",
     "VCatalogue",
     "VFlex",
     "VHome",
-  ];
-
-  var radioSelections = [
-    RadioItem(
-      padding: EdgeInsets.only(left: ScreenUtil().setHeight(12)),
-      text: "WhatApps",
-      color: Colors.black,
-      fontSize: font16,
-    ),
-    RadioItem(
-      padding: EdgeInsets.only(left: ScreenUtil().setHeight(12)),
-      text: "WhatApps Forward Link",
-      color: Colors.black,
-      fontSize: font16,
-    ),
+    "VForm",
   ];
 
   @override
@@ -223,36 +196,26 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     check();
     _init();
-    currentTabIndex = 1;
     totalNotification = "0";
-    totalLink = 0;
+    currentTabIndex = 1;
     more = true;
-    vTagData = myworksReady = readyNew = readyContacting = readyContacted =
-        readyQualified = readyConverted = readyFollowUp = readyUnqualified =
-            readyBadInfo = readyNoResponse = nodataNew = nodataContacting =
-                nodataContacted = nodataQualified = nodataConverted = nodataFollowUp =
-                    nodataUnqualified = nodataBadInfo = nodataNoResponse = vDataReady =
-                        branch = executive = link = vData = nodata = connection = vtagStatus = false;
-    _startDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.startDate);
-    _endDate = DateFormat("yyyy-MM-dd").parse(widget.vDataFilter.endDate);
-    checkConnection();
-    companyID = widget.userData[0].companyID;
-    branchID = widget.userData[0].branchID;
-    userID = widget.userData[0].userID;
-    level = widget.userData[0].level;
-    _byBranch = (widget.userData[0].level == "0") ? "All Branch" : "";
-    userType = widget.userData[0].userType;
+    readyNew = readyContacting = readyContacted = readyQualified = readyConverted =
+        readyFollowUp = readyUnqualified = readyBadInfo = readyNoResponse =
+            nodataNew = nodataContacting = nodataContacted = nodataQualified =
+                nodataConverted = nodataFollowUp = nodataUnqualified = nodataBadInfo =
+                    nodataNoResponse = vDataReady = branch = executive =
+                        link = vData = nodata = connection = vtagStatus = false;
     _byLink = "All Links";
-    _byStatus = widget.vDataFilter.status;
-    _byExecutive = "All Executives";
     _byVTag = "All VTags";
+    _byStatus = "All Status";
+    _byExecutive = "All Executives";
     link_id = "All Links";
-    type = widget.vDataFilter.type;
-    channel = widget.vDataFilter.channel;
-    apps = widget.vDataFilter.app;
+    type = "all";
+    channel = "all";
+    apps = "All";
     search = "";
     minimumDate = "2017-12-01";
-    count = 0;
+    checkConnection();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         prefs = await SharedPreferences.getInstance();
@@ -406,14 +369,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
         payload: now);
   }
 
-  @override
-  void dispose() {
-    if (_sub != null) _sub.cancel();
-    didReceiveLocalNotificationSubject.close();
-    selectNotificationSubject.close();
-    super.dispose();
-  }
-
   void onTapped(int index) {
     if (index != 1) {
       switch (index) {
@@ -447,6 +402,14 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           break;
       }
     }
+  }
+
+  @override
+  void dispose() {
+    if (_sub != null) _sub.cancel();
+    didReceiveLocalNotificationSubject.close();
+    selectNotificationSubject.close();
+    super.dispose();
   }
 
   @override
@@ -613,8 +576,8 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.fromLTRB(
-                        ScreenUtil().setHeight(10), 0, 0, 0),
+                    padding: EdgeInsets.fromLTRB(ScreenUtil().setHeight(10), 0,
+                        ScreenUtil().setHeight(0), 0),
                     child: Card(
                       child: InkWell(
                         borderRadius: BorderRadius.circular(100),
@@ -1146,7 +1109,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                         BouncingWidget(
                                           scaleFactor: _scaleFactor,
                                           onPressed: () {
-                                            _selection(index);
+                                            _redirectWhatsApp(index);
                                           },
                                           child: Container(
                                             height: ScreenUtil().setHeight(60),
@@ -1237,30 +1200,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     return widget;
   }
 
-  void _redirectVProfile(int index) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      VDataDetails vdata = new VDataDetails(
-        companyID: companyID,
-        branchID: branchID,
-        userID: userID,
-        level: level,
-        userType: userType,
-        date: vDataDetails[index].date,
-        name: vDataDetails[index].name,
-        phoneNo: vDataDetails[index].phoneNo,
-        status: vDataDetails[index].status,
-        email: vDataDetails[index].email,
-      );
-      Navigator.of(context).push(PageRouteTransition(
-          animationType: AnimationType.scale,
-          builder: (context) => VProfile(vdata: vdata)));
-    } else {
-      _toast("No Internet Connection!");
-    }
-  }
-
   Widget menuButton(String status, int index) {
     final Widget button = SizedBox(
       width: ScreenUtil().setWidth(285),
@@ -1327,28 +1266,284 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     );
   }
 
-  Future<bool> _onBackPressAppBar() async {
-    YYAlertDialogWithScaleIn();
-    return Future.value(false);
+  void _onRefresh() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      if (this.mounted) {
+        setState(() {
+          vData = false;
+          link = false;
+          total = null;
+        });
+      }
+      if (level == '0' && _byBranch != 'All Branch') {
+        for (var branch in branchesList) {
+          if (_byBranch == branch.branchName) {
+            branchID = branch.branchID;
+          }
+        }
+      }
+      http.post(urlVData, body: {
+        "companyID": companyID,
+        "branchID": branchID,
+        "level": level,
+        "userID": userID,
+        "user_type": userType,
+        "type": type,
+        "channel": channel,
+        "apps": apps,
+        "link_id": link_id,
+        "status": _byStatus,
+        "executive": _byExecutive,
+        "vtag": _byVTag,
+        "search": search,
+        "start_date": minimumDate,
+        "end_date": DateTime.now().toString().substring(0, 10),
+        "count": "0",
+        "offline": "no"
+      }).then((res) {
+        // print("search body: " + res.body.toString());
+        if (res.body == "nodata") {
+          if (this.mounted) {
+            setState(() {
+              vData = true;
+              connection = true;
+              nodata = true;
+              vDataReady = true;
+              total = 0;
+            });
+          }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          }
+        } else {
+          var jsonData = json.decode(res.body);
+          if (this.mounted) {
+            setState(() {
+              total = jsonData[0]['total'];
+            });
+          }
+          vDataDetails.clear();
+          for (var data in jsonData) {
+            VDataDetails vdata = VDataDetails(
+              date: data['date'],
+              name: data['name'] ?? "",
+              phoneNo: data['phone_number'],
+              email: data['email'] ?? '',
+              remark: data['remark'] ?? "-",
+              status: checkStatus(data['status']),
+              type: data['type'],
+              app: data['app'],
+              channel: data['channel'],
+              link: data['link_type'] ?? "" + data['link'],
+              handler: data['link'],
+            );
+            vDataDetails.add(vdata);
+          }
+          if (this.mounted) {
+            setState(() {
+              vData = true;
+              connection = true;
+            });
+          }
+          if (level == "0" && branch == true) {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          } else {
+            if (this.mounted) {
+              setState(() {
+                vDataReady = true;
+              });
+            }
+          }
+        }
+      }).catchError((err) {
+        print("Get data error: " + (err).toString());
+      });
+
+      http.post(urlLinks, body: {
+        "companyID": companyID,
+        "branchID": branchID,
+        "level": level,
+        "userID": userID,
+        "user_type": userType,
+      }).then((res) {
+        links.clear();
+        links.add("All Links");
+        if (res.body != "nodata") {
+          var jsonData = json.decode(res.body);
+          Links allLinks = Links(
+            link_type: "",
+            link: "All Links",
+            link_id: "All Links",
+            position: 0,
+          );
+          linksID.add(allLinks);
+          for (int i = 0; i < jsonData.length; i++) {
+            Links linkID = Links(
+              link_type: jsonData[i]['link_type'],
+              link: jsonData[i]['link'] ?? "",
+              link_id: jsonData[i]['link_id'],
+              position: i + 1,
+            );
+            linksID.add(linkID);
+            String link = jsonData[i]['link_type'].toString() +
+                jsonData[i]['link'].toString();
+            links.add(link);
+          }
+        }
+        _startDate = DateFormat("yyyy-MM-dd").parse(minimumDate);
+        _endDate = DateTime.now();
+        if (this.mounted) {
+          setState(() {
+            link = true;
+          });
+        }
+      }).catchError((err) {
+        print("Get link error: " + (err).toString());
+      });
+      _refreshController.refreshCompleted();
+    } else {
+      _toast("No Internet connection, data can't load");
+      _refreshController.refreshCompleted();
+    }
   }
 
-  void notification() {
-    http.post(urlNoti, body: {
-      "userID": userID,
+  void _onLoading() {
+    if (level == '0' && _byBranch != 'All Branch') {
+      for (var branch in branchesList) {
+        if (_byBranch == branch.branchName) {
+          branchID = branch.branchID;
+        }
+      }
+    }
+    http.post(urlVData, body: {
       "companyID": companyID,
       "branchID": branchID,
       "level": level,
+      "userID": userID,
       "user_type": userType,
-    }).then((res) async {
-      if (this.mounted) {
-        setState(() {
-          totalNotification = res.body;
-        });
+      "type": type,
+      "channel": channel,
+      "apps": apps,
+      "link_id": link_id,
+      "status": _byStatus,
+      "executive": _byExecutive,
+      "vtag": _byVTag,
+      "search": search,
+      "start_date": _startDate.toString().substring(0, 10),
+      "end_date": _endDate.toString().substring(0, 10),
+      "count": vDataDetails.length.toString(),
+      "offline": "no"
+    }).then((res) {
+      // print("Get More VData body: " + res.body.toString());
+      if (res.body == "nodata") {
+        if (this.mounted) {
+          setState(() {
+            connection = true;
+          });
+        }
+      } else {
+        var jsonData = json.decode(res.body);
+        if (this.mounted) {
+          setState(() {
+            total = jsonData[0]['total'];
+          });
+        }
+        for (var data in jsonData) {
+          VDataDetails vdata = VDataDetails(
+            date: data['date'],
+            name: data['name'] ?? "",
+            phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
+            remark: data['remark'] ?? "-",
+            status: checkStatus(data['status']),
+            type: data['type'],
+            app: data['app'],
+            channel: data['channel'],
+            link: data['link_type'] ?? "" + data['link'],
+            handler: data['link'],
+          );
+          vDataDetails.add(vdata);
+        }
+        if (this.mounted) {
+          setState(() {
+            connection = true;
+          });
+        }
       }
-      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }).catchError((err) {
-      print("Notification error: " + err.toString());
+      print("Get more data error: " + (err).toString());
     });
+    _refreshController.loadComplete();
+  }
+
+  void _redirectVProfile(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      String name, phoneNo, status, email;
+      if (connection == true) {
+        name = vDataDetails[index].name;
+        phoneNo = vDataDetails[index].phoneNo;
+        email = vDataDetails[index].email;
+        status = vDataDetails[index].status;
+      } else {
+        name = offlineVData[index]['name'];
+        phoneNo = offlineVData[index]['phone'];
+        email = offlineVData[index]['email'];
+        status = offlineVData[index]['status'];
+      }
+      VDataDetails vdata = new VDataDetails(
+        companyID: companyID,
+        branchID: branchID,
+        userID: userID,
+        level: level,
+        userType: userType,
+        name: name,
+        phoneNo: phoneNo,
+        email: email,
+        status: status,
+      );
+      Navigator.of(context).push(PageRouteTransition(
+          animationType: AnimationType.scale,
+          builder: (context) => VProfile(vdata: vdata)));
+    } else {
+      _toast("No Internet Connection!");
+    }
+  }
+
+  void _redirectWhatsApp(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      if (connection == true) {
+        FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
+      } else {
+        FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
+      }
+    } else {
+      _toast("This feature need Internet connection");
+    }
+  }
+
+  Future<bool> _onBackPressAppBar() async {
+    YYAlertDialogWithScaleIn();
+    return Future.value(false);
   }
 
   void _filter() async {
@@ -1495,181 +1690,209 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                               SizedBox(
                                 height: ScreenUtil().setHeight(15),
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
+                              Column(
                                 children: <Widget>[
-                                  Text(
-                                    "By Type",
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: font14,
-                                    ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                        "By Type",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: font14,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: ScreenUtil().setHeight(10),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  Flexible(
-                                    child: Wrap(
-                                      children: <Widget>[
-                                        Container(
-                                          width: ScreenUtil().setWidth(115),
-                                          height: ScreenUtil().setHeight(60),
-                                          margin: EdgeInsets.fromLTRB(0, 0,
-                                              ScreenUtil().setWidth(20), 0),
-                                          decoration: BoxDecoration(
-                                            color: (type == "all")
-                                                ? Colors.blue
-                                                : Colors.white,
-                                            border: Border(
-                                              top: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "all")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              right: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "all")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              bottom: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "all")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              left: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "all")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                            ),
-                                          ),
-                                          child: FlatButton(
-                                            onPressed: () {
-                                              setModalState(() {
-                                                type = "all";
-                                              });
-                                            },
-                                            child: Text(
-                                              'All',
-                                              style: TextStyle(
-                                                fontSize: font12,
+                                  SizedBox(
+                                    height: ScreenUtil().setHeight(10),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Flexible(
+                                        child: Wrap(
+                                          children: <Widget>[
+                                            Container(
+                                              width: ScreenUtil().setWidth(115),
+                                              height:
+                                                  ScreenUtil().setHeight(60),
+                                              margin: EdgeInsets.fromLTRB(0, 0,
+                                                  ScreenUtil().setWidth(20), 0),
+                                              decoration: BoxDecoration(
                                                 color: (type == "all")
-                                                    ? Colors.white
-                                                    : Colors.grey,
+                                                    ? Colors.blue
+                                                    : Colors.white,
+                                                border: Border(
+                                                  top: BorderSide(
+                                                      width: 1,
+                                                      color: (type == "all")
+                                                          ? Colors.blue
+                                                          : Colors
+                                                              .grey.shade300),
+                                                  right: BorderSide(
+                                                      width: 1,
+                                                      color: (type == "all")
+                                                          ? Colors.blue
+                                                          : Colors
+                                                              .grey.shade300),
+                                                  bottom: BorderSide(
+                                                      width: 1,
+                                                      color: (type == "all")
+                                                          ? Colors.blue
+                                                          : Colors
+                                                              .grey.shade300),
+                                                  left: BorderSide(
+                                                      width: 1,
+                                                      color: (type == "all")
+                                                          ? Colors.blue
+                                                          : Colors
+                                                              .grey.shade300),
+                                                ),
+                                              ),
+                                              child: FlatButton(
+                                                onPressed: () {
+                                                  setModalState(() {
+                                                    type = "all";
+                                                  });
+                                                },
+                                                child: Text(
+                                                  'All',
+                                                  style: TextStyle(
+                                                    fontSize: font12,
+                                                    color: (type == "all")
+                                                        ? Colors.white
+                                                        : Colors.grey,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: ScreenUtil().setWidth(220),
-                                          height: ScreenUtil().setHeight(60),
-                                          margin: EdgeInsets.fromLTRB(0, 0,
-                                              ScreenUtil().setWidth(20), 0),
-                                          decoration: BoxDecoration(
-                                            color: (type == "assigned")
-                                                ? Colors.blue
-                                                : Colors.white,
-                                            border: Border(
-                                              top: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "assigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              right: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "assigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              bottom: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "assigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              left: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "assigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                            ),
-                                          ),
-                                          child: FlatButton(
-                                            onPressed: () {
-                                              setModalState(() {
-                                                type = "assigned";
-                                              });
-                                            },
-                                            child: Text(
-                                              'Assigned',
-                                              style: TextStyle(
-                                                fontSize: font12,
+                                            Container(
+                                              width: ScreenUtil().setWidth(220),
+                                              height:
+                                                  ScreenUtil().setHeight(60),
+                                              margin: EdgeInsets.fromLTRB(0, 0,
+                                                  ScreenUtil().setWidth(20), 0),
+                                              decoration: BoxDecoration(
                                                 color: (type == "assigned")
-                                                    ? Colors.white
-                                                    : Colors.grey,
+                                                    ? Colors.blue
+                                                    : Colors.white,
+                                                border: Border(
+                                                  top: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "assigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                  right: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "assigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                  bottom: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "assigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                  left: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "assigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                ),
+                                              ),
+                                              child: FlatButton(
+                                                onPressed: () {
+                                                  setModalState(() {
+                                                    type = "assigned";
+                                                  });
+                                                },
+                                                child: Text(
+                                                  'Assigned',
+                                                  style: TextStyle(
+                                                    fontSize: font12,
+                                                    color: (type == "assigned")
+                                                        ? Colors.white
+                                                        : Colors.grey,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                        Container(
-                                          width: ScreenUtil().setWidth(250),
-                                          height: ScreenUtil().setHeight(60),
-                                          margin: EdgeInsets.fromLTRB(0, 0,
-                                              ScreenUtil().setWidth(10), 0),
-                                          decoration: BoxDecoration(
-                                            color: (type == "unassigned")
-                                                ? Colors.blue
-                                                : Colors.white,
-                                            border: Border(
-                                              top: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "unassigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              right: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "unassigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              bottom: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "unassigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              left: BorderSide(
-                                                  width: 1,
-                                                  color: (type == "unassigned")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                            ),
-                                          ),
-                                          child: FlatButton(
-                                            onPressed: () {
-                                              setModalState(() {
-                                                type = "unassigned";
-                                              });
-                                            },
-                                            child: Text(
-                                              'Unassigned',
-                                              style: TextStyle(
-                                                fontSize: font12,
+                                            Container(
+                                              width: ScreenUtil().setWidth(250),
+                                              height:
+                                                  ScreenUtil().setHeight(60),
+                                              margin: EdgeInsets.fromLTRB(0, 0,
+                                                  ScreenUtil().setWidth(10), 0),
+                                              decoration: BoxDecoration(
                                                 color: (type == "unassigned")
-                                                    ? Colors.white
-                                                    : Colors.grey,
+                                                    ? Colors.blue
+                                                    : Colors.white,
+                                                border: Border(
+                                                  top: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "unassigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                  right: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "unassigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                  bottom: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "unassigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                  left: BorderSide(
+                                                      width: 1,
+                                                      color:
+                                                          (type == "unassigned")
+                                                              ? Colors.blue
+                                                              : Colors.grey
+                                                                  .shade300),
+                                                ),
+                                              ),
+                                              child: FlatButton(
+                                                onPressed: () {
+                                                  setModalState(() {
+                                                    type = "unassigned";
+                                                  });
+                                                },
+                                                child: Text(
+                                                  'Unassigned',
+                                                  style: TextStyle(
+                                                    fontSize: font12,
+                                                    color:
+                                                        (type == "unassigned")
+                                                            ? Colors.white
+                                                            : Colors.grey,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: ScreenUtil().setHeight(30),
                                   ),
                                 ],
-                              ),
-                              SizedBox(
-                                height: ScreenUtil().setHeight(30),
                               ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -1734,7 +1957,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                             child: Text(
                                               'All',
                                               style: TextStyle(
-                                                fontSize: font12,
+                                                fontSize: font11,
                                                 color: (channel == "all")
                                                     ? Colors.white
                                                     : Colors.grey,
@@ -1742,63 +1965,63 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                             ),
                                           ),
                                         ),
-                                        Container(
-                                          width: ScreenUtil().setWidth(250),
-                                          height: ScreenUtil().setHeight(60),
-                                          margin: EdgeInsets.fromLTRB(
-                                              0,
-                                              ScreenUtil().setHeight(10),
-                                              ScreenUtil().setWidth(15),
-                                              ScreenUtil().setHeight(10)),
-                                          decoration: BoxDecoration(
-                                            color: (channel == "contact form")
-                                                ? Colors.blue
-                                                : Colors.white,
-                                            border: Border(
-                                              top: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              right: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              bottom: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                              left: BorderSide(
-                                                  width: 1,
-                                                  color: (channel ==
-                                                          "contact form")
-                                                      ? Colors.blue
-                                                      : Colors.grey.shade300),
-                                            ),
-                                          ),
-                                          child: FlatButton(
-                                            onPressed: () {
-                                              setModalState(() {
-                                                channel = "contact form";
-                                              });
-                                            },
-                                            child: Text(
-                                              'Contact Form',
-                                              style: TextStyle(
-                                                fontSize: font12,
-                                                color:
-                                                    (channel == "contact form")
-                                                        ? Colors.white
-                                                        : Colors.grey,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                        // Container(
+                                        //   width: ScreenUtil().setWidth(250),
+                                        //   height: ScreenUtil().setHeight(60),
+                                        //   margin: EdgeInsets.fromLTRB(
+                                        //       0,
+                                        //       ScreenUtil().setHeight(10),
+                                        //       ScreenUtil().setWidth(15),
+                                        //       ScreenUtil().setHeight(10)),
+                                        //   decoration: BoxDecoration(
+                                        //     color: (channel == "contact form")
+                                        //         ? Colors.blue
+                                        //         : Colors.white,
+                                        //     border: Border(
+                                        //       top: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //       right: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //       bottom: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //       left: BorderSide(
+                                        //           width: 1,
+                                        //           color: (channel ==
+                                        //                   "contact form")
+                                        //               ? Colors.blue
+                                        //               : Colors.grey.shade300),
+                                        //     ),
+                                        //   ),
+                                        //   child: FlatButton(
+                                        //     onPressed: () {
+                                        //       setModalState(() {
+                                        //         channel = "contact form";
+                                        //       });
+                                        //     },
+                                        //     child: Text(
+                                        //       'Contact Form',
+                                        //       style: TextStyle(
+                                        //         fontSize: font11,
+                                        //         color:
+                                        //             (channel == "contact form")
+                                        //                 ? Colors.white
+                                        //                 : Colors.grey,
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // ),
                                         Container(
                                           width: ScreenUtil().setWidth(320),
                                           height: ScreenUtil().setHeight(60),
@@ -1848,7 +2071,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                             child: Text(
                                               'WhatsApp Forward',
                                               style: TextStyle(
-                                                fontSize: font12,
+                                                fontSize: font11,
                                                 color: (channel ==
                                                         "whatsapp forward")
                                                     ? Colors.white
@@ -1905,7 +2128,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                             child: Text(
                                               'Messenger',
                                               style: TextStyle(
-                                                fontSize: font12,
+                                                fontSize: font11,
                                                 color: (channel == "messenger")
                                                     ? Colors.white
                                                     : Colors.grey,
@@ -1957,7 +2180,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                                             child: Text(
                                               'Import',
                                               style: TextStyle(
-                                                fontSize: font12,
+                                                fontSize: font11,
                                                 color: (channel == "import")
                                                     ? Colors.white
                                                     : Colors.grey,
@@ -3091,11 +3314,11 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     }
   }
 
-  List<Widget> _branch(List<Branch> branches) {
+  List<Widget> _link(List<Links> linksID) {
     List widgetList = <Widget>[];
-    for (var each in branches) {
+    for (var each in linksID) {
       Widget widget1 = Text(
-        each.branchName,
+        each.link_type + each.link,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: font14,
@@ -3106,11 +3329,11 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     return widgetList;
   }
 
-  List<Widget> _link(List<Links> linksID) {
+  List<Widget> _branch(List<Branch> branches) {
     List widgetList = <Widget>[];
-    for (var each in linksID) {
+    for (var each in branches) {
       Widget widget1 = Text(
-        each.link_type + each.link,
+        each.branchName,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: font14,
@@ -3135,233 +3358,6 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     return widgetList;
   }
 
-  void _selection(int index) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      if (myworksReady == true) {
-        _whatsappType(index);
-      } else {
-        _toast('Data loading, please try again');
-      }
-    }
-  }
-
-  YYDialog _whatsappType(int index) {
-    int type = 0;
-    return YYDialog().build()
-      ..width = ScreenUtil().setHeight(560)
-      ..borderRadius = ScreenUtil().setHeight(8)
-      ..text(
-        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-        alignment: Alignment.center,
-        text: "Select WhatsApp Type",
-        color: Colors.black,
-        fontSize: font18,
-        fontWeight: FontWeight.w500,
-      )
-      ..divider()
-      ..listViewOfRadioButton(
-          height: ScreenUtil().setHeight(240),
-          items: radioSelections,
-          intialValue: 0,
-          color: Colors.white,
-          activeColor: Colors.blue,
-          onClickItemListener: (index) {
-            type = index;
-          })
-      ..divider()
-      ..doubleButton(
-          padding: EdgeInsets.only(
-              top: ScreenUtil().setHeight(16),
-              bottom: ScreenUtil().setHeight(16)),
-          gravity: Gravity.right,
-          text1: "CANCEL",
-          color1: Colors.blue,
-          fontSize1: font14,
-          fontWeight1: FontWeight.bold,
-          text2: "OK",
-          color2: Colors.blue,
-          fontSize2: font14,
-          fontWeight2: FontWeight.bold,
-          onTap2: () {
-            if (type == 0) {
-              _redirectWhatsApp(index);
-            } else {
-              getVTagData(vDataDetails[index].phoneNo);
-              Future.delayed(const Duration(milliseconds: 50), () {
-                _myworksLink(index);
-              });
-            }
-          })
-      ..show();
-  }
-
-  void _redirectWhatsApp(int index) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      if (connection == true) {
-        FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
-      } else {
-        FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
-      }
-    } else {
-      _toast("This feature need Internet connection");
-    }
-  }
-
-  void _myworksLink(int index) {
-    RadioItem widget;
-    radioItems.clear();
-    for (var link in myWorks) {
-      widget = RadioItem(
-        padding: EdgeInsets.only(
-          left: ScreenUtil().setHeight(12),
-        ),
-        text: link.title,
-        color: Colors.black,
-        fontSize: font14,
-      );
-      radioItems.add(widget);
-    }
-    YYListViewDialogListRadio(index);
-  }
-
-  YYDialog YYListViewDialogListRadio(int index) {
-    int index1 = 0;
-    return YYDialog().build()
-      ..width = ScreenUtil().setHeight(600)
-      ..borderRadius = ScreenUtil().setHeight(8)
-      ..text(
-        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-        alignment: Alignment.center,
-        text: "Select MyWorks Link",
-        color: Colors.black,
-        fontSize: font18,
-        fontWeight: FontWeight.w500,
-      )
-      ..divider()
-      ..widget(
-        Container(
-          child: Card(
-            child: Container(
-              margin: EdgeInsets.only(
-                right: ScreenUtil().setHeight(20),
-                left: ScreenUtil().setHeight(30),
-              ),
-              height: ScreenUtil().setHeight(75),
-              child: TextField(
-                controller: _dialogSearchController,
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.go,
-                onSubmitted: (value) => _dialogSearch(value, index),
-                style: TextStyle(
-                  fontSize: font14,
-                ),
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.fromLTRB(10, 3, 0, 3),
-                  hintText: "Search",
-                  suffix: IconButton(
-                    iconSize: ScreenUtil().setHeight(40),
-                    icon: Icon(Icons.keyboard_hide),
-                    onPressed: () {
-                      FocusScope.of(context).requestFocus(new FocusNode());
-                    },
-                  ),
-                  suffixIcon: BouncingWidget(
-                    scaleFactor: _scaleFactor,
-                    onPressed: () {
-                      _dialogSearch(_dialogSearchController.text, index);
-                    },
-                    child: Icon(
-                      Icons.search,
-                      size: ScreenUtil().setHeight(50),
-                    ),
-                  ),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ),
-        ),
-      )
-      ..listViewOfRadioButton(
-          height: ScreenUtil().setHeight(1000),
-          items: radioItems,
-          intialValue: 0,
-          color: Colors.white,
-          activeColor: Colors.blue,
-          onClickItemListener: (index) {
-            index1 = index;
-          })
-      ..divider()
-      ..doubleButton(
-          padding: EdgeInsets.only(
-              top: ScreenUtil().setHeight(16),
-              bottom: ScreenUtil().setHeight(16)),
-          gravity: Gravity.right,
-          text1: "CANCEL",
-          color1: Colors.blue,
-          fontSize1: font14,
-          fontWeight1: FontWeight.bold,
-          onTap1: () {
-            _dialogSearchController.text = '';
-          },
-          text2: "OK",
-          color2: Colors.blue,
-          fontSize2: font14,
-          fontWeight2: FontWeight.bold,
-          onTap2: () {
-            _checking(index1, index);
-          })
-      ..show();
-  }
-
-  void _checking(int index1, int index) {
-    if (vTagData == true) {
-      WhatsappForward whatsapp = WhatsappForward(
-        url: myWorks[index1].link,
-        userID: userID,
-        userType: userType,
-        companyID: companyID,
-        branchID: branchID,
-        level: level,
-        vtagList: vtagList,
-        vtag: vTag,
-        name: vDataDetails[index].name,
-        phone: vDataDetails[index].phoneNo,
-      );
-      Future.delayed(const Duration(milliseconds: 50), () {
-        Navigator.push(
-          context,
-          AwesomePageRoute(
-            transitionDuration: Duration(milliseconds: 600),
-            exitPage: widget,
-            enterPage: WhatsAppForward(whatsappForward: whatsapp),
-            transition: StackTransition(),
-          ),
-        );
-      });
-    } else {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _checking(index1, index);
-      });
-    }
-  }
-
-  Future<void> _dialogSearch(String value, int index) async {
-    FocusScope.of(context).requestFocus(new FocusNode());
-    Navigator.pop(context);
-    myWorks.clear();
-    for (int i = 0; i < myWorks1.length; i++) {
-      if (myWorks1[i].title.toLowerCase().contains(value.toLowerCase())) {
-        myWorks.add(myWorks1[i]);
-      }
-    }
-    _myworksLink(index);
-  }
-
   void checkConnection() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("noti") != null) {
@@ -3372,13 +3368,93 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       }
       FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
     }
+    companyID = prefs.getString('companyID');
+    branchID = prefs.getString('branchID');
+    userID = prefs.getString('userID');
+    level = prefs.getString('level');
+    _byBranch = (level == "0") ? "All Branch" : "";
+    userType = prefs.getString('user_type');
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
       getPreference();
     } else {
-      _toast("Please connect to Internet!");
+      offline();
+      _toast("No Internet, the data shown is not up to date");
     }
+  }
+
+  void getPreference() {
+    startTime = (DateTime.now()).millisecondsSinceEpoch;
+    if (level == "0" || level == "4") {
+      getExecutive();
+    }
+    getData();
+    getLinks();
+    getVTag();
+    if (level == "0") {
+      getBranches();
+    }
+    notification();
+  }
+
+  void getBranches() {
+    http.post(urlBranches, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+    }).then((res) {
+      Branch branches = Branch(
+        branchID: '00',
+        branchName: 'All Branch',
+      );
+      branchesList.add(branches);
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        for (var data in jsonData) {
+          Branch branch = Branch(
+            branchID: data['id'],
+            branchName: data['name'],
+          );
+          branchesList.add(branch);
+        }
+        if (this.mounted) {
+          setState(() {
+            branch = true;
+          });
+        }
+        if (vData == true) {
+          if (this.mounted) {
+            setState(() {
+              vDataReady = true;
+            });
+          }
+        }
+      } else {}
+    }).catchError((err) {
+      print("Get branches error: " + err.toString());
+    });
+  }
+
+  void notification() {
+    http.post(urlNoti, body: {
+      "userID": userID,
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "user_type": userType,
+    }).then((res) async {
+      if (this.mounted) {
+        setState(() {
+          totalNotification = res.body;
+        });
+      }
+      FlutterAppBadger.updateBadgeCount(int.parse(totalNotification));
+    }).catchError((err) {
+      print("Notification error: " + err.toString());
+    });
   }
 
   String checkStatus(String status) {
@@ -3427,193 +3503,9 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     return realStatus;
   }
 
-  Future<void> getPreference() async {
-    if (level == "0" || level == "4") {
-      getExecutive();
-    }
-    getLink();
-    getData();
-    getLinks();
-    getVTag();
-    if (level == "0") {
-      getBranches();
-    }
-    notification();
-  }
-
-  void getVTagData(String phoneNo) {
-    http.post(urlVTag, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "userID": userID,
-      "level": level,
-      "user_type": userType,
-      "phone_number": phoneNo,
-    }).then((res) {
-      // print("getVTag body: " + res.body);
-      if (res.body == "nodata") {
-        vTag = [];
-      } else {
-        var jsonData = json.decode(res.body);
-        vTag = jsonData;
-      }
-      if (this.mounted) {
-        setState(() {
-          vTagData = true;
-        });
-      }
-    }).catchError((err) {
-      _toast(err.toString());
-      print("Get VTag error: " + err.toString());
-    });
-  }
-
-  void getLink() {
-    http.post(urlMyWorks, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "userID": userID,
-      "level": level,
-      "user_type": userType,
-      "count": myWorks.length.toString(),
-    }).then((res) {
-      // print("MyWorks body: " + res.body);
-      if (res.body == "nodata") {
-        if (this.mounted) {
-          setState(() {
-            myworksReady = true;
-          });
-        }
-      } else {
-        var jsonData = json.decode(res.body);
-        if (totalLink == 0) {
-          totalLink = int.parse(jsonData[0]);
-          for (int i = 1; i < jsonData.length; i++) {
-            Myworks mywork = Myworks(
-                date: jsonData[i]['date'],
-                title: jsonData[i]['title'],
-                urlName: jsonData[i]['urlName'],
-                link: jsonData[i]['link'],
-                category: jsonData[i]['category'],
-                qr: jsonData[i]['qr'],
-                id: jsonData[i]['id'],
-                handlers: jsonData[i]['handler'],
-                branchID: jsonData[i]['branchID'] ?? '',
-                branchName: jsonData[i]['branchName'] ?? '',
-                offLine: false);
-            myWorks.add(mywork);
-            myWorks1.add(mywork);
-          }
-          if (myWorks.length != totalLink) {
-            getLink();
-          } else {
-            if (this.mounted) {
-              setState(() {
-                myworksReady = true;
-              });
-            }
-          }
-        } else {
-          for (int i = 0; i < jsonData.length; i++) {
-            Myworks mywork = Myworks(
-                date: jsonData[i]['date'],
-                title: jsonData[i]['title'],
-                urlName: jsonData[i]['urlName'],
-                link: jsonData[i]['link'],
-                category: jsonData[i]['category'],
-                qr: jsonData[i]['qr'],
-                id: jsonData[i]['id'],
-                handlers: jsonData[i]['handlers'],
-                branchID: jsonData[i]['branchID'] ?? '',
-                branchName: jsonData[i]['branchName'] ?? '',
-                offLine: false);
-            myWorks.add(mywork);
-            myWorks1.add(mywork);
-          }
-          if (myWorks.length != totalLink) {
-            getLink();
-          } else {
-            if (this.mounted) {
-              setState(() {
-                myworksReady = true;
-              });
-            }
-          }
-        }
-      }
-    }).catchError((err) {
-      print("Get Link error: " + (err).toString());
-    });
-  }
-
-  void getBranches() {
-    http.post(urlBranches, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "level": level,
-      "userID": userID,
-      "user_type": userType,
-    }).then((res) {
-      Branch branches = Branch(
-        branchID: '00',
-        branchName: 'All Branch',
-      );
-      branchesList.add(branches);
-      if (res.body != "nodata") {
-        var jsonData = json.decode(res.body);
-        for (var data in jsonData) {
-          Branch branch = Branch(
-            branchID: data['id'],
-            branchName: data['name'],
-          );
-          branchesList.add(branch);
-        }
-        if (this.mounted) {
-          setState(() {
-            branch = true;
-          });
-        }
-        if (vData == true) {
-          if (this.mounted) {
-            setState(() {
-              vDataReady = true;
-            });
-          }
-        }
-      } else {}
-    }).catchError((err) {
-      print("Get branches error: " + err.toString());
-    });
-  }
-
-  void getVTag() {
-    http.post(urlVTag, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "userID": userID,
-      "level": level,
-      "user_type": userType,
-      "phone_number": "all",
-    }).then((res) {
-      // print("VTag body: " + res.body);
-      if (res.body != "nodata") {
-        var jsonData = json.decode(res.body);
-        vtagList = jsonData;
-        vtagList.insert(0, "-");
-      }
-      if (this.mounted) {
-        setState(() {
-          vtagStatus = true;
-        });
-      }
-    }).catchError((err) {
-      print("Get Link error: " + (err).toString());
-    });
-  }
-
   void getData() {
-    startDate = widget.vDataFilter.startDate;
-    endDate = widget.vDataFilter.endDate;
+    startDate = minimumDate;
+    endDate = DateTime.now().toString().substring(0, 10);
     getNewData();
     getContactingData();
     getContactedData();
@@ -3678,9 +3570,9 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
             date: data['date'],
             name: data['name'] ?? "",
             phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
             remark: data['remark'] ?? "-",
             status: checkStatus(data['status']),
-            email: data['email'] ?? '',
             type: data['type'],
             app: data['app'],
             channel: data['channel'],
@@ -3708,6 +3600,15 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
             });
           }
         }
+      }
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
+        getOfflineData();
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       print("Get data error: " + err.toString());
@@ -4407,14 +4308,7 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     });
   }
 
-  void _onLoading() {
-    if (level == '0' && _byBranch != 'All Branch') {
-      for (var branch in branchesList) {
-        if (_byBranch == branch.branchName) {
-          branchID = branch.branchID;
-        }
-      }
-    }
+  void getOfflineData() {
     http.post(urlVData, body: {
       "companyID": companyID,
       "branchID": branchID,
@@ -4424,56 +4318,40 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
       "type": type,
       "channel": channel,
       "apps": apps,
-      "link_id": link_id,
+      "link_id": "All Links",
       "status": _byStatus,
       "executive": _byExecutive,
       "vtag": _byVTag,
       "search": search,
-      "start_date": _startDate.toString().substring(0, 10),
-      "end_date": _endDate.toString().substring(0, 10),
-      "count": vDataDetails.length.toString(),
-      "offline": "no"
+      "start_date": minimumDate,
+      "end_date": DateTime.now().toString().substring(0, 10),
+      "count": "0",
+      "offline": "yes"
     }).then((res) {
-      // print("Get More VData body: " + res.body.toString());
-      if (res.body == "nodata") {
-        if (this.mounted) {
-          setState(() {
-            connection = true;
-          });
-        }
-      } else {
+      // print("Save VData body: " + res.body.toString());
+      if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
-        if (this.mounted) {
-          setState(() {
-            total = jsonData[0]['total'];
-          });
-        }
         for (var data in jsonData) {
           VDataDetails vdata = VDataDetails(
             date: data['date'],
             name: data['name'] ?? "",
             phoneNo: data['phone_number'],
+            email: data['email'] ?? '',
             remark: data['remark'] ?? "-",
             status: checkStatus(data['status']),
-            email: data['email'] ?? '',
             type: data['type'],
             app: data['app'],
             channel: data['channel'],
             link: data['link_type'] ?? "" + data['link'],
             handler: data['link'],
           );
-          vDataDetails.add(vdata);
+          vDataOffline.add(vdata);
         }
-        if (this.mounted) {
-          setState(() {
-            connection = true;
-          });
-        }
+        setData();
       }
     }).catchError((err) {
-      print("Get more data error: " + (err).toString());
+      print("Get offline data error: " + (err).toString());
     });
-    _refreshController.loadComplete();
   }
 
   void getLinks() {
@@ -4508,10 +4386,21 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           links.add(link);
         }
       }
+      _startDate = DateFormat("yyyy-MM-dd").parse(minimumDate);
+      _endDate = DateTime.now();
       if (this.mounted) {
         setState(() {
           link = true;
         });
+      }
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
+        getOfflineData();
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
       print("Get link error: " + (err).toString());
@@ -4547,59 +4436,125 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
           executive = true;
         });
       }
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
+        getOfflineData();
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
+      }
     }).catchError((err) {
       _toast(err.toString());
       print("Get Executive error: " + (err).toString());
     });
   }
 
-  void setStatus(int index, String newVal) {
-    vDataDetails[index].status = newVal;
-    http.post(urlChangeStatus, body: {
-      "phone_number": vDataDetails[index].phoneNo,
+  void getVTag() {
+    http.post(urlVTag, body: {
       "companyID": companyID,
       "branchID": branchID,
-      "level": level,
-      "status": newVal,
       "userID": userID,
+      "level": level,
       "user_type": userType,
+      "phone_number": "all",
     }).then((res) {
-      if (res.body == "success") {
-        _toast("Status changed");
-      } else {
-        _toast("Status can't change, please contact VVIN help desk");
+      // print("VTag body: " + res.body);
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        vtagList = jsonData;
+        vtagList.insert(0, "-");
+      }
+      if (this.mounted) {
+        setState(() {
+          vtagStatus = true;
+        });
+      }
+      if (link == true &&
+          vData == true &&
+          executive == true &&
+          vtagStatus == true) {
+        getOfflineData();
+        // endTime = DateTime.now().millisecondsSinceEpoch;
+        // int result = endTime - startTime;
+        // print("VData loading Time: " + result.toString());
       }
     }).catchError((err) {
-      _toast("Status can't change, please check your Internet connection");
-      print("Set status error: " + (err).toString());
+      print("Get Link error: " + (err).toString());
     });
+  }
+
+  Future<void> setData() async {
+    Database db = await VDataDB.instance.database;
+    await db.rawInsert('DELETE FROM vdata WHERE id > 0');
+    for (int index = 0; index < vDataOffline.length; index++) {
+      await db.rawInsert(
+          'INSERT INTO vdata (date, name, phone, handler, remark, status, total) VALUES("' +
+              vDataOffline[index].date +
+              '","' +
+              vDataOffline[index].name +
+              '","' +
+              vDataOffline[index].phoneNo +
+              '","' +
+              vDataOffline[index].handler +
+              '","' +
+              vDataOffline[index].remark +
+              '","' +
+              vDataOffline[index].status +
+              '","' +
+              total.toString() +
+              '")');
+    }
+  }
+
+  Future<void> offline() async {
+    vdataDB = await VDataDB.instance.database;
+    offlineVData = await vdataDB.query(VDataDB.table);
     if (this.mounted) {
       setState(() {
-        connection = true;
+        link = true;
+        vDataReady = true;
+        vtagStatus = true;
       });
     }
   }
 
-  void _noInternet() {
-    showToast(
-      "You are in offline mode, filter feature is not allow",
-      context: context,
-      animation: StyledToastAnimation.slideFromBottomFade,
-      reverseAnimation: StyledToastAnimation.slideToBottom,
-      position: StyledToastPosition.bottom,
-      duration: Duration(milliseconds: 3500),
-    );
+  void setStatus(int index, String newVal) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      http.post(urlChangeStatus, body: {
+        "phone_number": vDataDetails[index].phoneNo.toString(),
+        "companyID": companyID,
+        "branchID": branchID,
+        "userID": userID,
+        "level": level,
+        "user_type": userType,
+        "status": newVal,
+      }).then((res) {
+        if (res.body == "success") {
+          _toast("Status changed");
+          if (this.mounted) {
+            setState(() {
+              vDataDetails[index].status = newVal;
+              connection = true;
+            });
+          }
+        } else {
+          _toast("Status can't change, please contact VVIN help desk");
+        }
+      }).catchError((err) {
+        _toast("Status can't change, please check your Internet connection");
+        print("Set status error: " + (err).toString());
+      });
+    } else {
+      _toast("This feature need Internet connection");
+    }
   }
 
-  void _toast(String message) {
-    BotToast.showText(
-      text: message,
-      wrapToastAnimation: (controller, cancel, Widget child) =>
-          CustomAnimationWidget(
-        controller: controller,
-        child: child,
-      ),
-    );
+  void _noInternet() {
+    _toast("You are in offline mode, filter feature is not allow");
   }
 
   void _done() async {
@@ -4987,169 +4942,14 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
     }
   }
 
-  String _dateFormat(String fullDate) {
-    String result, date, month, year;
-    date = fullDate.substring(8, 10);
-    month = fullDate.substring(5, 7);
-    year = fullDate.substring(0, 4);
-    result = date + "/" + month + "/" + year;
-    return result;
-  }
-
-  void _onRefresh() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      if (this.mounted) {
-        setState(() {
-          vData = false;
-          link = false;
-          total = null;
-        });
-      }
-      if (level == '0' && _byBranch != 'All Branch') {
-        for (var branch in branchesList) {
-          if (_byBranch == branch.branchName) {
-            branchID = branch.branchID;
-          }
-        }
-      }
-      http.post(urlVData, body: {
-        "companyID": companyID,
-        "branchID": branchID,
-        "level": level,
-        "userID": userID,
-        "user_type": userType,
-        "type": type,
-        "channel": channel,
-        "apps": apps,
-        "link_id": link_id,
-        "status": _byStatus,
-        "executive": _byExecutive,
-        "vtag": _byVTag,
-        "search": search,
-        "start_date": minimumDate,
-        "end_date": DateTime.now().toString().substring(0, 10),
-        "count": "0",
-        "offline": "no"
-      }).then((res) {
-        // print("search body: " + res.body.toString());
-        if (res.body == "nodata") {
-          if (this.mounted) {
-            setState(() {
-              vData = true;
-              connection = true;
-              nodata = true;
-              vDataReady = true;
-              total = 0;
-            });
-          }
-          if (level == "0" && branch == true) {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          } else {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          }
-        } else {
-          var jsonData = json.decode(res.body);
-          if (this.mounted) {
-            setState(() {
-              total = jsonData[0]['total'];
-            });
-          }
-          vDataDetails.clear();
-          for (var data in jsonData) {
-            VDataDetails vdata = VDataDetails(
-              date: data['date'],
-              name: data['name'] ?? "",
-              phoneNo: data['phone_number'],
-              remark: data['remark'] ?? "-",
-              status: checkStatus(data['status']),
-              email: data['email'] ?? '',
-              type: data['type'],
-              app: data['app'],
-              channel: data['channel'],
-              link: data['link_type'] ?? "" + data['link'],
-              handler: data['link'],
-            );
-            vDataDetails.add(vdata);
-          }
-          if (this.mounted) {
-            setState(() {
-              vData = true;
-              connection = true;
-            });
-          }
-          if (level == "0" && branch == true) {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          } else {
-            if (this.mounted) {
-              setState(() {
-                vDataReady = true;
-              });
-            }
-          }
-        }
-      }).catchError((err) {
-        print("Get data error: " + (err).toString());
-      });
-
-      http.post(urlLinks, body: {
-        "companyID": companyID,
-        "branchID": branchID,
-        "level": level,
-        "userID": userID,
-        "user_type": userType,
-      }).then((res) {
-        links.clear();
-        links.add("All Links");
-        if (res.body != "nodata") {
-          var jsonData = json.decode(res.body);
-          Links allLinks = Links(
-            link_type: "",
-            link: "All Links",
-            link_id: "All Links",
-            position: 0,
-          );
-          linksID.add(allLinks);
-          for (int i = 0; i < jsonData.length; i++) {
-            Links linkID = Links(
-              link_type: jsonData[i]['link_type'],
-              link: jsonData[i]['link'] ?? "",
-              link_id: jsonData[i]['link_id'],
-              position: i + 1,
-            );
-            linksID.add(linkID);
-            String link = jsonData[i]['link_type'].toString() +
-                jsonData[i]['link'].toString();
-            links.add(link);
-          }
-        }
-        _startDate = DateFormat("yyyy-MM-dd").parse(minimumDate);
-        _endDate = DateTime.now();
-        if (this.mounted) {
-          setState(() {
-            link = true;
-          });
-        }
-      }).catchError((err) {
-        print("Get link error: " + (err).toString());
-      });
-      _refreshController.refreshCompleted();
-    } else {
-      _toast("No Internet connection, data can't load");
-      _refreshController.refreshCompleted();
-    }
+  void _toast(String message) {
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
+      ),
+    );
   }
 }

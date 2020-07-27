@@ -456,6 +456,7 @@ class _LoginPageState extends State<Login> {
           await prefs.setString('level', level);
           await prefs.setString('user_type', userType);
           await prefs.setString('branchID', branchID);
+          await prefs.setString('name', extractdata[0]);
           await prefs.setString('lastPassword', _passcontroller.text);
           companyList.clear();
           branchList.clear();
@@ -923,6 +924,7 @@ class _Default extends State<Default> {
           await prefs.setString('level', level);
           await prefs.setString('user_type', userType);
           await prefs.setString('branchID', branchID);
+          await prefs.setString('name', extractdata[0]);
           await prefs.setString('lastPassword', _passcontroller.text);
           companyList.clear();
           branchList.clear();

@@ -1,9 +1,7 @@
-import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,7 +17,6 @@ import 'package:vvin/vprofile.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:empty_widget/empty_widget.dart';
 import 'dart:convert';
-import 'package:vvin/whatsappForward.dart';
 
 class VDataStatus extends StatefulWidget {
   VDataInfo vdataInfo;
@@ -32,18 +29,10 @@ class VDataStatus extends StatefulWidget {
 class _VDataStatusState extends State<VDataStatus> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-  final TextEditingController _dialogSearchController = TextEditingController();
   String urlVData = ip + "vdata.php";
   String urlChangeStatus = ip + "vdataChangeStatus.php";
-  String urlMyWorks = ip + "myWorks2.php";
-  String urlVTag = ip + "vtag.php";
   List<VDataDetails> vDataDetails = [];
   List<Map> offlineVData;
-  List<Myworks> myWorks = [];
-  List<Myworks> myWorks1 = [];
-  List<RadioItem> radioItems = [];
-  List vtagList = [];
-  List vTag;
   double _scaleFactor = 1.0;
   String companyID,
       branchID,
@@ -61,8 +50,8 @@ class _VDataStatusState extends State<VDataStatus> {
       search,
       startDate,
       endDate;
-  bool vDataReady, nodata, myworksReady, vTagData;
-  int total, totalLink;
+  bool vDataReady, nodata;
+  int total;
   List<String> data = [
     "New",
     "Contacting",
@@ -73,21 +62,6 @@ class _VDataStatusState extends State<VDataStatus> {
     "Unqualified",
     "Bad Information",
     "No Response"
-  ];
-
-  var radioSelections = [
-    RadioItem(
-      padding: EdgeInsets.only(left: ScreenUtil().setHeight(12)),
-      text: "WhatApps",
-      color: Colors.black,
-      fontSize: font16,
-    ),
-    RadioItem(
-      padding: EdgeInsets.only(left: ScreenUtil().setHeight(12)),
-      text: "WhatApps Forward Link",
-      color: Colors.black,
-      fontSize: font16,
-    ),
   ];
 
   @override
@@ -109,10 +83,8 @@ class _VDataStatusState extends State<VDataStatus> {
     endDate = widget.vdataInfo.endDate;
     total = widget.vdataInfo.total;
     vDataDetails = widget.vdataInfo.vDataList;
-    totalLink = 0;
-    vTagData = myworksReady = nodata = false;
+    nodata = false;
     vDataReady = true;
-    getLink();
     super.initState();
   }
 
@@ -416,7 +388,7 @@ class _VDataStatusState extends State<VDataStatus> {
                                           BouncingWidget(
                                             scaleFactor: _scaleFactor,
                                             onPressed: () {
-                                              _selection(index);
+                                              _redirectWhatsApp(index);
                                             },
                                             child: Container(
                                               height:
@@ -503,336 +475,6 @@ class _VDataStatusState extends State<VDataStatus> {
     );
   }
 
-  void _selection(int index) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-      if (myworksReady == true) {
-        _whatsappType(index);
-      } else {
-        _toast('Data loading, please try again');
-      }
-    } else {
-      _toast('No Internet Connection');
-    }
-  }
-
-  YYDialog _whatsappType(int index) {
-    int type = 0;
-    return YYDialog().build()
-      ..width = ScreenUtil().setHeight(560)
-      ..borderRadius = ScreenUtil().setHeight(8)
-      ..text(
-        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-        alignment: Alignment.center,
-        text: "Select WhatsApp Type",
-        color: Colors.black,
-        fontSize: font18,
-        fontWeight: FontWeight.w500,
-      )
-      ..divider()
-      ..listViewOfRadioButton(
-          height: ScreenUtil().setHeight(240),
-          items: radioSelections,
-          intialValue: 0,
-          color: Colors.white,
-          activeColor: Colors.blue,
-          onClickItemListener: (index) {
-            type = index;
-          })
-      ..divider()
-      ..doubleButton(
-          padding: EdgeInsets.only(
-              top: ScreenUtil().setHeight(16),
-              bottom: ScreenUtil().setHeight(16)),
-          gravity: Gravity.right,
-          text1: "CANCEL",
-          color1: Colors.blue,
-          fontSize1: font14,
-          fontWeight1: FontWeight.bold,
-          text2: "OK",
-          color2: Colors.blue,
-          fontSize2: font14,
-          fontWeight2: FontWeight.bold,
-          onTap2: () {
-            if (type == 0) {
-              _redirectWhatsApp(index);
-            } else {
-              getVTagData(vDataDetails[index].phoneNo);
-              Future.delayed(const Duration(milliseconds: 50), () {
-                _myworksLink(index);
-              });
-            }
-          })
-      ..show();
-  }
-
-  void getVTagData(String phoneNo) {
-    http.post(urlVTag, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "userID": userID,
-      "level": level,
-      "user_type": userType,
-      "phone_number": phoneNo,
-    }).then((res) {
-      // print("getVTag body: " + res.body);
-      if (res.body == "nodata") {
-        vTag = [];
-      } else {
-        var jsonData = json.decode(res.body);
-        vTag = jsonData;
-      }
-      if (this.mounted) {
-        setState(() {
-          vTagData = true;
-        });
-      }
-    }).catchError((err) {
-      _toast(err.toString());
-      print("Get VTag error: " + err.toString());
-    });
-  }
-
-  void _redirectWhatsApp(int index) async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.wifi ||
-        connectivityResult == ConnectivityResult.mobile) {
-        FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
-    } else {
-      _toast("This feature need Internet connection");
-    }
-  }
-
-  void _myworksLink(int index) {
-    RadioItem widget;
-    radioItems.clear();
-    for (var link in myWorks) {
-      widget = RadioItem(
-        padding: EdgeInsets.only(
-          left: ScreenUtil().setHeight(12),
-        ),
-        text: link.title,
-        color: Colors.black,
-        fontSize: font14,
-      );
-      radioItems.add(widget);
-    }
-    YYListViewDialogListRadio(index);
-  }
-
-  YYDialog YYListViewDialogListRadio(int index) {
-    int index1 = 0;
-    return YYDialog().build()
-      ..width = ScreenUtil().setHeight(600)
-      ..borderRadius = ScreenUtil().setHeight(8)
-      ..text(
-        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
-        alignment: Alignment.center,
-        text: "Select MyWorks Link",
-        color: Colors.black,
-        fontSize: font18,
-        fontWeight: FontWeight.w500,
-      )
-      ..divider()
-      ..widget(
-        Container(
-          child: Card(
-            child: Container(
-              margin: EdgeInsets.only(
-                right: ScreenUtil().setHeight(20),
-                left: ScreenUtil().setHeight(30),
-              ),
-              height: ScreenUtil().setHeight(75),
-              child: TextField(
-                controller: _dialogSearchController,
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.go,
-                onSubmitted: (value) => _dialogSearch(value, index),
-                style: TextStyle(
-                  fontSize: font14,
-                ),
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.fromLTRB(10, 3, 0, 3),
-                  hintText: "Search",
-                  suffix: IconButton(
-                    iconSize: ScreenUtil().setHeight(40),
-                    icon: Icon(Icons.keyboard_hide),
-                    onPressed: () {
-                      FocusScope.of(context).requestFocus(new FocusNode());
-                    },
-                  ),
-                  suffixIcon: BouncingWidget(
-                    scaleFactor: _scaleFactor,
-                    onPressed: () {
-                      _dialogSearch(_dialogSearchController.text, index);
-                    },
-                    child: Icon(
-                      Icons.search,
-                      size: ScreenUtil().setHeight(50),
-                    ),
-                  ),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ),
-        ),
-      )
-      ..listViewOfRadioButton(
-          height: ScreenUtil().setHeight(1000),
-          items: radioItems,
-          intialValue: 0,
-          color: Colors.white,
-          activeColor: Colors.blue,
-          onClickItemListener: (index) {
-            index1 = index;
-          })
-      ..divider()
-      ..doubleButton(
-          padding: EdgeInsets.only(
-              top: ScreenUtil().setHeight(16),
-              bottom: ScreenUtil().setHeight(16)),
-          gravity: Gravity.right,
-          text1: "CANCEL",
-          color1: Colors.blue,
-          fontSize1: font14,
-          fontWeight1: FontWeight.bold,
-          onTap1: () {
-            _dialogSearchController.text = '';
-          },
-          text2: "OK",
-          color2: Colors.blue,
-          fontSize2: font14,
-          fontWeight2: FontWeight.bold,
-          onTap2: () {
-            _checking(index1, index);
-          })
-      ..show();
-  }
-
-  void _checking(int index1, int index) {
-    if (vTagData == true) {
-      WhatsappForward whatsapp = WhatsappForward(
-        url: myWorks[index1].link,
-        userID: userID,
-        userType: userType,
-        companyID: companyID,
-        branchID: branchID,
-        level: level,
-        vtagList: vtagList,
-        vtag: vTag,
-        name: vDataDetails[index].name,
-        phone: vDataDetails[index].phoneNo,
-      );
-      Future.delayed(const Duration(milliseconds: 50), () {
-        Navigator.push(
-          context,
-          AwesomePageRoute(
-            transitionDuration: Duration(milliseconds: 600),
-            exitPage: widget,
-            enterPage: WhatsAppForward(whatsappForward: whatsapp),
-            transition: StackTransition(),
-          ),
-        );
-      });
-    } else {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _checking(index1, index);
-      });
-    }
-  }
-
-  Future<void> _dialogSearch(String value, int index) async {
-    FocusScope.of(context).requestFocus(new FocusNode());
-    Navigator.pop(context);
-    myWorks.clear();
-    for (int i = 0; i < myWorks1.length; i++) {
-      if (myWorks1[i].title.toLowerCase().contains(value.toLowerCase())) {
-        myWorks.add(myWorks1[i]);
-      }
-    }
-    _myworksLink(index);
-  }
-
-  void getLink() {
-    http.post(urlMyWorks, body: {
-      "companyID": companyID,
-      "branchID": branchID,
-      "userID": userID,
-      "level": level,
-      "user_type": userType,
-      "count": myWorks.length.toString(),
-    }).then((res) {
-      // print("MyWorks body: " + res.body);
-      if (res.body == "nodata") {
-        if (this.mounted) {
-          setState(() {
-            myworksReady = true;
-          });
-        }
-      } else {
-        var jsonData = json.decode(res.body);
-        if (totalLink == 0) {
-          totalLink = int.parse(jsonData[0]);
-          for (int i = 1; i < jsonData.length; i++) {
-            Myworks mywork = Myworks(
-                date: jsonData[i]['date'],
-                title: jsonData[i]['title'],
-                urlName: jsonData[i]['urlName'],
-                link: jsonData[i]['link'],
-                category: jsonData[i]['category'],
-                qr: jsonData[i]['qr'],
-                id: jsonData[i]['id'],
-                handlers: jsonData[i]['handler'],
-                branchID: jsonData[i]['branchID'] ?? '',
-                branchName: jsonData[i]['branchName'] ?? '',
-                offLine: false);
-            myWorks.add(mywork);
-            myWorks1.add(mywork);
-          }
-          if (myWorks.length != totalLink) {
-            getLink();
-          } else {
-            if (this.mounted) {
-              setState(() {
-                myworksReady = true;
-              });
-            }
-          }
-        } else {
-          for (int i = 0; i < jsonData.length; i++) {
-            Myworks mywork = Myworks(
-                date: jsonData[i]['date'],
-                title: jsonData[i]['title'],
-                urlName: jsonData[i]['urlName'],
-                link: jsonData[i]['link'],
-                category: jsonData[i]['category'],
-                qr: jsonData[i]['qr'],
-                id: jsonData[i]['id'],
-                handlers: jsonData[i]['handlers'],
-                branchID: jsonData[i]['branchID'] ?? '',
-                branchName: jsonData[i]['branchName'] ?? '',
-                offLine: false);
-            myWorks.add(mywork);
-            myWorks1.add(mywork);
-          }
-          if (myWorks.length != totalLink) {
-            getLink();
-          } else {
-            if (this.mounted) {
-              setState(() {
-                myworksReady = true;
-              });
-            }
-          }
-        }
-      }
-    }).catchError((err) {
-      print("Get Link error: " + (err).toString());
-    });
-  }
-
   void _redirectVProfile(int index) async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
@@ -843,7 +485,7 @@ class _VDataStatusState extends State<VDataStatus> {
         userID: userID,
         level: level,
         userType: userType,
-        name: vDataDetails[index].name,
+        name:  vDataDetails[index].name,
         phoneNo: vDataDetails[index].phoneNo,
         email: vDataDetails[index].email,
         status: vDataDetails[index].status,
@@ -853,6 +495,16 @@ class _VDataStatusState extends State<VDataStatus> {
           builder: (context) => VProfile(vdata: vdata)));
     } else {
       _toast("No Internet Connection!");
+    }
+  }
+
+  void _redirectWhatsApp(int index) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
+    } else {
+      _toast("This feature need Internet connection");
     }
   }
 

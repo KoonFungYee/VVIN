@@ -16,12 +16,15 @@ import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:ndialog/ndialog.dart';
+import 'package:package_info/package_info.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vvin/animator.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/vform.dart';
@@ -69,6 +72,7 @@ class _MyWorksState extends State<MyWorks> {
   String urlVTag = ip + "vtag.php";
   String urlGetReminder = ip + "getreminder.php";
   String urlBranches = ip + "getBranch.php";
+  String urlVAnalytics = ip + "vanalytics.php";
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   UniLinksType _type = UniLinksType.string;
@@ -101,7 +105,9 @@ class _MyWorksState extends State<MyWorks> {
       linkID,
       filePath,
       now,
-      totalNotification;
+      totalNotification,
+      currentVersion,
+      newVersion;
   bool status,
       vtagStatus,
       connection,
@@ -2155,6 +2161,7 @@ class _MyWorksState extends State<MyWorks> {
       userType = prefs.getString('user_type');
       myWorks.clear();
       myWorks1.clear();
+      checkVersion();
       getLink();
       getVTag();
       getHandlerList();
@@ -3027,7 +3034,7 @@ class _MyWorksState extends State<MyWorks> {
           child: Column(
             children: <Widget>[
               SizedBox(
-                height: ScreenUtil().setHeight(20),
+                height: ScreenUtil().setHeight(10),
               ),
               Row(
                 children: <Widget>[
@@ -3598,30 +3605,107 @@ class _MyWorksState extends State<MyWorks> {
                             ),
                           ),
                         )
-                  : Container(
-                      height: MediaQuery.of(context).size.height * 0.4,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            JumpingText('Loading...'),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.02),
-                            SpinKitRing(
-                              lineWidth: 3,
-                              color: Colors.blue,
-                              size: 30.0,
-                              duration: Duration(milliseconds: 600),
-                            ),
-                          ],
-                        ),
+                  : Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          JumpingText('Loading...'),
+                          SizedBox(
+                              height:
+                                  MediaQuery.of(context).size.height * 0.02),
+                          SpinKitRing(
+                            lineWidth: 3,
+                            color: Colors.blue,
+                            size: 30.0,
+                            duration: Duration(milliseconds: 600),
+                          ),
+                        ],
                       ),
                     ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void checkVersion() {
+    String system;
+    if (Platform.isAndroid) {
+      system = "android";
+    } else {
+      system = "ios";
+    }
+    http.post(urlVAnalytics, body: {
+      "system": system,
+      "companyID": companyID,
+      "branchID": branchID,
+      "level": level,
+      "userID": userID,
+      "user_type": userType,
+      "startDate": "2017-12-01",
+      "endDate": "2017-12-01",
+    }).then((res) {
+      // print("Version body: " + res.body);
+      var jsonData = json.decode(res.body);
+      newVersion = jsonData[0]["version"];
+      try {
+        versionCheck(context);
+      } catch (e) {
+        print("VersionCheck error: " + e.toString());
+      }
+    });
+  }
+
+  void versionCheck(context) async {
+    final PackageInfo info = await PackageInfo.fromPlatform();
+    currentVersion = info.version.trim();
+    if (newVersion != currentVersion) {
+      _showVersionDialog(context);
+    }
+  }
+
+  void _showVersionDialog(context) async {
+    await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        String title = "New Update Available";
+        String message =
+            "There is a newer version of app available please update it now.";
+        return Platform.isIOS
+            ? new CupertinoAlertDialog(
+                title: Text(title),
+                content: Text(message),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Update Now"),
+                    onPressed: () => launch(
+                        'https://apps.apple.com/us/app/vvin/id1502502224'),
+                  ),
+                  FlatButton(
+                    child: Text("Later"),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              )
+            : NDialog(
+                dialogStyle: DialogStyle(titleDivider: true),
+                title: Text(title),
+                content: Text(message),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Update Now"),
+                    onPressed: () => launch(
+                        'https://play.google.com/store/apps/details?id=com.my.jtapps.vvin'),
+                  ),
+                  FlatButton(
+                    child: Text("Later"),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              );
+      },
     );
   }
 }

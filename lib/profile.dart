@@ -38,6 +38,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 final ScrollController controller = ScrollController();
 
 class Profile extends StatefulWidget {
+  final List<UserData> userData;
+  const Profile({Key key, this.userData}) : super(key: key);
+
   @override
   _ProfileState createState() => _ProfileState();
 }

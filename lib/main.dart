@@ -83,7 +83,7 @@ class _CheckingState extends State<Checking> {
   Future<void> mainScreen() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString('userID') == null ||
-        prefs.getString('branchID') == null) {
+        prefs.getString('name') == null) {
       if (_type == UniLinksType.string) {
         String initialLink;
         try {
