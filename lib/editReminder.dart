@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:typed_data';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vvin/calendarEvent.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
@@ -56,7 +57,7 @@ class _EditReminderState extends State<EditReminder> {
   UniLinksType _type = UniLinksType.string;
   final TextEditingController _remarkcontroller = TextEditingController();
   SharedPreferences prefs;
-  String date, remark, now, active;
+  String date, remark, now, active, companyID, userID, branchID, userType, level;
   double _scaleFactor = 1.0;
   DateTime dateTime;
   bool invalid, nameInvalid, phoneInvalid, remarkInvalid;
@@ -198,6 +199,55 @@ class _EditReminderState extends State<EditReminder> {
                 datetime: datetime),
           ));
           prefs.setString('reminder', payload);
+        }
+      } else if (payload.substring(0, 8) == 'calendar') {
+        if (prefs.getString('calendar') != payload) {
+          companyID = prefs.getString('companyID');
+          branchID = prefs.getString('branchID');
+          userID = prefs.getString('userID');
+          level = prefs.getString('level');
+          userType = prefs.getString('user_type');
+          UserData userdata = UserData(
+            companyID: companyID,
+            userID: userID,
+            branchID: branchID,
+            userType: userType,
+            level: level,
+          );
+          List<UserData> userData = [];
+          userData.add(userdata);
+          List list = payload.substring(8).split('~!');
+          List data = [];
+          String handler = list[5];
+          data.add(handler);
+          data.add(userData[0].userID);
+          String title = list[1];
+          data.add(title);
+          String description = list[2];
+          data.add(description);
+          String date = list[3];
+          data.add(date);
+          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          data.add(startTime);
+          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          data.add(endTime);
+          String person = list[6];
+          data.add(person);
+          String location = list[7];
+          data.add(location);
+          String notificationTime = list[8];
+          data.add(notificationTime);
+          String createdTime = list[0].toString().substring(0, 19);
+          data.add(createdTime);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: CalendarEvent(
+              data: data,
+              userData: userData,
+            ),
+          ));
+          prefs.setString('calendar', payload);
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
@@ -727,7 +777,7 @@ class _EditReminderState extends State<EditReminder> {
         }
         Database db = await ReminderDB.instance.database;
         int id = int.parse(
-              DateTime.now().millisecondsSinceEpoch.toString().substring(6));
+            DateTime.now().millisecondsSinceEpoch.toString().substring(6));
         if (widget.dataid == null) {
           await db.rawInsert(
               'INSERT INTO reminder (dataid, datetime, name, phone, remark, status, time) VALUES("' +

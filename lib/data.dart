@@ -14,10 +14,21 @@ double font16 = ScreenUtil().setSp(36.8, allowFontScalingSelf: false);
 double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
 double font20 = ScreenUtil().setSp(46, allowFontScalingSelf: false);
 
+class CalendarEvents {
+  String date;
+  List events;
+  CalendarEvents({this.date, this.events});
+}
+
 class UserData {
   String companyID, branchID, userID, level, userType, name;
   UserData(
-      {this.companyID, this.branchID, this.userID, this.userType, this.level, this.name});
+      {this.companyID,
+      this.branchID,
+      this.userID,
+      this.userType,
+      this.level,
+      this.name});
 }
 
 class ContactInfo {

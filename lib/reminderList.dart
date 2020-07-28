@@ -17,13 +17,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/animator.dart';
+import 'package:vvin/calendarEvent.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
 
 class ReminderList extends StatefulWidget {
-  ReminderList({Key key}) : super(key: key);
+  final List<UserData> userData;
+  ReminderList({Key key, this.userData}) : super(key: key);
 
   @override
   _ReminderListState createState() => _ReminderListState();
@@ -169,6 +171,41 @@ class _ReminderListState extends State<ReminderList> {
                 datetime: datetime),
           ));
           prefs.setString('reminder', payload);
+        }
+      } else if (payload.substring(0, 8) == 'calendar') {
+        if (prefs.getString('calendar') != payload) {
+          List list = payload.substring(8).split('~!');
+          List data = [];
+          String handler = list[5];
+          data.add(handler);
+          data.add(widget.userData[0].userID);
+          String title = list[1];
+          data.add(title);
+          String description = list[2];
+          data.add(description);
+          String date = list[3];
+          data.add(date);
+          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          data.add(startTime);
+          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          data.add(endTime);
+          String person = list[6];
+          data.add(person);
+          String location = list[7];
+          data.add(location);
+          String notificationTime = list[8];
+          data.add(notificationTime);
+          String createdTime = list[0].toString().substring(0, 19);
+          data.add(createdTime);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: CalendarEvent(
+              data: data,
+              userData: widget.userData,
+            ),
+          ));
+          prefs.setString('calendar', payload);
         }
       } else {
         if (prefs.getString('onMessage') != payload) {

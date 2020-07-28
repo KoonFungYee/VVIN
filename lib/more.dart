@@ -26,6 +26,7 @@ import 'package:showcaseview/showcaseview.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vvin/calendar.dart';
+import 'package:vvin/calendarEvent.dart';
 import 'package:vvin/companyDB.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/reminder.dart';
@@ -242,6 +243,59 @@ class _MoreState extends State<More> {
                 datetime: datetime),
           ));
           prefs.setString('reminder', payload);
+        }
+      } else if (payload.substring(0, 8) == 'calendar') {
+        if (prefs.getString('calendar') != payload) {
+          companyID = prefs.getString('companyID');
+          branchID = prefs.getString('branchID');
+          userID = prefs.getString('userID');
+          level = prefs.getString('level');
+          userType = prefs.getString('user_type');
+          handlerName = prefs.getString('name');
+          UserData userdata = UserData(
+            companyID: companyID,
+            userID: userID,
+            branchID: branchID,
+            userType: userType,
+            level: level,
+            name: name,
+          );
+          List<UserData> userData = [];
+          userData.add(userdata);
+          List list = payload.substring(8).split('~!');
+          List data = [];
+          String handler = list[5];
+          data.add(handler);
+          data.add(userData[0].userID);
+          String title = list[1];
+          data.add(title);
+          String description = list[2];
+          data.add(description);
+          String date = list[3];
+          data.add(date);
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
+          data.add(startTime);
+          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          data.add(endTime);
+          String person = list[6];
+          data.add(person);
+          String location = list[7];
+          data.add(location);
+          String notificationTime = list[8];
+          data.add(notificationTime);
+          String createdTime = list[0].toString().substring(0, 19);
+          data.add(createdTime);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: CalendarEvent(
+              data: data,
+              userData: userData,
+            ),
+          ));
+          prefs.setString('calendar', payload);
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
@@ -642,15 +696,15 @@ class _MoreState extends State<More> {
                             child: InkWell(
                               onTap: () {
                                 UserData userData = UserData(
-                                companyID: companyID,
-                                branchID: branchID,
-                                userID: userID,
-                                userType: userType,
-                                level: level,
-                                name: handlerName,
-                              );
-                              List<UserData> list = [];
-                              list.add(userData);
+                                  companyID: companyID,
+                                  branchID: branchID,
+                                  userID: userID,
+                                  userType: userType,
+                                  level: level,
+                                  name: handlerName,
+                                );
+                                List<UserData> list = [];
+                                list.add(userData);
                                 Navigator.push(
                                   context,
                                   AwesomePageRoute(
@@ -805,12 +859,24 @@ class _MoreState extends State<More> {
                           ),
                     InkWell(
                       onTap: () {
+                        UserData data = UserData(
+                          companyID: companyID,
+                          userID: userID,
+                          branchID: branchID,
+                          userType: userType,
+                          level: level,
+                          name: name,
+                        );
+                        List<UserData> userData = [];
+                        userData.add(data);
                         Navigator.push(
                           context,
                           AwesomePageRoute(
                             transitionDuration: Duration(milliseconds: 600),
                             exitPage: widget,
-                            enterPage: ReminderList(),
+                            enterPage: ReminderList(
+                              userData: userData,
+                            ),
                             transition: ParallaxTransition(),
                           ),
                         );

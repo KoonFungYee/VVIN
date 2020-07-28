@@ -16,6 +16,7 @@ import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vvin/calendarEvent.dart';
 import 'package:vvin/data.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
@@ -199,6 +200,55 @@ class _NotiDetailState extends State<NotiDetail> {
                 datetime: datetime),
           ));
           prefs.setString('reminder', payload);
+        }
+      } else if (payload.substring(0, 8) == 'calendar') {
+        if (prefs.getString('calendar') != payload) {
+          companyID = prefs.getString('companyID');
+          branchID = prefs.getString('branchID');
+          userID = prefs.getString('userID');
+          level = prefs.getString('level');
+          userType = prefs.getString('user_type');
+          UserData userdata = UserData(
+            companyID: companyID,
+            userID: userID,
+            branchID: branchID,
+            userType: userType,
+            level: level,
+          );
+          List<UserData> userData = [];
+          userData.add(userdata);
+          List list = payload.substring(8).split('~!');
+          List data = [];
+          String handler = list[5];
+          data.add(handler);
+          data.add(userData[0].userID);
+          String title = list[1];
+          data.add(title);
+          String description = list[2];
+          data.add(description);
+          String date = list[3];
+          data.add(date);
+          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          data.add(startTime);
+          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          data.add(endTime);
+          String person = list[6];
+          data.add(person);
+          String location = list[7];
+          data.add(location);
+          String notificationTime = list[8];
+          data.add(notificationTime);
+          String createdTime = list[0].toString().substring(0, 19);
+          data.add(createdTime);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: CalendarEvent(
+              data: data,
+              userData: userData,
+            ),
+          ));
+          prefs.setString('calendar', payload);
         }
       } else {
         if (prefs.getString('onMessage') != payload) {

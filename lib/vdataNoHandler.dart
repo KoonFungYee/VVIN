@@ -15,6 +15,7 @@ import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:intl/intl.dart';
+import 'package:vvin/calendarEvent.dart';
 import 'package:vvin/reminder.dart';
 import 'package:menu_button/menu_button.dart';
 import 'package:progress_indicators/progress_indicators.dart';
@@ -376,6 +377,41 @@ class _VDataNoHandlerState extends State<VDataNoHandler> {
                 datetime: datetime),
           ));
           prefs.setString('reminder', payload);
+        }
+      } else if (payload.substring(0, 8) == 'calendar') {
+        if (prefs.getString('calendar') != payload) {
+          List list = payload.substring(8).split('~!');
+          List data = [];
+          String handler = list[5];
+          data.add(handler);
+          data.add(widget.userData[0].userID);
+          String title = list[1];
+          data.add(title);
+          String description = list[2];
+          data.add(description);
+          String date = list[3];
+          data.add(date);
+          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          data.add(startTime);
+          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          data.add(endTime);
+          String person = list[6];
+          data.add(person);
+          String location = list[7];
+          data.add(location);
+          String notificationTime = list[8];
+          data.add(notificationTime);
+          String createdTime = list[0].toString().substring(0, 19);
+          data.add(createdTime);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: CalendarEvent(
+              data: data,
+              userData: widget.userData,
+            ),
+          ));
+          prefs.setString('calendar', payload);
         }
       } else {
         if (prefs.getString('onMessage') != payload) {

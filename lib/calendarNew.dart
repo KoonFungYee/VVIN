@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -9,14 +11,18 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttericon/linecons_icons.dart';
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:vvin/calendar.dart';
+import 'package:vvin/calendarEvent.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
@@ -61,6 +67,7 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
   double _scaleFactor = 1.0;
   int _radioValue = 0;
   String now, date, startTime, endTime, notificationTime;
+  DateTime start, end;
   bool allDay;
 
   @override
@@ -77,6 +84,10 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
       date = widget.data[4];
       startTime = widget.data[5];
       endTime = widget.data[6];
+      if (widget.data[5] != 'allDay') {
+        start = _timeFormat(widget.data[5]);
+        end = _timeFormat(widget.data[6]);
+      }
       notificationTime = widget.data[9];
       (widget.data[5] == 'allDay') ? allDay = true : allDay = false;
     } else {
@@ -205,6 +216,45 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                 datetime: datetime),
           ));
           prefs.setString('reminder', payload);
+        }
+      } else if (payload.substring(0, 8) == 'calendar') {
+        if (prefs.getString('calendar') != payload) {
+          List list = payload.substring(8).split('~!');
+          List data = [];
+          String handler = list[5];
+          data.add(handler);
+          data.add(widget.userData[0].userID);
+          String title = list[1];
+          data.add(title);
+          String description = list[2];
+          data.add(description);
+          String date = list[3];
+          data.add(date);
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
+          data.add(startTime);
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
+          data.add(endTime);
+          String person = list[6];
+          data.add(person);
+          String location = list[7];
+          data.add(location);
+          String notificationTime = list[8];
+          data.add(notificationTime);
+          String createdTime = list[0].toString().substring(0, 19);
+          data.add(createdTime);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: CalendarEvent(
+              data: data,
+              userData: widget.userData,
+            ),
+          ));
+          prefs.setString('calendar', payload);
         }
       } else {
         if (prefs.getString('onMessage') != payload) {
@@ -761,7 +811,7 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
     );
   }
 
-  void _createEvent() {
+  Future<void> _createEvent() async {
     FocusScope.of(context).requestFocus(new FocusNode());
     if (allDay == true) {
       startTime = 'allDay';
@@ -775,32 +825,93 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
       _toast('Please select start time');
     } else if (endTime == '') {
       _toast('Please select end time');
+    } else if (allDay == false && end.isBefore(start)) {
+      _toast('Invalid time');
+    } else if (date == DateTime.now().toString().substring(0, 10)) {
+      if (allDay == false && DateTime.now().isAfter(start)) {
+        _toast('Invalid time');
+      } else if (allDay == true &&
+          _timeFormat(notificationTime).isBefore(DateTime.now())) {
+        _toast('Invalid time');
+      } else {
+        String id = (widget.data == null)
+            ? DateTime.now().millisecondsSinceEpoch.toString()
+            : widget.data[11];
+        if (widget.isNew == false) {
+          int id = int.parse(
+              widget.data[11].substring(3, widget.data[11].length - 3));
+          await flutterLocalNotificationsPlugin.cancel(id);
+        }
+        _saveEvent(id);
+        setTime(id);
+      }
     } else {
-      _saveEvent();
+      String id = (widget.data == null)
+          ? DateTime.now().millisecondsSinceEpoch.toString()
+          : widget.data[11];
+      if (widget.isNew == false) {
+        int id =
+            int.parse(widget.data[11].substring(3, widget.data[11].length - 3));
+        await flutterLocalNotificationsPlugin.cancel(id);
+      }
+
+      _saveEvent(id);
+      setTime(id);
     }
   }
 
-  void _saveEvent() async {
-    // print("companyID" + widget.userData[0].companyID);
-    // print("branchID" + widget.userData[0].branchID);
-    // print("level" + widget.userData[0].level);
-    // print("userID" + widget.userData[0].userID);
-    // print("user_type" + widget.userData[0].userType);
-    // print("handler" + widget.userData[0].name);
-    // print("title" + _titleController.text);
-    // print("description" + _descriptionController.text);
-    // print("meet_with" + _meetWithController.text);
-    // print("location" + _locationController.text);
-    // print("date" + date);
-    // print("start_time" + startTime);
-    // print("end_time" + endTime);
-    // print("notification" + notificationTime);
-    // print("created_date" + DateTime.now().toString().substring(0, 19));
+  void setTime(String dataID) {
+    DateTime notiTime;
+    String time, startEndTime, createdTime, handler;
+    int id;
+    if (startTime != 'allDay') {
+      time = date + ' ' + _timeFormat(startTime).toString().substring(11);
+      notiTime = DateTime.parse(time);
+      id = int.parse(dataID.substring(
+          3, notiTime.millisecondsSinceEpoch.toString().length - 3));
+      startEndTime = startTime + ' - ' + endTime;
+    } else {
+      time =
+          date + ' ' + _timeFormat(notificationTime).toString().substring(11);
+      notiTime = DateTime.parse(time);
+      id = int.parse(dataID.substring(
+          3, notiTime.millisecondsSinceEpoch.toString().length - 3));
+      startEndTime = 'Full Day';
+    }
+    if (widget.isNew == true) {
+      createdTime = DateTime.now().toString();
+      handler = widget.userData[0].name;
+    } else {
+      createdTime = widget.data[10];
+      handler = widget.data[0];
+    }
+    String details = createdTime +
+        "~!" +
+        _titleController.text +
+        "~!" +
+        _descriptionController.text +
+        "~!" +
+        date +
+        "~!" +
+        startEndTime +
+        "~!" +
+        handler +
+        "~!" +
+        _meetWithController.text +
+        "~!" +
+        _locationController.text +
+        "~!" +
+        notificationTime;
+    _scheduleNotification(id, details, notiTime);
+  }
+
+  void _saveEvent(String id) async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
+      _onLoading();
       http.post(urlSaveCalendar, body: {
-        "id": DateTime.now().millisecondsSinceEpoch.toString(),
+        "id": id,
         "companyID": widget.userData[0].companyID,
         "branchID": widget.userData[0].branchID,
         "level": widget.userData[0].level,
@@ -817,12 +928,64 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
         "notification": notificationTime,
         "created_date": DateTime.now().toString().substring(0, 19),
       }).then((res) {
-        // print(res.body);
+        if (res.body == 'success') {
+          Navigator.pop(context);
+          Navigator.pop(context);
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            AwesomePageRoute(
+              transitionDuration: Duration(milliseconds: 600),
+              exitPage: widget,
+              enterPage: Calendar(userData: widget.userData),
+              transition: ZoomOutSlideTransition(),
+            ),
+          );
+        }
       }).catchError((err) {
         _toast(err.toString());
         print("Save calendar error: " + err.toString());
       });
+    } else {
+      _toast('No Internet');
     }
+  }
+
+  void _onLoading() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () {},
+        child: Dialog(
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.1,
+            width: MediaQuery.of(context).size.width * 0.1,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text('Saving...'),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  SpinKitRing(
+                    lineWidth: 3,
+                    color: Colors.blue,
+                    size: 30.0,
+                    duration: Duration(milliseconds: 600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _notification() {
@@ -1073,7 +1236,7 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                               ScreenUtil().setHeight(10),
                               ScreenUtil().setHeight(10)),
                           child: Text(
-                            "Add Notification",
+                            _title(type),
                             style: TextStyle(
                                 fontSize: font14, fontWeight: FontWeight.bold),
                           ),
@@ -1120,6 +1283,13 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                             initialDateTime: _initialTime(type),
                             onDateTimeChanged: (time) {
                               selectedTime = time.toString().substring(11, 16);
+                              switch (type) {
+                                case 'startTime':
+                                  start = time;
+                                  break;
+                                default:
+                                  end = time;
+                              }
                             },
                           ),
                         ),
@@ -1132,11 +1302,17 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                                 setState(() {
                                   startTime = _time(selectedTime);
                                 });
+                                if (start == null) {
+                                  start = _initialTime(type);
+                                }
                                 break;
                               case 'endTime':
                                 setState(() {
                                   endTime = _time(selectedTime);
                                 });
+                                if (end == null) {
+                                  end = _initialTime(type);
+                                }
                                 break;
                               default:
                                 setState(() {
@@ -1154,7 +1330,7 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                             ),
                             child: Center(
                               child: Text(
-                                'Add Notification',
+                                'Done',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: font14,
@@ -1171,6 +1347,21 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
             );
           });
         });
+  }
+
+  String _title(String type) {
+    String title;
+    switch (type) {
+      case 'startTime':
+        title = 'Start Time';
+        break;
+      case 'endTime':
+        title = 'End Time';
+        break;
+      default:
+        title = 'Add Notification';
+    }
+    return title;
   }
 
   DateTime _initialTime(String type) {
@@ -1232,7 +1423,11 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
     } else if (hour == 12) {
       time = time + ' PM';
     } else {
-      time = (hour - 12).toString() + time.substring(2) + ' PM';
+      if (hour - 12 < 10) {
+        time = '0' + (hour - 12).toString() + time.substring(2) + ' PM';
+      } else {
+        time = (hour - 12).toString() + time.substring(2) + ' PM';
+      }
     }
     return time;
   }
@@ -1464,5 +1659,42 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
             );
           });
         });
+  }
+
+  Future<void> _scheduleNotification(
+      int id, String details, DateTime notiTime) async {
+    String description = 'Description: ' + _descriptionController.text + ' ';
+    String time = (startTime != 'allDay')
+        ? 'Time: ' + startTime + ' - ' + endTime + ' '
+        : 'Time: Full Day';
+    String person = 'Person: ' + _meetWithController.text + ' ';
+    var scheduledNotificationDateTime = notiTime;
+    var vibrationPattern = Int64List(1);
+    vibrationPattern[0] = 0;
+
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your other channel id',
+      'your other channel name',
+      'your other channel description',
+      icon: 'secondary_icon',
+      largeIcon: DrawableResourceAndroidBitmap(''),
+      vibrationPattern: vibrationPattern,
+      enableLights: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+      ticker: 'ticker',
+      styleInformation: BigTextStyleInformation(''),
+    );
+    var iOSPlatformChannelSpecifics =
+        IOSNotificationDetails(sound: 'slow_spring_board.aiff');
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.schedule(
+        id,
+        _titleController.text,
+        description + '\n' + time + '\n' + person,
+        scheduledNotificationDateTime,
+        platformChannelSpecifics,
+        payload: 'calendar' + details);
   }
 }

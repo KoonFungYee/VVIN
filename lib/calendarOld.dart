@@ -11,8 +11,6 @@ import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:progress_indicators/progress_indicators.dart';
 import 'package:route_transitions/route_transitions.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,13 +86,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
   List<CalendarEvents> calendarEvents = [];
   List _selectedEvents;
   double _scaleFactor = 1.0;
-  String now,
-      dateSelected,
-      executive,
-      executiveID,
-      branch,
-      branchID,
-      nameSelected;
+  String now, dateSelected, executive, executiveID, branch, branchID;
   bool ready = false;
   bool branchReady, handlerReady, dateReady, listReady;
 
@@ -105,7 +97,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
     _init();
     initial();
     listReady = dateReady = handlerReady = branchReady = false;
-    nameSelected = executiveID = branchID = branch = executive = '';
+    executiveID = branchID = branch = executive = '';
     dateSelected = DateTime.now().toString().substring(0, 10);
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
@@ -244,13 +236,9 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
           data.add(description);
           String date = list[3];
           data.add(date);
-          String startTime = (list[4] == 'Full Day')
-              ? 'allDay'
-              : list[4].toString().split(' - ')[0];
+          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day')
-              ? 'allDay'
-              : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -343,18 +331,8 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
           ),
         ),
         body: (ready == false)
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  JumpingText('Loading...'),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                  SpinKitRing(
-                    lineWidth: 3,
-                    color: Colors.blue,
-                    size: 30.0,
-                    duration: Duration(milliseconds: 600),
-                  ),
-                ],
+            ? Container(
+                child: Text('data'),
               )
             : Column(
                 children: <Widget>[
@@ -401,40 +379,20 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        Expanded(
-                          flex: 8,
-                          child: Row(
-                            children: <Widget>[
-                              Text(
-                                _dateFormat(dateSelected),
-                                style: TextStyle(
-                                    fontSize: font16,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              (nameSelected == '')
-                                  ? Text('')
-                                  : Text(
-                                      ' (' + nameSelected + ')',
-                                      style: TextStyle(
-                                        fontSize: font16,
-                                        color: Color.fromRGBO(8, 195, 20, 1),
-                                      ),
-                                    ),
-                            ],
-                          ),
+                        Text(
+                          _dateFormat(dateSelected),
+                          style: TextStyle(
+                              fontSize: font16, fontWeight: FontWeight.bold),
                         ),
-                        Expanded(
-                          flex: 1,
-                          child: (widget.userData[0].level == '0')
-                              ? (branchReady == true && handlerReady == true)
-                                  ? filter()
-                                  : Container()
-                              : (widget.userData[0].level == '4')
-                                  ? (handlerReady == true)
-                                      ? filter()
-                                      : Container()
-                                  : Container(),
-                        )
+                        (widget.userData[0].level == '0')
+                            ? (branchReady == true && handlerReady == true)
+                                ? filter()
+                                : Container()
+                            : (widget.userData[0].level == '4')
+                                ? (handlerReady == true)
+                                    ? filter()
+                                    : Container()
+                                : Container(),
                       ],
                     ),
                   ),
@@ -448,37 +406,30 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-        floatingActionButton:
-            (DateTime.now().isBefore(DateTime.parse(dateSelected)) ||
-                    DateTime.now().toString().substring(0, 10) == dateSelected)
-                ? FloatingActionButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        AwesomePageRoute(
-                          transitionDuration: Duration(milliseconds: 600),
-                          exitPage: widget,
-                          enterPage: CalendarNewEvent(
-                              isNew: true,
-                              userData: widget.userData,
-                              date: dateSelected),
-                          transition: ZoomOutSlideTransition(),
-                        ),
-                      );
-                    },
-                    child: Icon(
-                      Icons.add,
-                    ),
-                    shape: CircleBorder(),
-                  )
-                : null,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              AwesomePageRoute(
+                transitionDuration: Duration(milliseconds: 600),
+                exitPage: widget,
+                enterPage: CalendarNewEvent(
+                    isNew: true, userData: widget.userData, date: dateSelected),
+                transition: ZoomOutSlideTransition(),
+              ),
+            );
+          },
+          child: Icon(
+            Icons.add,
+          ),
+          shape: CircleBorder(),
+        ),
       ),
     );
   }
 
   void _onDaySelected(DateTime day, List events) {
     setState(() {
-      nameSelected = '';
       dateSelected = day.toString().substring(0, 10);
     });
     if (ready == true) {
@@ -487,9 +438,6 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
           setState(() {
             _selectedEvents = list.events;
           });
-          break;
-        } else {
-          _selectedEvents = [];
         }
       }
     }
@@ -835,20 +783,29 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
   }
 
   void _filterProceed() {
-    List list1 = [];
-    for (var events in calendarEvents) {
-      if (events.date == dateSelected) {
-        for (var list in events.events) {
-          if (list[1] == executiveID) {
-            list1.add(list);
-          }
-        }
-      }
-    }
-    _selectedEvents = list1;
+    date.clear();
+    events.clear();
+    eventsList.clear();
+    date.add(DateTime.parse('2020-07-27'));
+    List detail = [
+      'Kelvin Koon', //name
+      '6423',
+      'Long title here',
+      'Long decription here',
+      '2020-07-23',
+      'allDay',
+      'allDay',
+      'Jason Koo',
+      'JT Apps Sdn Bhd',
+      '11:00 PM',
+      '2020-06-12',
+    ];
+    events.add(detail);
+    eventsList.add(events);
+    _events = Map.fromIterables(date, eventsList);
+    _selectedEvents = events;
     if (this.mounted) {
       setState(() {
-        nameSelected = executive;
         ready = true;
       });
     }
@@ -1179,7 +1136,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
                                   : 'Full day',
                               style: TextStyle(
                                 color: Color.fromRGBO(46, 56, 77, 1),
-                                fontSize: font12,
+                                fontSize: font14,
                               ),
                             ),
                           ],
@@ -1274,11 +1231,6 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
             default:
               for (int i = 0; i < calendarEvents.length; i++) {
                 if (calendarEvents[i].date == dateSelected) {
-                  int id = int.parse(calendarEvents[i]
-                      .events[index][11]
-                      .substring(
-                          3, calendarEvents[i].events[index][11].length - 3));
-                  await flutterLocalNotificationsPlugin.cancel(id);
                   _delete(calendarEvents[i].events[index][11]);
                   calendarEvents[i].events.removeAt(index);
                   break;
@@ -1364,21 +1316,25 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
         for (int i = 0; i < jsonData.length; i++) {
           for (int j = 0; j < jsonData[i]['data'].length; j++) {
             date.add(DateTime.parse(jsonData[i]['date']));
+            // List list = jsonData[i]['data'][j];
             events.add(jsonData[i]['data'][j]);
             eventsList.add(events);
+            // CalendarEvents event =
+            //     CalendarEvents(events: jsonData[i]['data'][j]);
+
           }
           CalendarEvents event = CalendarEvents(
               date: jsonData[i]['date'], events: jsonData[i]['data']);
           calendarEvents.add(event);
         }
         _events = Map.fromIterables(date, eventsList);
+        List list1 = [];
         for (var list in calendarEvents) {
           if (list.date == dateSelected) {
-            _selectedEvents = list.events;
+            list1.add(list.events);
           }
         }
-      } else {
-        _selectedEvents = [];
+        _selectedEvents = list1;
       }
       if (this.mounted) {
         setState(() {
@@ -1446,7 +1402,6 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(100),
         onTap: _filter,
         child: Container(
-          width: ScreenUtil().setHeight(60),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
           ),

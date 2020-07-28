@@ -159,6 +159,41 @@ class _CalendarEventState extends State<CalendarEvent> {
           ));
           prefs.setString('reminder', payload);
         }
+      } else if (payload.substring(0, 8) == 'calendar') {
+        if (prefs.getString('calendar') != payload) {
+          List list = payload.substring(8).split('~!');
+          List data = [];
+          String handler = list[5];
+          data.add(handler);
+          data.add(widget.userData[0].userID);
+          String title = list[1];
+          data.add(title);
+          String description = list[2];
+          data.add(description);
+          String date = list[3];
+          data.add(date);
+          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          data.add(startTime);
+          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          data.add(endTime);
+          String person = list[6];
+          data.add(person);
+          String location = list[7];
+          data.add(location);
+          String notificationTime = list[8];
+          data.add(notificationTime);
+          String createdTime = list[0].toString().substring(0, 19);
+          data.add(createdTime);
+          Navigator.of(context).push(PageTransition(
+            duration: Duration(milliseconds: 1),
+            type: PageTransitionType.transferUp,
+            child: CalendarEvent(
+              data: data,
+              userData: widget.userData,
+            ),
+          ));
+          prefs.setString('calendar', payload);
+        }
       } else {
         if (prefs.getString('onMessage') != payload) {
           Navigator.of(context).push(PageTransition(
@@ -283,7 +318,7 @@ class _CalendarEventState extends State<CalendarEvent> {
                     children: <Widget>[
                       Flexible(
                         child: Text(
-                          widget.data[3],
+                          (widget.data[3] == '') ? ' -' : widget.data[3],
                           style: TextStyle(
                             color: Color.fromRGBO(105, 112, 127, 1),
                             fontSize: font14,
@@ -345,8 +380,8 @@ class _CalendarEventState extends State<CalendarEvent> {
                           Flexible(
                             child: Text(
                               (widget.data[5] == 'allDay')
-                              ? 'Full day'
-                              : widget.data[5] + ' - ' + widget.data[6],
+                                  ? 'Full day'
+                                  : widget.data[5] + ' - ' + widget.data[6],
                               style: TextStyle(
                                 color: Color.fromRGBO(90, 90, 90, 1),
                                 fontSize: font14,
@@ -410,6 +445,7 @@ class _CalendarEventState extends State<CalendarEvent> {
                         children: <Widget>[
                           Flexible(
                             child: Text(
+                              (widget.data[7] == '') ? ' -' : 
                               widget.data[7],
                               style: TextStyle(
                                 color: Color.fromRGBO(90, 90, 90, 1),
@@ -442,7 +478,7 @@ class _CalendarEventState extends State<CalendarEvent> {
                         children: <Widget>[
                           Flexible(
                             child: Text(
-                              widget.data[8],
+                              (widget.data[8] == '') ? ' -' : widget.data[8],
                               style: TextStyle(
                                 color: Color.fromRGBO(90, 90, 90, 1),
                                 fontSize: font14,
