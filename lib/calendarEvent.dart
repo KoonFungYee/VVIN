@@ -286,7 +286,7 @@ class _CalendarEventState extends State<CalendarEvent> {
                   fontSize: font18,
                   fontWeight: FontWeight.bold),
             ),
-            actions: <Widget>[popupMenuButton()],
+            actions: (widget.data[1] == widget.userData[0].userID) ? <Widget>[popupMenuButton()] : null,
           ),
         ),
         body: SingleChildScrollView(
