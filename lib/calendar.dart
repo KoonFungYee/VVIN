@@ -1238,15 +1238,19 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
           ),
         ),
         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: "edit",
-                child: Text(
-                  "Edit",
-                  style: TextStyle(
-                    fontSize: font12,
-                  ),
-                ),
-              ),
+              (DateTime.now().isBefore(DateTime.parse(dateSelected)) ||
+                      DateTime.now().toString().substring(0, 10) ==
+                          dateSelected)
+                  ? PopupMenuItem<String>(
+                      value: "edit",
+                      child: Text(
+                        "Edit",
+                        style: TextStyle(
+                          fontSize: font12,
+                        ),
+                      ),
+                    )
+                  : null,
               PopupMenuItem<String>(
                 value: "delete",
                 child: Text(
