@@ -192,7 +192,7 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
           List list = payload.substring(8).split('~!');
           int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(12);
+          String time = list[1].toString().substring(11);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
@@ -854,7 +854,6 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
             int.parse(widget.data[11].substring(3, widget.data[11].length - 3));
         await flutterLocalNotificationsPlugin.cancel(id);
       }
-
       _saveEvent(id);
       setTime(id);
     }
@@ -862,11 +861,24 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
 
   void setTime(String dataID) {
     DateTime notiTime;
-    String time, startEndTime, createdTime, handler;
+    String time, startEndTime, createdTime, handler, type;
     int id;
     if (startTime != 'allDay') {
       time = date + ' ' + _timeFormat(startTime).toString().substring(11);
-      notiTime = DateTime.parse(time);
+      type = notificationTime.split(' ')[1];
+      switch (type) {
+        case 'minutes':
+          notiTime = start.subtract(
+              Duration(minutes: int.parse(notificationTime.split(' ')[0])));
+          break;
+        case 'hours':
+          notiTime = start.subtract(
+              Duration(hours: int.parse(notificationTime.split(' ')[0])));
+          break;
+        default:
+          notiTime = start.subtract(
+              Duration(days: int.parse(notificationTime.split(' ')[0])));
+      }
       id = int.parse(dataID.substring(
           3, notiTime.millisecondsSinceEpoch.toString().length - 3));
       startEndTime = startTime + ' - ' + endTime;
@@ -1165,16 +1177,6 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                             Text('Days before'),
                           ],
                         ),
-                        // Row(
-                        //   children: <Widget>[
-                        //     Radio(
-                        //       value: 3,
-                        //       groupValue: _radioValue,
-                        //       onChanged: _handleRadioValueChange,
-                        //     ),
-                        //     Text('Weeks before'),
-                        //   ],
-                        // ),
                         SizedBox(height: ScreenUtil().setHeight(60)),
                         BouncingWidget(
                           scaleFactor: _scaleFactor,

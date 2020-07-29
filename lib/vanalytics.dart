@@ -77,6 +77,7 @@ class _VAnalyticsState extends State<VAnalytics>
   String urlTopViews = ip + "topview.php";
   String urlLeads = ip + "leads.php";
   String urlGetReminder = ip + "getreminder.php";
+  String urlEvents = ip + "getEvents.php";
   double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
   double font14 = ScreenUtil().setSp(32.2, allowFontScalingSelf: false);
   double font18 = ScreenUtil().setSp(41.4, allowFontScalingSelf: false);
@@ -319,7 +320,7 @@ class _VAnalyticsState extends State<VAnalytics>
           List list = payload.substring(8).split('~!');
           int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(12);
+          String time = list[1].toString().substring(11);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
@@ -371,9 +372,13 @@ class _VAnalyticsState extends State<VAnalytics>
           data.add(description);
           String date = list[3];
           data.add(date);
-          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -2606,14 +2611,14 @@ class _VAnalyticsState extends State<VAnalytics>
         app: "All",
         channel: "all");
     UserData userData = UserData(
-        companyID: companyID,
-        branchID: branchID,
-        userID: userID,
-        userType: userType,
-        level: level,
-      );
-      List<UserData> list = [];
-      list.add(userData);
+      companyID: companyID,
+      branchID: branchID,
+      userID: userID,
+      userType: userType,
+      level: level,
+    );
+    List<UserData> list = [];
+    list.add(userData);
     Navigator.of(context).pushReplacement(PageTransition(
       duration: Duration(milliseconds: 1),
       type: PageTransitionType.transferUp,
@@ -2666,14 +2671,14 @@ class _VAnalyticsState extends State<VAnalytics>
         app: "All",
         channel: "all");
     UserData userData = UserData(
-        companyID: companyID,
-        branchID: branchID,
-        userID: userID,
-        userType: userType,
-        level: level,
-      );
-      List<UserData> list = [];
-      list.add(userData);
+      companyID: companyID,
+      branchID: branchID,
+      userID: userID,
+      userType: userType,
+      level: level,
+    );
+    List<UserData> list = [];
+    list.add(userData);
     Navigator.of(context).pushReplacement(PageTransition(
       duration: Duration(milliseconds: 1),
       type: PageTransitionType.transferUp,
@@ -2993,6 +2998,173 @@ class _VAnalyticsState extends State<VAnalytics>
     if (prefs.getString("getreminder") == null) {
       getReminder();
     }
+    if (prefs.getString("getCalendar") == null) {
+      getCalendar();
+    }
+  }
+
+  void getCalendar() {
+    prefs.setString("getCalendar", "1");
+    http.post(urlEvents, body: {
+      "companyID": companyID,
+      "branchID": branchID,
+      "userID": userID,
+      "user_type": userType,
+      "level": level,
+    }).then((res) {
+      if (res.body != "nodata") {
+        var jsonData = json.decode(res.body);
+        // print(jsonData);
+        for (int i = 0; i < jsonData.length; i++) {
+          if (jsonData[i]['date'] ==
+                  DateTime.now().toString().substring(0, 10) ||
+              DateTime.parse(jsonData[i]['date']).isAfter(DateTime.now())) {
+            String handler,
+                title,
+                description,
+                date,
+                startTime,
+                endTime,
+                person,
+                location,
+                notificationTime,
+                createdDate,
+                dataID,
+                time,
+                type;
+            DateTime start, notiTime;
+            for (int j = 0; j < jsonData[i]['data'].length; j++) {
+              handler = jsonData[i]['data'][j][0];
+              title = jsonData[i]['data'][j][2];
+              description = jsonData[i]['data'][j][3];
+              date = jsonData[i]['data'][j][4];
+              startTime = jsonData[i]['data'][j][5];
+              endTime = jsonData[i]['data'][j][6];
+              person = jsonData[i]['data'][j][7];
+              location = jsonData[i]['data'][j][8];
+              notificationTime = jsonData[i]['data'][j][9];
+              createdDate = jsonData[i]['data'][j][10];
+              dataID = jsonData[i]['data'][j][11];
+              int id = int.parse(dataID.substring(3, dataID.length - 3));
+              if (startTime != 'allDay') {
+                start = DateTime.parse(date +
+                    ' ' +
+                    _timeFormat(startTime).toString().substring(11));
+                type = notificationTime.split(' ')[1];
+                switch (type) {
+                  case 'minutes':
+                    notiTime = start.subtract(Duration(
+                        minutes: int.parse(notificationTime.split(' ')[0])));
+                    break;
+                  case 'hours':
+                    notiTime = start.subtract(Duration(
+                        hours: int.parse(notificationTime.split(' ')[0])));
+                    break;
+                  default:
+                    notiTime = start.subtract(Duration(
+                        days: int.parse(notificationTime.split(' ')[0])));
+                }
+              } else {
+                time = date +
+                    ' ' +
+                    _timeFormat(notificationTime).toString().substring(11);
+                notiTime = DateTime.parse(time);
+              }
+              String details = createdDate +
+                  "~!" +
+                  title +
+                  "~!" +
+                  description +
+                  "~!" +
+                  date +
+                  "~!" +
+                  startTime +
+                  ' - ' +
+                  endTime +
+                  ' - ' +
+                  handler +
+                  "~!" +
+                  person +
+                  "~!" +
+                  location +
+                  "~!" +
+                  notificationTime;
+              _scheduleNotification1(
+                  id, details, notiTime, jsonData[i]['data'][j]);
+            }
+          }
+        }
+      }
+    }).catchError((err) {
+      _toast(err.toString());
+      print("Get events error: " + err.toString());
+    });
+  }
+
+  DateTime _timeFormat(String time) {
+    DateTime actual;
+    if (time.substring(time.length - 2) == 'PM') {
+      if (time.substring(0, 2) != '12') {
+        actual = DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day,
+            int.parse(time.substring(0, 2)) + 12,
+            int.parse(time.substring(3, 5)));
+      } else {
+        actual = DateTime(
+            DateTime.now().year,
+            DateTime.now().month,
+            DateTime.now().day,
+            int.parse(time.substring(0, 2)),
+            int.parse(time.substring(3, 5)));
+      }
+    } else {
+      actual = DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          int.parse(time.substring(0, 2)),
+          int.parse(time.substring(3, 5)));
+    }
+    return actual;
+  }
+
+  Future<void> _scheduleNotification1(
+      int id, String details, DateTime notiTime, List data) async {
+    String description = 'Description: ' + data[3] + ' ';
+    String time = (data[5] != 'allDay')
+        ? 'Time: ' + data[5] + ' - ' + data[6] + ' '
+        : 'Time: Full Day';
+    String person = 'Person: ' + data[7] + ' ';
+    var scheduledNotificationDateTime = notiTime;
+    var vibrationPattern = Int64List(1);
+    vibrationPattern[0] = 0;
+
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'your other channel id',
+      'your other channel name',
+      'your other channel description',
+      icon: 'secondary_icon',
+      largeIcon: DrawableResourceAndroidBitmap(''),
+      vibrationPattern: vibrationPattern,
+      enableLights: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+      ticker: 'ticker',
+      styleInformation: BigTextStyleInformation(''),
+    );
+    var iOSPlatformChannelSpecifics =
+        IOSNotificationDetails(sound: 'slow_spring_board.aiff');
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.schedule(
+        id,
+        data[2],
+        description + '\n' + time + '\n' + person,
+        scheduledNotificationDateTime,
+        platformChannelSpecifics,
+        payload: 'calendar' + details);
   }
 
   void getReminder() {
@@ -3003,6 +3175,7 @@ class _VAnalyticsState extends State<VAnalytics>
       "level": level,
       "user_type": userType,
     }).then((res) async {
+      print(res.body);
       if (res.body != 'nodata') {
         var jsonData = json.decode(res.body);
         Database db = await ReminderDB.instance.database;

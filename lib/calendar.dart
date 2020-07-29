@@ -206,7 +206,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
           List list = payload.substring(8).split('~!');
           int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(12);
+          String time = list[1].toString().substring(11);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
@@ -416,7 +416,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
                                   : Text(
                                       ' (' + nameSelected + ')',
                                       style: TextStyle(
-                                        fontSize: font16,
+                                        fontSize: font14,
                                         color: Color.fromRGBO(8, 195, 20, 1),
                                       ),
                                     ),

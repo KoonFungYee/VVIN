@@ -147,7 +147,7 @@ class _ReminderListState extends State<ReminderList> {
           List list = payload.substring(8).split('~!');
           int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(12);
+          String time = list[1].toString().substring(11);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
@@ -457,7 +457,7 @@ class _ReminderListState extends State<ReminderList> {
           enterPage: Reminder(
             dataid: int.parse(reminderList[index]['dataid']),
             date: reminderList[index]['datetime'].toString().substring(0, 10),
-            time: reminderList[index]['datetime'].toString().substring(12),
+            time: reminderList[index]['datetime'].toString().substring(11),
             name: reminderList[index]['name'],
             phone: reminderList[index]['phone'],
             remark: reminderList[index]['remark'],

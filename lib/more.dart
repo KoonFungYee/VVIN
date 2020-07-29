@@ -219,7 +219,7 @@ class _MoreState extends State<More> {
           List list = payload.substring(8).split('~!');
           int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(12);
+          String time = list[1].toString().substring(11);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
@@ -277,7 +277,9 @@ class _MoreState extends State<More> {
               ? 'allDay'
               : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -1276,27 +1278,26 @@ class _MoreState extends State<More> {
       List reminders = await db1.query(ReminderDB.table);
       String sendtime = DateTime.now().millisecondsSinceEpoch.toString();
       for (int i = 0; i < reminders.length; i++) {
-        http
-            .post(urlReminder, body: {
-              "companyID": companyID,
-              "branchID": branchID,
-              "userID": userID,
-              "level": level,
-              "user_type": userType,
-              "id": reminders[i]['dataid'].toString(),
-              "datetime": reminders[i]['datetime'].toString(),
-              "name": reminders[i]['name'],
-              "phone": reminders[i]['phone'].toString(),
-              "remark": reminders[i]['remark'],
-              "status": reminders[i]['status'],
-              "time": reminders[i]['time'].toString(),
-              "sendtime": sendtime,
-            })
-            .then((res) async {})
-            .catchError((err) {
-              _toast("Something wrong on save reminder");
-              print("Reminder error: " + (err).toString());
-            });
+        http.post(urlReminder, body: {
+          "companyID": companyID,
+          "branchID": branchID,
+          "userID": userID,
+          "level": level,
+          "user_type": userType,
+          "id": reminders[i]['dataid'].toString(),
+          "datetime": reminders[i]['datetime'].toString(),
+          "name": reminders[i]['name'],
+          "phone": reminders[i]['phone'].toString(),
+          "remark": reminders[i]['remark'],
+          "status": reminders[i]['status'],
+          "time": reminders[i]['time'].toString(),
+          "sendtime": sendtime,
+        }).then((res) async {
+          print(res.body);
+        }).catchError((err) {
+          _toast("Something wrong on save reminder");
+          print("Reminder error: " + (err).toString());
+        });
       }
       db1.rawInsert('DELETE FROM reminder WHERE id > 0');
       await flutterLocalNotificationsPlugin.cancelAll();
@@ -1338,6 +1339,7 @@ class _MoreState extends State<More> {
       prefs.setString('noti', null);
       prefs.setString('newNoti', null);
       prefs.setString("getreminder", null);
+      prefs.setString("getCalendar", null);
       prefs.setString("branchID", null);
 
       _clearToken();

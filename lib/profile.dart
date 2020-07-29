@@ -195,7 +195,7 @@ class _ProfileState extends State<Profile> {
           List list = payload.substring(8).split('~!');
           int dataid = int.parse(list[0]);
           String date = list[1].toString().substring(0, 10);
-          String time = list[1].toString().substring(12);
+          String time = list[1].toString().substring(11);
           String name = list[2];
           String phone = list[3];
           String remark = list[4];
@@ -1088,6 +1088,7 @@ class _ProfileState extends State<Profile> {
       prefs.setString('noti', null);
       prefs.setString('newNoti', null);
       prefs.setString("getreminder", null);
+      prefs.setString("getCalendar", null);
       prefs.setString("branchID", null);
 
       _clearToken();
