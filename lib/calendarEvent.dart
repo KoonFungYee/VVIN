@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:awesome_page_transitions/awesome_page_transitions.dart';
+import 'package:bot_toast/bot_toast.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,19 +9,25 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:http/http.dart' as http;
+import 'package:vvin/calendar.dart';
+import 'package:vvin/calendarNew.dart';
 import 'package:vvin/data.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminder.dart';
 import 'package:vvin/reminderDB.dart';
 
 class CalendarEvent extends StatefulWidget {
+  final bool edit;
   final List data;
   final List<UserData> userData;
-  CalendarEvent({Key key, this.data, this.userData}) : super(key: key);
+  CalendarEvent({Key key, this.edit, this.data, this.userData})
+      : super(key: key);
 
   @override
   _CalendarEventState createState() => _CalendarEventState();
@@ -39,6 +48,7 @@ class _CalendarEventState extends State<CalendarEvent> {
   final ScrollController controller = ScrollController();
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   UniLinksType _type = UniLinksType.string;
+  String urlDelete = ip + "deleteCalendar.php";
   String now;
 
   @override
@@ -46,6 +56,7 @@ class _CalendarEventState extends State<CalendarEvent> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     check();
     _init();
+    print(widget.edit);
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         _showNotification();
@@ -172,9 +183,13 @@ class _CalendarEventState extends State<CalendarEvent> {
           data.add(description);
           String date = list[3];
           data.add(date);
-          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -271,6 +286,7 @@ class _CalendarEventState extends State<CalendarEvent> {
                   fontSize: font18,
                   fontWeight: FontWeight.bold),
             ),
+            actions: <Widget>[popupMenuButton()],
           ),
         ),
         body: SingleChildScrollView(
@@ -445,8 +461,7 @@ class _CalendarEventState extends State<CalendarEvent> {
                         children: <Widget>[
                           Flexible(
                             child: Text(
-                              (widget.data[7] == '') ? ' -' : 
-                              widget.data[7],
+                              (widget.data[7] == '') ? ' -' : widget.data[7],
                               style: TextStyle(
                                 color: Color.fromRGBO(90, 90, 90, 1),
                                 fontSize: font14,
@@ -526,6 +541,140 @@ class _CalendarEventState extends State<CalendarEvent> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget popupMenuButton() {
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.more_vert,
+        size: ScreenUtil().setWidth(40),
+        color: Colors.grey,
+      ),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        (widget.edit == true)
+            ? PopupMenuItem<String>(
+                value: "edit",
+                child: Text(
+                  "Edit",
+                  style: TextStyle(
+                    fontSize: font14,
+                  ),
+                ),
+              )
+            : null,
+        PopupMenuItem<String>(
+          value: "delete",
+          child: Text(
+            "Delete",
+            style: TextStyle(
+              fontSize: font14,
+            ),
+          ),
+        ),
+      ],
+      onSelected: (selectedItem) {
+        switch (selectedItem) {
+          case "edit":
+            Navigator.push(
+              context,
+              AwesomePageRoute(
+                transitionDuration: Duration(milliseconds: 600),
+                exitPage: widget,
+                enterPage: CalendarNewEvent(
+                    data: widget.data, isNew: false, userData: widget.userData),
+                transition: ZoomOutSlideTransition(),
+              ),
+            );
+            break;
+          default:
+            _delete(widget.data[11]);
+        }
+      },
+    );
+  }
+
+  void _delete(String id) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.wifi ||
+        connectivityResult == ConnectivityResult.mobile) {
+      _onLoading();
+      http.post(urlDelete, body: {
+        "companyID": widget.userData[0].companyID,
+        "branchID": widget.userData[0].branchID,
+        "userID": widget.userData[0].userID,
+        "user_type": widget.userData[0].userType,
+        "level": widget.userData[0].level,
+        "id": id,
+      }).then((res) {
+        if (res.body == "success") {
+          Navigator.pop(context);
+          Navigator.pop(context);
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            AwesomePageRoute(
+              transitionDuration: Duration(milliseconds: 600),
+              exitPage: widget,
+              enterPage: Calendar(userData: widget.userData),
+              transition: ZoomOutSlideTransition(),
+            ),
+          );
+        }
+      }).catchError((err) {
+        _toast(err.toString());
+        print("Delete calendar error: " + err.toString());
+      });
+    } else {
+      _toast('No Internet Connection');
+    }
+  }
+
+  void _onLoading() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () {},
+        child: Dialog(
+          elevation: 0.0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.1,
+            width: MediaQuery.of(context).size.width * 0.1,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text('Deleting...'),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                  SpinKitRing(
+                    lineWidth: 3,
+                    color: Colors.blue,
+                    size: 30.0,
+                    duration: Duration(milliseconds: 600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _toast(String message) {
+    BotToast.showText(
+      text: message,
+      wrapToastAnimation: (controller, cancel, Widget child) =>
+          CustomAnimationWidget(
+        controller: controller,
+        child: child,
       ),
     );
   }

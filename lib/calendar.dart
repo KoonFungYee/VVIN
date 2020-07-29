@@ -1102,6 +1102,9 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
               PageRouteTransition(
                 animationType: AnimationType.scale,
                 builder: (context) => CalendarEvent(
+                  edit: (DateTime.now().isBefore(DateTime.parse(dateSelected)) ||
+                      DateTime.now().toString().substring(0, 10) ==
+                          dateSelected),
                   data: _selectedEvents[i],
                   userData: widget.userData,
                 ),
