@@ -868,15 +868,15 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
       type = notificationTime.split(' ')[1];
       switch (type) {
         case 'minutes':
-          notiTime = start.subtract(
+          notiTime = DateTime.parse(time).subtract(
               Duration(minutes: int.parse(notificationTime.split(' ')[0])));
           break;
         case 'hours':
-          notiTime = start.subtract(
+          notiTime = DateTime.parse(time).subtract(
               Duration(hours: int.parse(notificationTime.split(' ')[0])));
           break;
         default:
-          notiTime = start.subtract(
+          notiTime = DateTime.parse(time).subtract(
               Duration(days: int.parse(notificationTime.split(' ')[0])));
       }
       id = int.parse(dataID.substring(

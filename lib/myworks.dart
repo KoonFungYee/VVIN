@@ -2248,62 +2248,89 @@ class _MyWorksState extends State<MyWorks> {
     }).then((res) {
       if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
-        // print(jsonData);
         for (int i = 0; i < jsonData.length; i++) {
-          if (jsonData[i]['date'] ==
-                  DateTime.now().toString().substring(0, 10) ||
-              DateTime.parse(jsonData[i]['date']).isAfter(DateTime.now())) {
-            String handler,
-                title,
-                description,
-                date,
-                startTime,
-                endTime,
-                person,
-                location,
-                notificationTime,
-                createdDate,
-                dataID,
-                time,
-                type;
-            DateTime start, notiTime;
-            for (int j = 0; j < jsonData[i]['data'].length; j++) {
-              handler = jsonData[i]['data'][j][0];
-              title = jsonData[i]['data'][j][2];
-              description = jsonData[i]['data'][j][3];
-              date = jsonData[i]['data'][j][4];
-              startTime = jsonData[i]['data'][j][5];
-              endTime = jsonData[i]['data'][j][6];
-              person = jsonData[i]['data'][j][7];
-              location = jsonData[i]['data'][j][8];
-              notificationTime = jsonData[i]['data'][j][9];
-              createdDate = jsonData[i]['data'][j][10];
-              dataID = jsonData[i]['data'][j][11];
-              int id = int.parse(dataID.substring(3, dataID.length - 3));
-              if (startTime != 'allDay') {
-                start = DateTime.parse(date +
-                    ' ' +
-                    _timeFormat(startTime).toString().substring(11));
-                type = notificationTime.split(' ')[1];
-                switch (type) {
-                  case 'minutes':
-                    notiTime = start.subtract(Duration(
-                        minutes: int.parse(notificationTime.split(' ')[0])));
-                    break;
-                  case 'hours':
-                    notiTime = start.subtract(Duration(
-                        hours: int.parse(notificationTime.split(' ')[0])));
-                    break;
-                  default:
-                    notiTime = start.subtract(Duration(
-                        days: int.parse(notificationTime.split(' ')[0])));
-                }
-              } else {
-                time = date +
-                    ' ' +
-                    _timeFormat(notificationTime).toString().substring(11);
-                notiTime = DateTime.parse(time);
+          String handler,
+              handlerID,
+              title,
+              description,
+              date,
+              startTime,
+              endTime,
+              person,
+              location,
+              notificationTime,
+              createdDate,
+              dataID,
+              time,
+              type;
+          DateTime start, notiTime;
+          for (int j = 0; j < jsonData[i]['data'].length; j++) {
+            handler = jsonData[i]['data'][j][0];
+            handlerID = jsonData[i]['data'][j][1];
+            title = jsonData[i]['data'][j][2];
+            description = jsonData[i]['data'][j][3];
+            date = jsonData[i]['data'][j][4];
+            startTime = jsonData[i]['data'][j][5];
+            endTime = jsonData[i]['data'][j][6];
+            person = jsonData[i]['data'][j][7];
+            location = jsonData[i]['data'][j][8];
+            notificationTime = jsonData[i]['data'][j][9];
+            createdDate = jsonData[i]['data'][j][10];
+            dataID = jsonData[i]['data'][j][11];
+            int id = int.parse(dataID.substring(3, dataID.length - 3));
+            if (startTime != 'allDay' &&
+                handlerID == userID &&
+                DateTime.parse(date +
+                        ' ' +
+                        _timeFormat(startTime).toString().substring(11))
+                    .isAfter(DateTime.now())) {
+              start = DateTime.parse(
+                  date + ' ' + _timeFormat(startTime).toString().substring(11));
+              type = notificationTime.split(' ')[1];
+              switch (type) {
+                case 'minutes':
+                  notiTime = start.subtract(Duration(
+                      minutes: int.parse(notificationTime.split(' ')[0])));
+                  break;
+                case 'hours':
+                  notiTime = start.subtract(Duration(
+                      hours: int.parse(notificationTime.split(' ')[0])));
+                  break;
+                default:
+                  notiTime = start.subtract(Duration(
+                      days: int.parse(notificationTime.split(' ')[0])));
               }
+              String details = createdDate +
+                  "~!" +
+                  title +
+                  "~!" +
+                  description +
+                  "~!" +
+                  date +
+                  "~!" +
+                  startTime +
+                  ' - ' +
+                  endTime +
+                  ' - ' +
+                  handler +
+                  "~!" +
+                  person +
+                  "~!" +
+                  location +
+                  "~!" +
+                  notificationTime;
+              _scheduleNotification1(
+                  id, details, notiTime, jsonData[i]['data'][j]);
+            } else if (startTime == 'allDay' &&
+                handlerID == userID &&
+                DateTime.parse(date +
+                        ' ' +
+                        _timeFormat(notificationTime).toString().substring(11))
+                    .isAfter(DateTime.now())) {
+              time = date +
+                  ' ' +
+                  _timeFormat(notificationTime).toString().substring(11);
+              notiTime = DateTime.parse(time);
               String details = createdDate +
                   "~!" +
                   title +
