@@ -1000,7 +1000,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
 
   YYDialog YYListViewDialogListRadio() {
     return YYDialog().build()
-      ..width = ScreenUtil().setHeight(600)
+      ..width = MediaQuery.of(context).size.width * 0.85
       ..borderRadius = ScreenUtil().setHeight(8)
       ..text(
         padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
@@ -1060,7 +1060,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
           items: radioItems,
           intialValue: 0,
           color: Colors.white,
-          activeColor: Colors.deepPurpleAccent,
+          activeColor: Colors.blue,
           onClickItemListener: (index) {
             selectedName = contactList[index].name;
             selectedPhone = contactList[index].phone;
@@ -1072,14 +1072,14 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
               bottom: ScreenUtil().setHeight(16)),
           gravity: Gravity.right,
           text1: "CANCEL",
-          color1: Colors.deepPurpleAccent,
+          color1: Colors.blue,
           fontSize1: font14,
           fontWeight1: FontWeight.bold,
           onTap1: () {
             _searchController.text = '';
           },
           text2: "OK",
-          color2: Colors.deepPurpleAccent,
+          color2: Colors.blue,
           fontSize2: font14,
           fontWeight2: FontWeight.bold,
           onTap2: () {

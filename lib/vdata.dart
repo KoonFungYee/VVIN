@@ -1701,7 +1701,7 @@ class _VDataState extends State<VData> {
   YYDialog YYListViewDialogListRadio(int index) {
     int index1 = 0;
     return YYDialog().build()
-      ..width = ScreenUtil().setHeight(600)
+      ..width = MediaQuery.of(context).size.width * 0.85
       ..borderRadius = ScreenUtil().setHeight(8)
       ..text(
         padding: EdgeInsets.all(ScreenUtil().setHeight(20)),

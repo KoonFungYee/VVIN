@@ -948,7 +948,7 @@ class _VProfileState extends State<VProfile>
   YYDialog _whatsappType() {
     int type = 0;
     return YYDialog().build()
-      ..width = ScreenUtil().setHeight(560)
+      ..width = MediaQuery.of(context).size.width * 0.85
       ..borderRadius = ScreenUtil().setHeight(8)
       ..text(
         padding: EdgeInsets.all(ScreenUtil().setHeight(20)),

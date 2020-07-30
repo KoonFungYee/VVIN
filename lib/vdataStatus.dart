@@ -520,7 +520,7 @@ class _VDataStatusState extends State<VDataStatus> {
   YYDialog _whatsappType(int index) {
     int type = 0;
     return YYDialog().build()
-      ..width = ScreenUtil().setHeight(560)
+      ..width = MediaQuery.of(context).size.width * 0.85
       ..borderRadius = ScreenUtil().setHeight(8)
       ..text(
         padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
@@ -624,7 +624,7 @@ class _VDataStatusState extends State<VDataStatus> {
   YYDialog YYListViewDialogListRadio(int index) {
     int index1 = 0;
     return YYDialog().build()
-      ..width = ScreenUtil().setHeight(600)
+      ..width = MediaQuery.of(context).size.width * 0.85
       ..borderRadius = ScreenUtil().setHeight(8)
       ..text(
         padding: EdgeInsets.all(ScreenUtil().setHeight(20)),

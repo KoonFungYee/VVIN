@@ -343,19 +343,21 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
           ),
         ),
         body: (ready == false)
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  JumpingText('Loading...'),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.02),
-                  SpinKitRing(
-                    lineWidth: 3,
-                    color: Colors.blue,
-                    size: 30.0,
-                    duration: Duration(milliseconds: 600),
-                  ),
-                ],
-              )
+            ? Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    JumpingText('Loading...'),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                    SpinKitRing(
+                      lineWidth: 3,
+                      color: Colors.blue,
+                      size: 30.0,
+                      duration: Duration(milliseconds: 600),
+                    ),
+                  ],
+                ),
+            )
             : Column(
                 children: <Widget>[
                   Container(

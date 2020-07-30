@@ -989,7 +989,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
 
   YYDialog YYListViewDialogListRadio() {
     return YYDialog().build()
-      ..width = ScreenUtil().setHeight(600)
+      ..width = MediaQuery.of(context).size.width * 0.85
       ..borderRadius = ScreenUtil().setHeight(8)
       ..text(
         padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
