@@ -105,9 +105,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     check();
     _init();
     try {
-      _namecontroller.text = widget.whatsappForward.name;
-      _phonecontroller.text = widget.whatsappForward.phone;
-      seletedVTag = widget.whatsappForward.vtag;
+      _namecontroller.text = widget.whatsappForward.name??'';
+      _phonecontroller.text = widget.whatsappForward.phone??'';
+      seletedVTag = widget.whatsappForward.vtag?? [];
     } catch (e) {}
     list.clear();
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
@@ -265,7 +265,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
               ? 'allDay'
               : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
