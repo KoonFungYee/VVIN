@@ -1291,7 +1291,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
             }
           }
         }
-        if (_phonecontroller.text.substring(0, 1) != "6") {
+        if (_phonecontroller.text.substring(0, 1) == "0") {
           _phonecontroller.text = "6" + _phonecontroller.text;
         }
         http.post(urlWhatsApp, body: {
