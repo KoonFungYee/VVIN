@@ -1382,6 +1382,8 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin {
         for (var list in calendarEvents) {
           if (list.date == dateSelected) {
             _selectedEvents = list.events;
+          } else {
+            _selectedEvents = [];
           }
         }
       } else {
