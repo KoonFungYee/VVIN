@@ -2225,9 +2225,9 @@ class _MyWorksState extends State<MyWorks> {
       if (level == '0') {
         getBranches();
       }
-      // if (prefs.getString("getreminder") == null) {
+      if (prefs.getString("getreminder") == null) {
         getReminder();
-      // }
+      }
       if (prefs.getString("getCalendar") == null) {
         getCalendar();
       }
@@ -2471,7 +2471,7 @@ class _MyWorksState extends State<MyWorks> {
       "level": level,
       "user_type": userType,
     }).then((res) async {
-      print(res.body);
+      // print(res.body);
       if (res.body != 'nodata') {
         var jsonData = json.decode(res.body);
         Database db = await ReminderDB.instance.database;
@@ -2519,7 +2519,7 @@ class _MyWorksState extends State<MyWorks> {
             }
           }
         }
-        // prefs.setString("getreminder", "1");
+        prefs.setString("getreminder", "1");
       }
     }).catchError((err) {
       _toast("Get reminder error: " + err.toString());
