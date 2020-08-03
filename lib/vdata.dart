@@ -767,7 +767,7 @@ class _VDataState extends State<VData> {
                                       fontSize: font15)),
                             ),
                             Tab(
-                              child: Text('Followu  Up',
+                              child: Text('Follow-Up',
                                   style: TextStyle(
                                       color: Colors.grey.shade600,
                                       fontSize: font15)),
