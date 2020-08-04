@@ -75,7 +75,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   Whatsapp _whatsapp = Whatsapp();
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
-  var _phonecontroller = MaskedTextController(mask: '000000000000');
+  var _phonecontroller = MaskedTextController(mask: '000000000000000000');
   double _scaleFactor = 1.0;
   String urlWhatsApp = ip + "whatsappForward.php";
   File pickedImage;
@@ -1329,7 +1329,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
             ),
           );
         }).catchError((err) {
-          print("WhatsApp Forward error: " + (err).toString());
+          print("WhatsApp Forward error: " + err.toString());
         });
       }
     } else {
