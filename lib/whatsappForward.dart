@@ -105,9 +105,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     check();
     _init();
     try {
-      _namecontroller.text = widget.whatsappForward.name??'';
-      _phonecontroller.text = widget.whatsappForward.phone??'';
-      seletedVTag = widget.whatsappForward.vtag?? [];
+      _namecontroller.text = widget.whatsappForward.name ?? '';
+      _phonecontroller.text = widget.whatsappForward.phone ?? '';
+      seletedVTag = widget.whatsappForward.vtag ?? [];
     } catch (e) {}
     list.clear();
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
@@ -464,25 +464,25 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                               top: ScreenUtil().setHeight(20),
                                               left: ScreenUtil().setWidth(20),
                                               child: Container(
-                                                  width: ScreenUtil()
-                                                      .setWidth(100),
-                                                  height: ScreenUtil()
-                                                      .setHeight(100),
-                                                  decoration: BoxDecoration(
-                                                    shape: BoxShape.rectangle,
-                                                    color: Colors.transparent,
-                                                    borderRadius:
-                                                        BorderRadius.all(
-                                                            Radius.circular(
-                                                                10.0)),
+                                                width:
+                                                    ScreenUtil().setWidth(100),
+                                                height:
+                                                    ScreenUtil().setHeight(100),
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.rectangle,
+                                                  color: Colors.transparent,
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                    Radius.circular(10.0),
                                                   ),
-                                                  child: Icon(
-                                                    FontAwesomeIcons
-                                                        .addressCard,
-                                                    color: Colors.grey,
-                                                    size: ScreenUtil()
-                                                        .setHeight(40),
-                                                  )),
+                                                ),
+                                                child: Icon(
+                                                  FontAwesomeIcons.addressCard,
+                                                  color: Colors.grey,
+                                                  size: ScreenUtil()
+                                                      .setHeight(40),
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),

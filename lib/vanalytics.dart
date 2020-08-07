@@ -13,6 +13,7 @@ import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
+import 'package:google_api_availability/google_api_availability.dart';
 import 'package:intl/intl.dart';
 import 'package:vvin/calendarEvent.dart';
 import 'package:vvin/reminder.dart';
@@ -72,6 +73,8 @@ class _VAnalyticsState extends State<VAnalytics>
   UniLinksType _type = UniLinksType.string;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   GlobalKey<RefreshIndicatorState> refreshKey;
+  GooglePlayServicesAvailability _playStoreAvailability =
+      GooglePlayServicesAvailability.unknown;
   String urlNoti = ip + "notiTotalNumber.php";
   String urlVAnalytics = ip + "vanalytics.php";
   String urlTopViews = ip + "topview.php";
@@ -179,6 +182,7 @@ class _VAnalyticsState extends State<VAnalytics>
     editor = connection = nodata = refresh = false;
     currentTabIndex = load = 0;
     _initialize();
+    checkPlayServices();
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     _firebaseMessaging.onIosSettingsRegistered
@@ -2834,6 +2838,21 @@ class _VAnalyticsState extends State<VAnalytics>
     _toast("This feature need Internet connection");
   }
 
+  Future<void> checkPlayServices([bool showDialog = false]) async {
+    GooglePlayServicesAvailability playStoreAvailability;
+    try {
+      playStoreAvailability = await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability(showDialog);
+    } on PlatformException {
+      playStoreAvailability = GooglePlayServicesAvailability.unknown;
+    }
+    if (this.mounted) {
+      setState(() {
+        _playStoreAvailability = playStoreAvailability;
+      });
+    }
+  }
+
   void _initialize() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("noti") != null) {
@@ -3777,7 +3796,7 @@ class _VAnalyticsState extends State<VAnalytics>
                 actions: <Widget>[
                   FlatButton(
                     child: Text("Update Now"),
-                    onPressed: () => _launchURL(
+                    onPressed: () => launch(
                         'https://apps.apple.com/us/app/vvin/id1502502224'),
                   ),
                   FlatButton(
@@ -3793,8 +3812,12 @@ class _VAnalyticsState extends State<VAnalytics>
                 actions: <Widget>[
                   FlatButton(
                     child: Text("Update Now"),
-                    onPressed: () => _launchURL(
-                        'https://play.google.com/store/apps/details?id=com.my.jtapps.vvin'),
+                    onPressed: () => (_playStoreAvailability.toString() ==
+                            'GooglePlayServicesAvailability.success')
+                        ? launch(
+                            'https://play.google.com/store/apps/details?id=com.my.jtapps.vvin')
+                        : launch(
+                            'https://appgallery1.huawei.com/#/app/C102687175'),
                   ),
                   FlatButton(
                     child: Text("Later"),
@@ -3804,14 +3827,6 @@ class _VAnalyticsState extends State<VAnalytics>
               );
       },
     );
-  }
-
-  _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
   }
 
   void _toast(String message) {

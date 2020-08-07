@@ -44,6 +44,7 @@ List branchList = [];
 List<Branch> branchDetails = [];
 var allData;
 
+// login main layout
 class Login extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -579,6 +580,7 @@ class _LoginPageState extends State<Login> {
   }
 }
 
+// login second/third layout
 class Default extends StatefulWidget {
   @override
   _Default createState() => _Default();

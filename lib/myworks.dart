@@ -38,6 +38,7 @@ import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:google_api_availability/google_api_availability.dart';
 import 'package:vvin/notifications.dart';
 import 'package:vvin/reminderDB.dart';
 import 'package:vvin/vanalytics.dart';
@@ -66,6 +67,8 @@ class _MyWorksState extends State<MyWorks> {
       BehaviorSubject<String>();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+  GooglePlayServicesAvailability _playStoreAvailability =
+      GooglePlayServicesAvailability.unknown;
   String urlNoti = ip + "notiTotalNumber.php";
   String urlMyWorks = ip + "myWorks2.php";
   String urlHandler = ip + "getHandler.php";
@@ -176,6 +179,7 @@ class _MyWorksState extends State<MyWorks> {
     currentTabIndex = 2;
     total = 0;
     checkConnection();
+    checkPlayServices();
     super.initState();
   }
 
@@ -2188,6 +2192,21 @@ class _MyWorksState extends State<MyWorks> {
     }
   }
 
+  Future<void> checkPlayServices([bool showDialog = false]) async {
+    GooglePlayServicesAvailability playStoreAvailability;
+    try {
+      playStoreAvailability = await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability(showDialog);
+    } on PlatformException {
+      playStoreAvailability = GooglePlayServicesAvailability.unknown;
+    }
+    if (this.mounted) {
+      setState(() {
+        _playStoreAvailability = playStoreAvailability;
+      });
+    }
+  }
+
   Future<void> checkConnection() async {
     final _devicePath = await getApplicationDocumentsDirectory();
     location = _devicePath.path.toString();
@@ -3947,8 +3966,12 @@ class _MyWorksState extends State<MyWorks> {
                 actions: <Widget>[
                   FlatButton(
                     child: Text("Update Now"),
-                    onPressed: () => launch(
-                        'https://play.google.com/store/apps/details?id=com.my.jtapps.vvin'),
+                    onPressed: () => (_playStoreAvailability.toString() ==
+                            'GooglePlayServicesAvailability.success')
+                        ? launch(
+                            'https://play.google.com/store/apps/details?id=com.my.jtapps.vvin')
+                        : launch(
+                            'https://appgallery1.huawei.com/#/app/C102687175'),
                   ),
                   FlatButton(
                     child: Text("Later"),

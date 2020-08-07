@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-String ip = 'http://211.25.23.149/api/';
+String ip = 'https://vvinoa.vvin.com/api/';
 double font10 = ScreenUtil().setSp(23, allowFontScalingSelf: false);
 double font11 = ScreenUtil().setSp(25.3, allowFontScalingSelf: false);
 double font12 = ScreenUtil().setSp(27.6, allowFontScalingSelf: false);
