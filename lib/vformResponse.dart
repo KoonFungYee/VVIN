@@ -868,7 +868,7 @@ class _VFormResponseState extends State<VFormResponse> {
         break;
       }
     }
-    if (phoneNo.substring(0, 1) != '6') {
+    if (phoneNo.substring(0, 1) == '0') {
       if (this.mounted) {
         setState(() {
           phoneNo = "+6" + phoneNo.substring(0, 1) + ' ' + phoneNo.substring(1);

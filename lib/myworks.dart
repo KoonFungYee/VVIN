@@ -414,6 +414,717 @@ class _MyWorksState extends State<MyWorks> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
+    YYDialog.init(context);
+    return WillPopScope(
+      onWillPop: _onBackPressAppBar,
+      child: Scaffold(
+        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.white,
+          onTap: onTapped,
+          currentIndex: currentTabIndex,
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.trending_up,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "VAnalytics",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.insert_chart,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "VData",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.assignment,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "My Works",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: (totalNotification != "0")
+                  ? Badge(
+                      position: BadgePosition.topRight(top: -8, right: -5),
+                      animationDuration: Duration(milliseconds: 300),
+                      animationType: BadgeAnimationType.slide,
+                      badgeContent: Text(
+                        '$totalNotification',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ScreenUtil()
+                              .setSp(20, allowFontScalingSelf: false),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      child: Icon(
+                        Icons.notifications,
+                        size: ScreenUtil().setHeight(40),
+                      ),
+                    )
+                  : Icon(
+                      Icons.notifications,
+                      size: ScreenUtil().setHeight(40),
+                    ),
+              title: Text(
+                "Notifications",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.menu,
+                size: ScreenUtil().setHeight(40),
+              ),
+              title: Text(
+                "More",
+                style: TextStyle(
+                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
+                ),
+              ),
+            )
+          ],
+        ),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(
+            ScreenUtil().setHeight(85),
+          ),
+          child: AppBar(
+            brightness: Brightness.light,
+            backgroundColor: Colors.white,
+            elevation: 1,
+            centerTitle: true,
+            title: Text(
+              "My Works",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontSize: font18,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        body: Container(
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: ScreenUtil().setHeight(10),
+              ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Container(
+                      child: Card(
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(
+                              ScreenUtil().setHeight(20),
+                              0,
+                              ScreenUtil().setHeight(20),
+                              0),
+                          height: ScreenUtil().setHeight(80),
+                          child: TextField(
+                            onChanged: _search,
+                            style: TextStyle(
+                              fontSize: font14,
+                            ),
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: ScreenUtil().setHeight(6),
+                              ),
+                              hintText: "Search",
+                              suffix: IconButton(
+                                iconSize: ScreenUtil().setHeight(35),
+                                icon: Icon(Icons.keyboard_hide),
+                                onPressed: () {
+                                  FocusScope.of(context)
+                                      .requestFocus(new FocusNode());
+                                },
+                              ),
+                              suffixIcon: Icon(
+                                Icons.search,
+                                size: ScreenUtil().setHeight(45),
+                              ),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(ScreenUtil().setWidth(10), 0,
+                        ScreenUtil().setHeight(0), 0),
+                    child: Card(
+                      child: InkWell(
+                        onTap: _myWorkfilter,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: EdgeInsets.all(
+                            ScreenUtil().setHeight(15),
+                          ),
+                          child: Icon(
+                            Icons.tune,
+                            size: ScreenUtil().setHeight(45),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: ScreenUtil().setHeight(10),
+              ),
+              (status == true && vtagStatus == true)
+                  ? Container(
+                      padding: EdgeInsets.all(
+                        ScreenUtil().setHeight(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            "QR downloaded: " + totalQR.toString(),
+                            style: TextStyle(fontSize: font12),
+                          ),
+                          // Text(
+                          //   "Link downloaded: " + totalLink.toString(),
+                          //   style: TextStyle(fontSize: font12),
+                          // )
+                        ],
+                      ),
+                    )
+                  : Container(),
+              SizedBox(
+                height: ScreenUtil().setHeight(10),
+              ),
+              (status == true && vtagStatus == true)
+                  ? (nodata == true)
+                      ? Center(
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: EmptyListWidget(
+                                packageImage: PackageImage.Image_2,
+                                // title: 'No Data',
+                                subTitle: 'No Data',
+                                titleTextStyle: Theme.of(context)
+                                    .typography
+                                    .dense
+                                    .display1
+                                    .copyWith(color: Color(0xff9da9c7)),
+                                subtitleTextStyle: Theme.of(context)
+                                    .typography
+                                    .dense
+                                    .body2
+                                    .copyWith(color: Color(0xffabb8d6))),
+                          ),
+                        )
+                      : Flexible(
+                          child: SmartRefresher(
+                            enablePullDown: true,
+                            enablePullUp: false,
+                            header: MaterialClassicHeader(),
+                            footer: CustomFooter(
+                              builder: (BuildContext context, LoadStatus mode) {
+                                Widget body;
+                                if (mode == LoadStatus.idle) {
+                                  if (more == true) {
+                                    body = SpinKitRing(
+                                      lineWidth: 2,
+                                      color: Colors.blue,
+                                      size: 20.0,
+                                      duration: Duration(milliseconds: 600),
+                                    );
+                                  }
+                                } else if (mode == LoadStatus.loading) {
+                                  if (more == true) {
+                                    body = SpinKitRing(
+                                      lineWidth: 2,
+                                      color: Color.fromRGBO(0, 174, 239, 1),
+                                      size: 20.0,
+                                      duration: Duration(milliseconds: 600),
+                                    );
+                                  }
+                                } else if (mode == LoadStatus.failed) {
+                                  body = Text("Load Failed!Click retry!");
+                                } else if (mode == LoadStatus.canLoading) {
+                                  body = Text("release to load more");
+                                } else {
+                                  body = Text("No more Data");
+                                }
+                                return Container(
+                                  height: 55.0,
+                                  child: Center(child: body),
+                                );
+                              },
+                            ),
+                            controller: _refreshController,
+                            onRefresh: _onRefresh,
+                            child: ListView.builder(
+                              itemCount: (connection == false)
+                                  ? offlineLink.length
+                                  : myWorks.length,
+                              itemBuilder: (context, int index) {
+                                return WidgetANimator(
+                                  Card(
+                                    child: Column(
+                                      children: <Widget>[
+                                        Container(
+                                          padding: EdgeInsets.fromLTRB(
+                                              ScreenUtil().setHeight(20),
+                                              ScreenUtil().setHeight(20),
+                                              ScreenUtil().setHeight(20),
+                                              ScreenUtil().setHeight(0)),
+                                          child: Column(
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text(
+                                                    (connection == false)
+                                                        ? offlineLink[index]
+                                                            ['date']
+                                                        : myWorks[index].date,
+                                                    style: TextStyle(
+                                                      fontSize: font12,
+                                                      color: Color.fromRGBO(
+                                                          165, 165, 165, 1),
+                                                    ),
+                                                  ),
+                                                  (level == "0" || level == "4")
+                                                      ? (myWorks[index]
+                                                                      .category !=
+                                                                  "VForm" &&
+                                                              myWorks[index]
+                                                                      .category !=
+                                                                  "VBrochure")
+                                                          ? popupMenuButton(
+                                                              index)
+                                                          : popupMenuButton1(
+                                                              index)
+                                                      : Container(),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height:
+                                                    ScreenUtil().setHeight(10),
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: <Widget>[
+                                                      Text(
+                                                        (connection == false)
+                                                            ? offlineLink[index]
+                                                                ['type']
+                                                            : myWorks[index]
+                                                                .category,
+                                                        style: TextStyle(
+                                                          fontSize: font12,
+                                                          color: Color.fromRGBO(
+                                                              0, 174, 239, 1),
+                                                        ),
+                                                      ),
+                                                      (level == '0' &&
+                                                              myWorks[index]
+                                                                      .branchName !=
+                                                                  '')
+                                                          ? Text(
+                                                              ' (' +
+                                                                  myWorks[index]
+                                                                      .branchName +
+                                                                  ')',
+                                                              style: TextStyle(
+                                                                fontSize:
+                                                                    font12,
+                                                                color: Color
+                                                                    .fromRGBO(
+                                                                        8,
+                                                                        195,
+                                                                        20,
+                                                                        1),
+                                                              ),
+                                                            )
+                                                          : Text(''),
+                                                    ],
+                                                  ),
+                                                  (connection == true)
+                                                      ? Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          children: <Widget>[
+                                                            Text(
+                                                              "Available Offline",
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      font12,
+                                                                  color: Color
+                                                                      .fromRGBO(
+                                                                          153,
+                                                                          153,
+                                                                          153,
+                                                                          1)),
+                                                            )
+                                                          ],
+                                                        )
+                                                      : Container(),
+                                                ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Flexible(
+                                                    child: InkWell(
+                                                      onTap: () {
+                                                        // if (connection !=
+                                                        //     false) {
+                                                        //   _visitURL(index);
+                                                        // }
+                                                      },
+                                                      child: Text(
+                                                        (connection == false)
+                                                            ? offlineLink[index]
+                                                                ['title']
+                                                            : myWorks[index]
+                                                                .title,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                            decoration:
+                                                                TextDecoration
+                                                                    .none,
+                                                            fontSize: font14,
+                                                            color:
+                                                                Color.fromRGBO(
+                                                                    20,
+                                                                    23,
+                                                                    32,
+                                                                    1),
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  _switch(index),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Divider(),
+                                        SizedBox(
+                                          height: ScreenUtil().setHeight(5),
+                                        ),
+                                        Container(
+                                          child: Column(
+                                            children: <Widget>[
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                children: <Widget>[
+                                                  BouncingWidget(
+                                                    scaleFactor: _scaleFactor,
+                                                    onPressed: () {
+                                                      if (connection == true) {
+                                                        _whatsappForward(
+                                                            myWorks[index]
+                                                                .link);
+                                                      } else {
+                                                        _toast(
+                                                            "Offline mode can not WhatsApp Forward");
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      height: ScreenUtil()
+                                                          .setHeight(65),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.22,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                        color: Colors.white,
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          top: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          left: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          right: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          'Forward',
+                                                          style: TextStyle(
+                                                              fontSize: font12,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  BouncingWidget(
+                                                    scaleFactor: _scaleFactor,
+                                                    onPressed: () {
+                                                      _viewQR(index);
+                                                    },
+                                                    child: Container(
+                                                      height: ScreenUtil()
+                                                          .setHeight(65),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.22,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                        color: Colors.white,
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          top: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          left: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          right: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          'QR Code',
+                                                          style: TextStyle(
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1),
+                                                              fontSize: font12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  BouncingWidget(
+                                                    scaleFactor: _scaleFactor,
+                                                    onPressed: () {
+                                                      if (connection != false) {
+                                                        _visitURL(index);
+                                                      } else {
+                                                        _toast(
+                                                            "Please check your Internet Connection");
+                                                      }
+                                                    },
+                                                    child: Container(
+                                                      height: ScreenUtil()
+                                                          .setHeight(65),
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.22,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                        color: Colors.white,
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          top: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          left: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                          right: BorderSide(
+                                                              width: 1,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1)),
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          'Visit URL',
+                                                          style: TextStyle(
+                                                              fontSize: font12,
+                                                              color: Color
+                                                                  .fromRGBO(
+                                                                      0,
+                                                                      174,
+                                                                      239,
+                                                                      1),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              SizedBox(
+                                                height:
+                                                    ScreenUtil().setHeight(20),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                  : Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          JumpingText('Loading...'),
+                          SizedBox(
+                              height:
+                                  MediaQuery.of(context).size.height * 0.02),
+                          SpinKitRing(
+                            lineWidth: 3,
+                            color: Colors.blue,
+                            size: 30.0,
+                            duration: Duration(milliseconds: 600),
+                          ),
+                        ],
+                      ),
+                    ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _onRefresh() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
@@ -706,13 +1417,11 @@ class _MyWorksState extends State<MyWorks> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: <Widget>[
-                                          Flexible(
-                                            child: Text(
-                                                "Assign selected links to branch",
-                                                style: TextStyle(
-                                                    color: Colors.grey.shade600,
-                                                    fontSize: font13)),
-                                          ),
+                                          Text(
+                                              "Assign selected links to branch",
+                                              style: TextStyle(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: font13)),
                                         ],
                                       ),
                                       SizedBox(
@@ -2147,30 +2856,31 @@ class _MyWorksState extends State<MyWorks> {
           }
         }
       } else {
-        var path = location +
-            "/" +
-            myWorks[index].category +
-            myWorks[index].id +
-            "/VVIN.html";
-        if (File(path).existsSync() == true) {
-          await OpenFile.open(path);
-        } else {
-          _toast("This offline link still in downloading");
-        }
+        // var path = location +
+        //     "/" +
+        //     myWorks[index].category +
+        //     myWorks[index].id +
+        //     "/VVIN.html";
+        // if (File(path).existsSync() == true) {
+        //   await OpenFile.open(path);
+        // } else {
+          _toast("Not available for offline mode");
+        // }
       }
-    } else {
-      var path = location +
-          "/" +
-          offlineLink[index]['type'] +
-          offlineLink[index]['linkid'] +
-          "/VVIN.html";
-      if (File(path).existsSync() == true) {
-        await OpenFile.open(path);
-      } else {
-        _toast(
-            "This offline link not in your device, please enter the page again in online mode to complete the offline link download.");
-      }
-    }
+    } 
+    // else {
+    //   var path = location +
+    //       "/" +
+    //       offlineLink[index]['type'] +
+    //       offlineLink[index]['linkid'] +
+    //       "/VVIN.html";
+    //   if (File(path).existsSync() == true) {
+    //     await OpenFile.open(path);
+    //   } else {
+    //     _toast(
+    //         "This offline link not in your device, please enter the page again in online mode to complete the offline link download.");
+    //   }
+    // }
   }
 
   Future<void> setData() async {
@@ -2739,7 +3449,7 @@ class _MyWorksState extends State<MyWorks> {
 
   Future<void> _save() async {
     if (offlineLink.length == 0) {
-      _download();
+      // _download();
       _downloadImage();
       setData();
     } else {
@@ -3183,718 +3893,6 @@ class _MyWorksState extends State<MyWorks> {
           CustomAnimationWidget(
         controller: controller,
         child: child,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ScreenUtil.init(context, width: 750, height: 1334, allowFontScaling: false);
-    YYDialog.init(context);
-    return WillPopScope(
-      onWillPop: _onBackPressAppBar,
-      child: Scaffold(
-        backgroundColor: Color.fromRGBO(235, 235, 255, 1),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          onTap: onTapped,
-          currentIndex: currentTabIndex,
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.trending_up,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "VAnalytics",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.insert_chart,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "VData",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.assignment,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "My Works",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: (totalNotification != "0")
-                  ? Badge(
-                      position: BadgePosition.topRight(top: -8, right: -5),
-                      animationDuration: Duration(milliseconds: 300),
-                      animationType: BadgeAnimationType.slide,
-                      badgeContent: Text(
-                        '$totalNotification',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: ScreenUtil()
-                              .setSp(20, allowFontScalingSelf: false),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      child: Icon(
-                        Icons.notifications,
-                        size: ScreenUtil().setHeight(40),
-                      ),
-                    )
-                  : Icon(
-                      Icons.notifications,
-                      size: ScreenUtil().setHeight(40),
-                    ),
-              title: Text(
-                "Notifications",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.menu,
-                size: ScreenUtil().setHeight(40),
-              ),
-              title: Text(
-                "More",
-                style: TextStyle(
-                  fontSize: ScreenUtil().setSp(24, allowFontScalingSelf: false),
-                ),
-              ),
-            )
-          ],
-        ),
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(
-            ScreenUtil().setHeight(85),
-          ),
-          child: AppBar(
-            brightness: Brightness.light,
-            backgroundColor: Colors.white,
-            elevation: 1,
-            centerTitle: true,
-            title: Text(
-              "My Works",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontSize: font18,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        body: Container(
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: ScreenUtil().setHeight(10),
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      child: Card(
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(
-                              ScreenUtil().setHeight(20),
-                              0,
-                              ScreenUtil().setHeight(20),
-                              0),
-                          height: ScreenUtil().setHeight(80),
-                          child: TextField(
-                            onChanged: _search,
-                            style: TextStyle(
-                              fontSize: font14,
-                            ),
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: ScreenUtil().setHeight(6),
-                              ),
-                              hintText: "Search",
-                              suffix: IconButton(
-                                iconSize: ScreenUtil().setHeight(35),
-                                icon: Icon(Icons.keyboard_hide),
-                                onPressed: () {
-                                  FocusScope.of(context)
-                                      .requestFocus(new FocusNode());
-                                },
-                              ),
-                              suffixIcon: Icon(
-                                Icons.search,
-                                size: ScreenUtil().setHeight(45),
-                              ),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(ScreenUtil().setWidth(10), 0,
-                        ScreenUtil().setHeight(0), 0),
-                    child: Card(
-                      child: InkWell(
-                        onTap: _myWorkfilter,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: EdgeInsets.all(
-                            ScreenUtil().setHeight(15),
-                          ),
-                          child: Icon(
-                            Icons.tune,
-                            size: ScreenUtil().setHeight(45),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: ScreenUtil().setHeight(10),
-              ),
-              (status == true && vtagStatus == true)
-                  ? Container(
-                      padding: EdgeInsets.all(
-                        ScreenUtil().setHeight(10),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            "QR downloaded: " + totalQR.toString(),
-                            style: TextStyle(fontSize: font12),
-                          ),
-                          Text(
-                            "Link downloaded: " + totalLink.toString(),
-                            style: TextStyle(fontSize: font12),
-                          )
-                        ],
-                      ),
-                    )
-                  : Container(),
-              SizedBox(
-                height: ScreenUtil().setHeight(10),
-              ),
-              (status == true && vtagStatus == true)
-                  ? (nodata == true)
-                      ? Center(
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.6,
-                            child: EmptyListWidget(
-                                packageImage: PackageImage.Image_2,
-                                // title: 'No Data',
-                                subTitle: 'No Data',
-                                titleTextStyle: Theme.of(context)
-                                    .typography
-                                    .dense
-                                    .display1
-                                    .copyWith(color: Color(0xff9da9c7)),
-                                subtitleTextStyle: Theme.of(context)
-                                    .typography
-                                    .dense
-                                    .body2
-                                    .copyWith(color: Color(0xffabb8d6))),
-                          ),
-                        )
-                      : Flexible(
-                          child: SmartRefresher(
-                            enablePullDown: true,
-                            enablePullUp: false,
-                            header: MaterialClassicHeader(),
-                            footer: CustomFooter(
-                              builder: (BuildContext context, LoadStatus mode) {
-                                Widget body;
-                                if (mode == LoadStatus.idle) {
-                                  if (more == true) {
-                                    body = SpinKitRing(
-                                      lineWidth: 2,
-                                      color: Colors.blue,
-                                      size: 20.0,
-                                      duration: Duration(milliseconds: 600),
-                                    );
-                                  }
-                                } else if (mode == LoadStatus.loading) {
-                                  if (more == true) {
-                                    body = SpinKitRing(
-                                      lineWidth: 2,
-                                      color: Color.fromRGBO(0, 174, 239, 1),
-                                      size: 20.0,
-                                      duration: Duration(milliseconds: 600),
-                                    );
-                                  }
-                                } else if (mode == LoadStatus.failed) {
-                                  body = Text("Load Failed!Click retry!");
-                                } else if (mode == LoadStatus.canLoading) {
-                                  body = Text("release to load more");
-                                } else {
-                                  body = Text("No more Data");
-                                }
-                                return Container(
-                                  height: 55.0,
-                                  child: Center(child: body),
-                                );
-                              },
-                            ),
-                            controller: _refreshController,
-                            onRefresh: _onRefresh,
-                            // onLoading: _onLoading,
-                            child: ListView.builder(
-                              itemCount: (connection == false)
-                                  ? offlineLink.length
-                                  : myWorks.length,
-                              itemBuilder: (context, int index) {
-                                return WidgetANimator(
-                                  Card(
-                                    child: Column(
-                                      children: <Widget>[
-                                        Container(
-                                          padding: EdgeInsets.fromLTRB(
-                                              ScreenUtil().setHeight(20),
-                                              ScreenUtil().setHeight(20),
-                                              ScreenUtil().setHeight(20),
-                                              ScreenUtil().setHeight(0)),
-                                          child: Column(
-                                            children: <Widget>[
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    (connection == false)
-                                                        ? offlineLink[index]
-                                                            ['date']
-                                                        : myWorks[index].date,
-                                                    style: TextStyle(
-                                                      fontSize: font12,
-                                                      color: Color.fromRGBO(
-                                                          165, 165, 165, 1),
-                                                    ),
-                                                  ),
-                                                  (level == "0" || level == "4")
-                                                      ? (myWorks[index]
-                                                                      .category !=
-                                                                  "VForm" &&
-                                                              myWorks[index]
-                                                                      .category !=
-                                                                  "VBrochure")
-                                                          ? popupMenuButton(
-                                                              index)
-                                                          : popupMenuButton1(
-                                                              index)
-                                                      : Container(),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height:
-                                                    ScreenUtil().setHeight(10),
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: <Widget>[
-                                                      Text(
-                                                        (connection == false)
-                                                            ? offlineLink[index]
-                                                                ['type']
-                                                            : myWorks[index]
-                                                                .category,
-                                                        style: TextStyle(
-                                                          fontSize: font12,
-                                                          color: Color.fromRGBO(
-                                                              0, 174, 239, 1),
-                                                        ),
-                                                      ),
-                                                      (level == '0' &&
-                                                              myWorks[index]
-                                                                      .branchName !=
-                                                                  '')
-                                                          ? Text(
-                                                              ' (' +
-                                                                  myWorks[index]
-                                                                      .branchName +
-                                                                  ')',
-                                                              style: TextStyle(
-                                                                fontSize:
-                                                                    font12,
-                                                                color: Color
-                                                                    .fromRGBO(
-                                                                        8,
-                                                                        195,
-                                                                        20,
-                                                                        1),
-                                                              ),
-                                                            )
-                                                          : Text(''),
-                                                    ],
-                                                  ),
-                                                  (connection == true)
-                                                      ? Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .start,
-                                                          children: <Widget>[
-                                                            Text(
-                                                              "Available Offline",
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      font12,
-                                                                  color: Color
-                                                                      .fromRGBO(
-                                                                          153,
-                                                                          153,
-                                                                          153,
-                                                                          1)),
-                                                            )
-                                                          ],
-                                                        )
-                                                      : Container(),
-                                                ],
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: <Widget>[
-                                                  Flexible(
-                                                    child: InkWell(
-                                                      onTap: () {
-                                                        // if (connection !=
-                                                        //     false) {
-                                                        //   _visitURL(index);
-                                                        // }
-                                                      },
-                                                      child: Text(
-                                                        (connection == false)
-                                                            ? offlineLink[index]
-                                                                ['title']
-                                                            : myWorks[index]
-                                                                .title,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                            decoration:
-                                                                TextDecoration
-                                                                    .none,
-                                                            fontSize: font14,
-                                                            color:
-                                                                Color.fromRGBO(
-                                                                    20,
-                                                                    23,
-                                                                    32,
-                                                                    1),
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  _switch(index),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Divider(),
-                                        SizedBox(
-                                          height: ScreenUtil().setHeight(5),
-                                        ),
-                                        Container(
-                                          child: Column(
-                                            children: <Widget>[
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: <Widget>[
-                                                  BouncingWidget(
-                                                    scaleFactor: _scaleFactor,
-                                                    onPressed: () {
-                                                      if (connection == true) {
-                                                        _whatsappForward(
-                                                            myWorks[index]
-                                                                .link);
-                                                      } else {
-                                                        _toast(
-                                                            "Offline mode can not WhatsApp Forward");
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      height: ScreenUtil()
-                                                          .setHeight(65),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.22,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                        color: Colors.white,
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          top: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          left: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          right: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                        ),
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          'Forward',
-                                                          style: TextStyle(
-                                                              fontSize: font12,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  BouncingWidget(
-                                                    scaleFactor: _scaleFactor,
-                                                    onPressed: () {
-                                                      _viewQR(index);
-                                                    },
-                                                    child: Container(
-                                                      height: ScreenUtil()
-                                                          .setHeight(65),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.22,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                        color: Colors.white,
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          top: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          left: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          right: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                        ),
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          'QR Code',
-                                                          style: TextStyle(
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
-                                                              fontSize: font12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  BouncingWidget(
-                                                    scaleFactor: _scaleFactor,
-                                                    onPressed: () {
-                                                      if (connection != false) {
-                                                        _visitURL(index);
-                                                      } else {
-                                                        _toast(
-                                                            "Please check your Internet Connection");
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      height: ScreenUtil()
-                                                          .setHeight(65),
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width *
-                                                              0.22,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5.0),
-                                                        color: Colors.white,
-                                                        border: Border(
-                                                          bottom: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          top: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          left: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                          right: BorderSide(
-                                                              width: 1,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1)),
-                                                        ),
-                                                      ),
-                                                      child: Center(
-                                                        child: Text(
-                                                          'Visit URL',
-                                                          style: TextStyle(
-                                                              fontSize: font12,
-                                                              color: Color
-                                                                  .fromRGBO(
-                                                                      0,
-                                                                      174,
-                                                                      239,
-                                                                      1),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                height:
-                                                    ScreenUtil().setHeight(20),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        )
-                  : Flexible(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          JumpingText('Loading...'),
-                          SizedBox(
-                              height:
-                                  MediaQuery.of(context).size.height * 0.02),
-                          SpinKitRing(
-                            lineWidth: 3,
-                            color: Colors.blue,
-                            size: 30.0,
-                            duration: Duration(milliseconds: 600),
-                          ),
-                        ],
-                      ),
-                    ),
-            ],
-          ),
-        ),
       ),
     );
   }
