@@ -87,6 +87,7 @@ class _MyWorksState extends State<MyWorks> {
   final TextEditingController _namecontroller = TextEditingController();
   final TextEditingController _phonecontroller = TextEditingController();
   final TextEditingController _remarkcontroller = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   double _scaleFactor = 1.0;
   List<String> allHandler = [];
   List<Branch> branchList = [];
@@ -179,7 +180,6 @@ class _MyWorksState extends State<MyWorks> {
     currentTabIndex = 2;
     total = 0;
     checkConnection();
-    checkPlayServices();
     super.initState();
   }
 
@@ -546,7 +546,10 @@ class _MyWorksState extends State<MyWorks> {
                               0),
                           height: ScreenUtil().setHeight(80),
                           child: TextField(
-                            onChanged: _search,
+                            controller: _searchController,
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.go,
+                            onSubmitted: (value) => _search(value),
                             style: TextStyle(
                               fontSize: font14,
                             ),
@@ -563,9 +566,15 @@ class _MyWorksState extends State<MyWorks> {
                                       .requestFocus(new FocusNode());
                                 },
                               ),
-                              suffixIcon: Icon(
-                                Icons.search,
-                                size: ScreenUtil().setHeight(45),
+                              suffixIcon: BouncingWidget(
+                                scaleFactor: _scaleFactor,
+                                onPressed: () {
+                                  _search(_searchController.text);
+                                },
+                                child: Icon(
+                                  Icons.search,
+                                  size: ScreenUtil().setHeight(50),
+                                ),
                               ),
                               border: InputBorder.none,
                             ),
@@ -2864,10 +2873,10 @@ class _MyWorksState extends State<MyWorks> {
         // if (File(path).existsSync() == true) {
         //   await OpenFile.open(path);
         // } else {
-          _toast("Not available for offline mode");
+        _toast("Not available for offline mode");
         // }
       }
-    } 
+    }
     // else {
     //   var path = location +
     //       "/" +
@@ -2899,21 +2908,6 @@ class _MyWorksState extends State<MyWorks> {
               '","' +
               myWorks[index].id +
               '")');
-    }
-  }
-
-  Future<void> checkPlayServices([bool showDialog = false]) async {
-    GooglePlayServicesAvailability playStoreAvailability;
-    try {
-      playStoreAvailability = await GoogleApiAvailability.instance
-          .checkGooglePlayServicesAvailability(showDialog);
-    } on PlatformException {
-      playStoreAvailability = GooglePlayServicesAvailability.unknown;
-    }
-    if (this.mounted) {
-      setState(() {
-        _playStoreAvailability = playStoreAvailability;
-      });
     }
   }
 
@@ -3544,6 +3538,7 @@ class _MyWorksState extends State<MyWorks> {
   }
 
   Future<void> _search(String value) async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     if (status == false) {
       _toast("Please wait for loading");
     } else {
@@ -3552,10 +3547,10 @@ class _MyWorksState extends State<MyWorks> {
           search = value;
         });
       }
+      myWorks.clear();
       switch (category) {
         case "all":
           {
-            myWorks.clear();
             if (connection == true) {
               for (int i = 0; i < myWorks1.length; i++) {
                 if (myWorks1[i]
@@ -3596,7 +3591,6 @@ class _MyWorksState extends State<MyWorks> {
 
         case "vcard":
           {
-            myWorks.clear();
             if (connection == true) {
               for (int i = 0; i < myWorks1.length; i++) {
                 if (myWorks1[i]
@@ -3640,7 +3634,6 @@ class _MyWorksState extends State<MyWorks> {
 
         case "vflex":
           {
-            myWorks.clear();
             if (connection == true) {
               for (int i = 0; i < myWorks1.length; i++) {
                 if (myWorks1[i]
@@ -3684,7 +3677,6 @@ class _MyWorksState extends State<MyWorks> {
 
         case "vcatalogue":
           {
-            myWorks.clear();
             if (connection == true) {
               for (int i = 0; i < myWorks1.length; i++) {
                 if (myWorks1[i]
@@ -3725,6 +3717,89 @@ class _MyWorksState extends State<MyWorks> {
             }
           }
           break;
+
+        case "vbrochure":
+          {
+            if (connection == true) {
+              for (int i = 0; i < myWorks1.length; i++) {
+                if (myWorks1[i]
+                        .title
+                        .toLowerCase()
+                        .contains(value.toLowerCase()) &&
+                    myWorks1[i].category == "VBrochure") {
+                  Myworks mywork = Myworks(
+                      date: myWorks1[i].date,
+                      title: myWorks1[i].title,
+                      urlName: myWorks1[i].urlName,
+                      link: myWorks1[i].link,
+                      category: myWorks1[i].category,
+                      qr: myWorks1[i].qr,
+                      id: myWorks1[i].id,
+                      handlers: myWorks1[i].handlers,
+                      branchID: myWorks1[i].branchID ?? '',
+                      branchName: myWorks1[i].branchName ?? '',
+                      offLine: false);
+                  myWorks.add(mywork);
+                }
+              }
+              if (this.mounted) {
+                setState(() {
+                  connection = true;
+                });
+              }
+            } else {
+              offlineLink = await db.rawQuery(
+                  "SELECT * FROM myworks WHERE type = 'VBrochure' AND title LIKE '%" +
+                      value +
+                      "%'");
+              if (this.mounted) {
+                setState(() {
+                  connection = false;
+                });
+              }
+            }
+          }
+          break;
+
+        default:
+          if (connection == true) {
+            for (int i = 0; i < myWorks1.length; i++) {
+              if (myWorks1[i]
+                      .title
+                      .toLowerCase()
+                      .contains(value.toLowerCase()) &&
+                  myWorks1[i].category == "VForm") {
+                Myworks mywork = Myworks(
+                    date: myWorks1[i].date,
+                    title: myWorks1[i].title,
+                    urlName: myWorks1[i].urlName,
+                    link: myWorks1[i].link,
+                    category: myWorks1[i].category,
+                    qr: myWorks1[i].qr,
+                    id: myWorks1[i].id,
+                    handlers: myWorks1[i].handlers,
+                    branchID: myWorks1[i].branchID ?? '',
+                    branchName: myWorks1[i].branchName ?? '',
+                    offLine: false);
+                myWorks.add(mywork);
+              }
+            }
+            if (this.mounted) {
+              setState(() {
+                connection = true;
+              });
+            }
+          } else {
+            offlineLink = await db.rawQuery(
+                "SELECT * FROM myworks WHERE type = 'VForm' AND title LIKE '%" +
+                    value +
+                    "%'");
+            if (this.mounted) {
+              setState(() {
+                connection = false;
+              });
+            }
+          }
       }
     }
   }
@@ -3897,10 +3972,23 @@ class _MyWorksState extends State<MyWorks> {
     );
   }
 
-  void checkVersion() {
+  Future<void> checkVersion([bool showDialog = false]) async {
+    GooglePlayServicesAvailability playStoreAvailability;
+    try {
+      playStoreAvailability = await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability(showDialog);
+    } on PlatformException {
+      playStoreAvailability = GooglePlayServicesAvailability.unknown;
+    }
+    _playStoreAvailability = playStoreAvailability;
     String system;
     if (Platform.isAndroid) {
-      system = "android";
+      if (_playStoreAvailability.toString() ==
+          'GooglePlayServicesAvailability.success') {
+        system = "android";
+      } else {
+        system = "huawei";
+      }
     } else {
       system = "ios";
     }

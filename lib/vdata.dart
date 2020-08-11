@@ -6,6 +6,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:empty_widget/empty_widget.dart';
+import 'package:fake_whatsapp/fake_whatsapp.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -70,6 +71,7 @@ class _VDataState extends State<VData> {
       RefreshController(initialRefresh: false);
   StreamSubscription _sub;
   UniLinksType _type = UniLinksType.string;
+  Whatsapp _whatsapp = Whatsapp();
   bool connection,
       nodata,
       link,
@@ -1671,10 +1673,19 @@ class _VDataState extends State<VData> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
+      bool whatsapp = await _whatsapp.isWhatsappInstalled();
       if (connection == true) {
-        FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
+        if (whatsapp == true) {
+          FlutterOpenWhatsapp.sendSingleMessage(vDataDetails[index].phoneNo, "");
+        } else {
+          await launch('https://api.whatsapp.com/send?phone=' + vDataDetails[index].phoneNo);
+        }
       } else {
-        FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
+        if (whatsapp == true) {
+          FlutterOpenWhatsapp.sendSingleMessage(offlineVData[index]['phone'], "");
+        } else {
+          await launch('https://api.whatsapp.com/send?phone=' + offlineVData[index]['phone']);
+        }
       }
     } else {
       _toast("This feature need Internet connection");

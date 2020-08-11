@@ -4,6 +4,7 @@ import 'package:awesome_page_transitions/awesome_page_transitions.dart';
 import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:fake_whatsapp/fake_whatsapp.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -97,6 +98,7 @@ class _VProfileState extends State<VProfile>
   UniLinksType _type = UniLinksType.string;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TabController controller;
+  Whatsapp _whatsapp = Whatsapp();
   String urlVProfile = ip + "vprofile.php";
   String urlHandler = ip + "handler.php";
   String urlVTag = ip + "vtag.php";
@@ -374,9 +376,13 @@ class _VProfileState extends State<VProfile>
           data.add(description);
           String date = list[3];
           data.add(date);
-          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -998,7 +1004,13 @@ class _VProfileState extends State<VProfile>
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.wifi ||
         connectivityResult == ConnectivityResult.mobile) {
-      FlutterOpenWhatsapp.sendSingleMessage(widget.vdata.phoneNo, "");
+      bool whatsapp = await _whatsapp.isWhatsappInstalled();
+      if (whatsapp == true) {
+        FlutterOpenWhatsapp.sendSingleMessage(widget.vdata.phoneNo, "");
+      } else {
+        await launch(
+            'https://api.whatsapp.com/send?phone=' + widget.vdata.phoneNo);
+      }
     } else {
       _toast("No Internet Connection");
     }

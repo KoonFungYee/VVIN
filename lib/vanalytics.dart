@@ -182,7 +182,6 @@ class _VAnalyticsState extends State<VAnalytics>
     editor = connection = nodata = refresh = false;
     currentTabIndex = load = 0;
     _initialize();
-    checkPlayServices();
     _firebaseMessaging.requestNotificationPermissions(
         const IosNotificationSettings(sound: true, badge: true, alert: true));
     _firebaseMessaging.onIosSettingsRegistered
@@ -2838,21 +2837,6 @@ class _VAnalyticsState extends State<VAnalytics>
     _toast("This feature need Internet connection");
   }
 
-  Future<void> checkPlayServices([bool showDialog = false]) async {
-    GooglePlayServicesAvailability playStoreAvailability;
-    try {
-      playStoreAvailability = await GoogleApiAvailability.instance
-          .checkGooglePlayServicesAvailability(showDialog);
-    } on PlatformException {
-      playStoreAvailability = GooglePlayServicesAvailability.unknown;
-    }
-    if (this.mounted) {
-      setState(() {
-        _playStoreAvailability = playStoreAvailability;
-      });
-    }
-  }
-
   void _initialize() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("noti") != null) {
@@ -3545,15 +3529,28 @@ class _VAnalyticsState extends State<VAnalytics>
     });
   }
 
-  void getVanalyticsData() {
+  Future<void> getVanalyticsData([bool showDialog = false]) async {
     if (this.mounted) {
       setState(() {
         vanalytic = false;
       });
     }
+    GooglePlayServicesAvailability playStoreAvailability;
+    try {
+      playStoreAvailability = await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability(showDialog);
+    } on PlatformException {
+      playStoreAvailability = GooglePlayServicesAvailability.unknown;
+    }
+    _playStoreAvailability = playStoreAvailability;
     String system;
     if (Platform.isAndroid) {
-      system = "android";
+      if (_playStoreAvailability.toString() ==
+          'GooglePlayServicesAvailability.success') {
+        system = "android";
+      } else {
+        system = "huawei";
+      }
     } else {
       system = "ios";
     }
@@ -3773,7 +3770,7 @@ class _VAnalyticsState extends State<VAnalytics>
     }
   }
 
-  versionCheck(context) async {
+  void versionCheck(context) async {
     final PackageInfo info = await PackageInfo.fromPlatform();
     currentVersion = info.version.trim();
     if (newVersion != currentVersion) {
@@ -3781,7 +3778,7 @@ class _VAnalyticsState extends State<VAnalytics>
     }
   }
 
-  _showVersionDialog(context) async {
+  void _showVersionDialog(context) async {
     await showDialog<String>(
       context: context,
       barrierDismissible: false,

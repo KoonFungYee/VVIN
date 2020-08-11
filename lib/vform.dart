@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:bot_toast/bot_toast.dart';
+import 'package:bouncing_widget/bouncing_widget.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:empty_widget/empty_widget.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -61,6 +62,7 @@ class _VFormState extends State<VForm> {
       BehaviorSubject<ReceivedNotification>();
   final BehaviorSubject<String> selectNotificationSubject =
       BehaviorSubject<String>();
+  final TextEditingController _searchController = TextEditingController();
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   StreamSubscription _sub;
@@ -73,7 +75,7 @@ class _VFormState extends State<VForm> {
   String now, total, search, companyID, userID, branchID, userType, level;
   bool nodata, more, ready;
   List vform = [];
-  
+  double _scaleFactor = 1.0;
 
   @override
   void initState() {
@@ -235,9 +237,13 @@ class _VFormState extends State<VForm> {
           data.add(description);
           String date = list[3];
           data.add(date);
-          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -339,7 +345,10 @@ class _VFormState extends State<VForm> {
                   ),
                   height: ScreenUtil().setHeight(75),
                   child: TextField(
-                    onChanged: _search,
+                    controller: _searchController,
+                    keyboardType: TextInputType.text,
+                    textInputAction: TextInputAction.go,
+                    onSubmitted: (value) => _search(value),
                     style: TextStyle(
                       fontSize: font14,
                     ),
@@ -355,9 +364,15 @@ class _VFormState extends State<VForm> {
                           FocusScope.of(context).requestFocus(new FocusNode());
                         },
                       ),
-                      suffixIcon: Icon(
-                        Icons.search,
-                        size: ScreenUtil().setHeight(50),
+                      suffixIcon: BouncingWidget(
+                        scaleFactor: _scaleFactor,
+                        onPressed: () {
+                          _search(_searchController.text);
+                        },
+                        child: Icon(
+                          Icons.search,
+                          size: ScreenUtil().setHeight(50),
+                        ),
                       ),
                       border: InputBorder.none,
                     ),
@@ -541,6 +556,7 @@ class _VFormState extends State<VForm> {
   }
 
   Future<void> _search(String value) async {
+    FocusScope.of(context).requestFocus(new FocusNode());
     if (this.mounted) {
       setState(() {
         search = value.toLowerCase();
@@ -565,6 +581,7 @@ class _VFormState extends State<VForm> {
             setState(() {
               nodata = true;
               ready = true;
+              total = '0';
             });
           }
         } else {
