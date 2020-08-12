@@ -1271,7 +1271,6 @@ class _VProfileState extends State<VProfile>
                                 color: Color.fromRGBO(235, 235, 255, 1),
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(10))),
-                            height: MediaQuery.of(context).size.height * 0.2,
                             child: TextField(
                               style: TextStyle(
                                 fontSize: font14,
@@ -4516,6 +4515,8 @@ class _ImageScreenState extends State<ImageScreen> {
                     tag: 'imageHero',
                     child: Container(
                       child: PhotoView(
+                        minScale: 0.3,
+                        maxScale: 3.0,
                         imageProvider: CachedNetworkImageProvider(widget.image),
                       ),
                     ),

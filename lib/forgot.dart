@@ -131,7 +131,7 @@ class _Forgot extends State<Forgot> {
                         contentPadding:
                             EdgeInsets.all(ScreenUtil().setHeight(10)),
                         border: OutlineInputBorder(
-                            borderSide: new BorderSide(color: Colors.grey)),
+                            borderSide: BorderSide(color: Colors.grey)),
                       ),
                     ),
                   ),

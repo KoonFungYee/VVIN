@@ -14,7 +14,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:progress_indicators/progress_indicators.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttericon/linecons_icons.dart';
@@ -357,34 +356,22 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                 SizedBox(height: ScreenUtil().setHeight(5)),
                 Container(
                   height: ScreenUtil().setHeight(60),
-                  padding: EdgeInsets.all(0.5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(
-                        color: Colors.grey.shade400, style: BorderStyle.solid),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: TextField(
-                          style: TextStyle(
-                            fontSize: font14,
-                          ),
-                          controller: _titleController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            hintText: 'Title',
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.only(
-                                left: ScreenUtil().setHeight(10),
-                                bottom: ScreenUtil().setHeight(20),
-                                top: ScreenUtil().setHeight(-15),
-                                right: ScreenUtil().setHeight(20)),
-                          ),
-                        ),
+                  color: Colors.white,
+                  child: TextField(
+                    style: TextStyle(
+                      height: 1,
+                      fontSize: font14,
+                    ),
+                    controller: _titleController,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      hintText: 'Title',
+                      contentPadding:
+                          EdgeInsets.only(left: ScreenUtil().setHeight(10)),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 SizedBox(height: ScreenUtil().setHeight(20)),
@@ -401,36 +388,24 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                 ),
                 SizedBox(height: ScreenUtil().setHeight(5)),
                 Container(
-                  height: ScreenUtil().setHeight(220),
-                  padding: EdgeInsets.all(0.5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(
-                        color: Colors.grey.shade400, style: BorderStyle.solid),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: TextField(
-                          maxLines: 5,
-                          style: TextStyle(
-                            fontSize: font14,
-                          ),
-                          controller: _descriptionController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            hintText: 'Add description here',
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.only(
-                                left: ScreenUtil().setHeight(10),
-                                bottom: ScreenUtil().setHeight(20),
-                                top: ScreenUtil().setHeight(-15),
-                                right: ScreenUtil().setHeight(20)),
-                          ),
-                        ),
+                  color: Colors.white,
+                  child: TextField(
+                    maxLines: 3,
+                    style: TextStyle(
+                      height: 1,
+                      fontSize: font14,
+                    ),
+                    controller: _descriptionController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      hintText: 'Add description here',
+                      contentPadding: EdgeInsets.only(
+                          left: ScreenUtil().setHeight(10),
+                          top: ScreenUtil().setHeight(20)),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 SizedBox(height: ScreenUtil().setHeight(20)),
@@ -595,34 +570,22 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                 SizedBox(height: ScreenUtil().setHeight(5)),
                 Container(
                   height: ScreenUtil().setHeight(60),
-                  padding: EdgeInsets.all(0.5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(
-                        color: Colors.grey.shade400, style: BorderStyle.solid),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: TextField(
-                          style: TextStyle(
-                            fontSize: font14,
-                          ),
-                          controller: _meetWithController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            hintText: 'Client\'s Name',
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.only(
-                                left: ScreenUtil().setHeight(10),
-                                bottom: ScreenUtil().setHeight(20),
-                                top: ScreenUtil().setHeight(-15),
-                                right: ScreenUtil().setHeight(20)),
-                          ),
-                        ),
+                  color: Colors.white,
+                  child: TextField(
+                    style: TextStyle(
+                      height: 1,
+                      fontSize: font14,
+                    ),
+                    controller: _meetWithController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      hintText: 'Client\'s Name',
+                      contentPadding:
+                          EdgeInsets.only(left: ScreenUtil().setHeight(10)),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 SizedBox(height: ScreenUtil().setHeight(20)),
@@ -640,34 +603,22 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                 SizedBox(height: ScreenUtil().setHeight(5)),
                 Container(
                   height: ScreenUtil().setHeight(60),
-                  padding: EdgeInsets.all(0.5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(
-                        color: Colors.grey.shade400, style: BorderStyle.solid),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: TextField(
-                          style: TextStyle(
-                            fontSize: font14,
-                          ),
-                          controller: _locationController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            hintText: 'Location',
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.only(
-                                left: ScreenUtil().setHeight(10),
-                                bottom: ScreenUtil().setHeight(20),
-                                top: ScreenUtil().setHeight(-15),
-                                right: ScreenUtil().setHeight(20)),
-                          ),
-                        ),
+                  color: Colors.white,
+                  child: TextField(
+                    style: TextStyle(
+                      height: 1,
+                      fontSize: font14,
+                    ),
+                    controller: _locationController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      hintText: 'Location',
+                      contentPadding:
+                          EdgeInsets.only(left: ScreenUtil().setHeight(10)),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 SizedBox(height: ScreenUtil().setHeight(20)),
@@ -1116,34 +1067,21 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                       children: <Widget>[
                         Container(
                           height: ScreenUtil().setHeight(60),
-                          padding: EdgeInsets.all(0.5),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(
-                                color: Colors.grey.shade400,
-                                style: BorderStyle.solid),
-                          ),
-                          child: Row(
-                            children: <Widget>[
-                              Expanded(
-                                child: TextField(
-                                  style: TextStyle(
-                                    fontSize: font14,
-                                  ),
-                                  controller: _timeController,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.only(
-                                        left: ScreenUtil().setHeight(10),
-                                        bottom: ScreenUtil().setHeight(20),
-                                        top: ScreenUtil().setHeight(-15),
-                                        right: ScreenUtil().setHeight(20)),
-                                  ),
-                                ),
+                          color: Colors.white,
+                          child: TextField(
+                            style: TextStyle(
+                              height: 1,
+                              fontSize: font14,
+                            ),
+                            controller: _timeController,
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              contentPadding: EdgeInsets.only(
+                                  left: ScreenUtil().setHeight(10)),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(color: Colors.grey),
                               ),
-                            ],
+                            ),
                           ),
                         ),
                         SizedBox(height: ScreenUtil().setHeight(20)),

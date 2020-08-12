@@ -536,48 +536,43 @@ class _MyWorksState extends State<MyWorks> {
               Row(
                 children: <Widget>[
                   Expanded(
-                    child: Container(
-                      child: Card(
-                        child: Container(
-                          margin: EdgeInsets.fromLTRB(
-                              ScreenUtil().setHeight(20),
-                              0,
-                              ScreenUtil().setHeight(20),
-                              0),
-                          height: ScreenUtil().setHeight(80),
-                          child: TextField(
-                            controller: _searchController,
-                            keyboardType: TextInputType.text,
-                            textInputAction: TextInputAction.go,
-                            onSubmitted: (value) => _search(value),
-                            style: TextStyle(
-                              fontSize: font14,
+                    child: Card(
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(ScreenUtil().setHeight(20),
+                            0, ScreenUtil().setHeight(20), 0),
+                        height: ScreenUtil().setHeight(80),
+                        child: TextField(
+                          controller: _searchController,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.go,
+                          onSubmitted: (value) => _search(value),
+                          style: TextStyle(
+                            fontSize: font14,
+                          ),
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: ScreenUtil().setHeight(6),
                             ),
-                            decoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: ScreenUtil().setHeight(6),
-                              ),
-                              hintText: "Search",
-                              suffix: IconButton(
-                                iconSize: ScreenUtil().setHeight(35),
-                                icon: Icon(Icons.keyboard_hide),
-                                onPressed: () {
-                                  FocusScope.of(context)
-                                      .requestFocus(new FocusNode());
-                                },
-                              ),
-                              suffixIcon: BouncingWidget(
-                                scaleFactor: _scaleFactor,
-                                onPressed: () {
-                                  _search(_searchController.text);
-                                },
-                                child: Icon(
-                                  Icons.search,
-                                  size: ScreenUtil().setHeight(50),
-                                ),
-                              ),
-                              border: InputBorder.none,
+                            hintText: "Search",
+                            suffix: IconButton(
+                              iconSize: ScreenUtil().setHeight(35),
+                              icon: Icon(Icons.keyboard_hide),
+                              onPressed: () {
+                                FocusScope.of(context)
+                                    .requestFocus(new FocusNode());
+                              },
                             ),
+                            suffixIcon: BouncingWidget(
+                              scaleFactor: _scaleFactor,
+                              onPressed: () {
+                                _search(_searchController.text);
+                              },
+                              child: Icon(
+                                Icons.search,
+                                size: ScreenUtil().setHeight(50),
+                              ),
+                            ),
+                            border: InputBorder.none,
                           ),
                         ),
                       ),
@@ -1429,7 +1424,7 @@ class _MyWorksState extends State<MyWorks> {
                                           Text(
                                               "Assign selected links to branch",
                                               style: TextStyle(
-                                                  color: Colors.grey.shade600,
+                                                  color: Colors.grey,
                                                   fontSize: font13)),
                                         ],
                                       ),
@@ -1443,7 +1438,7 @@ class _MyWorksState extends State<MyWorks> {
                                           borderRadius:
                                               BorderRadius.circular(5),
                                           border: Border.all(
-                                              color: Colors.grey.shade400,
+                                              color: Colors.grey,
                                               style: BorderStyle.solid),
                                         ),
                                         child: Row(
@@ -1515,7 +1510,7 @@ class _MyWorksState extends State<MyWorks> {
                                   child: Text(
                                     "Assign handler for the leads generated by this work",
                                     style: TextStyle(
-                                        color: Colors.grey.shade600,
+                                        color: Colors.grey,
                                         fontSize: font13),
                                   ),
                                 ),
@@ -1530,7 +1525,7 @@ class _MyWorksState extends State<MyWorks> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(5),
                                 border: Border.all(
-                                    color: Colors.grey.shade400,
+                                    color: Colors.grey,
                                     style: BorderStyle.solid),
                               ),
                               child: Row(
@@ -3542,11 +3537,7 @@ class _MyWorksState extends State<MyWorks> {
     if (status == false) {
       _toast("Please wait for loading");
     } else {
-      if (this.mounted) {
-        setState(() {
-          search = value;
-        });
-      }
+      search = value;
       myWorks.clear();
       switch (category) {
         case "all":

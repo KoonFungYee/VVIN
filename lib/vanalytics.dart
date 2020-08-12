@@ -3489,6 +3489,7 @@ class _VAnalyticsState extends State<VAnalytics>
       "endDate": _endDate.toString().substring(0, 10),
     }).then((res) {
       // print("VAnalytics chart body: " + res.body);
+      leadsDatas.clear();
       if (res.body == "nodata") {
         LeadData leadsData = LeadData(
           date: DateTime.now().toString().substring(0, 10),
@@ -3497,7 +3498,6 @@ class _VAnalyticsState extends State<VAnalytics>
         leadsDatas.add(leadsData);
       } else {
         var jsonData = json.decode(res.body);
-        leadsDatas.clear();
         for (var data in jsonData) {
           LeadData leadsData = LeadData(
             date: data["date"],

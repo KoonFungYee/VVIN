@@ -941,7 +941,7 @@ class _VDataState extends State<VData> {
                           child: Column(
                             children: <Widget>[
                               InkWell(
-                                onTap: () async {
+                                onTap: () {
                                   _redirectVProfile(index);
                                 },
                                 child: Container(

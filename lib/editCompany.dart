@@ -410,7 +410,6 @@ class _EditCompanyState extends State<EditCompany> {
                         Text(
                           "Name",
                           style: TextStyle(
-                              fontFamily: 'Roboto',
                               fontWeight: FontWeight.bold,
                               fontSize: font14),
                         )
@@ -424,15 +423,12 @@ class _EditCompanyState extends State<EditCompany> {
                       color: Color.fromRGBO(235, 235, 255, 1),
                       child: TextField(
                         style: TextStyle(
-                          fontFamily: 'Roboto',
                           height: 1,
                           fontSize: font15,
                         ),
                         controller: _nameController,
                         keyboardType: TextInputType.text,
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.all(ScreenUtil().setHeight(10)),
                           border: OutlineInputBorder(
                               borderSide: BorderSide(color: Colors.lightBlue)),
                         ),
@@ -469,8 +465,6 @@ class _EditCompanyState extends State<EditCompany> {
                         controller: _phoneController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.all(ScreenUtil().setHeight(10)),
                           border: OutlineInputBorder(
                               borderSide: BorderSide(color: Colors.lightBlue)),
                         ),
@@ -485,7 +479,6 @@ class _EditCompanyState extends State<EditCompany> {
                         Text(
                           "Email",
                           style: TextStyle(
-                            fontFamily: 'Roboto',
                             fontWeight: FontWeight.bold,
                             fontSize: font14,
                           ),
@@ -500,15 +493,12 @@ class _EditCompanyState extends State<EditCompany> {
                       color: Color.fromRGBO(235, 235, 255, 1),
                       child: TextField(
                         style: TextStyle(
-                          fontFamily: 'Roboto',
                           height: 1,
                           fontSize: font15,
                         ),
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.all(ScreenUtil().setHeight(10)),
                           border: OutlineInputBorder(
                               borderSide: BorderSide(color: Colors.lightBlue)),
                         ),
@@ -538,15 +528,12 @@ class _EditCompanyState extends State<EditCompany> {
                       color: Color.fromRGBO(235, 235, 255, 1),
                       child: TextField(
                         style: TextStyle(
-                          fontFamily: 'Roboto',
                           height: 1,
                           fontSize: font15,
                         ),
                         controller: _websiteController,
                         keyboardType: TextInputType.url,
                         decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.all(ScreenUtil().setHeight(10)),
                           border: OutlineInputBorder(
                               borderSide: BorderSide(color: Colors.lightBlue)),
                         ),

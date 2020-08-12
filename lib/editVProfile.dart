@@ -559,9 +559,13 @@ class _EditVProfileState extends State<EditVProfile> {
           data.add(description);
           String date = list[3];
           data.add(date);
-          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -673,8 +677,6 @@ class _EditVProfileState extends State<EditVProfile> {
                     controller: _nameController,
                     keyboardType: TextInputType.text,
                     decoration: InputDecoration(
-                      contentPadding:
-                          EdgeInsets.all(ScreenUtil().setHeight(10)),
                       border: InputBorder.none,
                     ),
                   ),
@@ -794,7 +796,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                                             5),
                                                     border: Border.all(
                                                         color: Colors
-                                                            .grey.shade500,
+                                                            .grey,
                                                         style:
                                                             BorderStyle.solid),
                                                   ),
@@ -887,7 +889,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(5),
                                       border: Border.all(
-                                          color: Colors.grey.shade400,
+                                          color: Colors.grey,
                                           style: BorderStyle.solid),
                                     ),
                                     child: InkWell(
@@ -935,7 +937,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               style: BorderStyle.solid),
                         ),
                         child: Row(
@@ -1002,7 +1004,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               style: BorderStyle.solid),
                         ),
                         child: Row(
@@ -1014,20 +1016,10 @@ class _EditVProfileState extends State<EditVProfile> {
                                   fontSize: font14,
                                 ),
                                 controller: _companyController,
-                                // onSubmitted: (String inputText) {
-                                //   checkAddress();
-                                // },
                                 keyboardType: TextInputType.text,
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   focusedBorder: InputBorder.none,
-                                  // suffix: IconButton(
-                                  //     onPressed: () {
-                                  //       checkAddress();
-                                  //     },
-                                  //     icon: Icon(
-                                  //         MaterialCommunityIcons.map_search,
-                                  //         color: Colors.blue)),
                                   contentPadding: EdgeInsets.only(
                                       left: ScreenUtil().setHeight(10),
                                       bottom: ScreenUtil().setHeight(20),
@@ -1076,36 +1068,19 @@ class _EditVProfileState extends State<EditVProfile> {
                       ),
                       Container(
                         height: ScreenUtil().setHeight(60),
-                        padding: EdgeInsets.all(0.5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(
-                              color: Colors.grey.shade400,
-                              style: BorderStyle.solid),
-                        ),
-                        child: Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: TextField(
-                                style: TextStyle(
-                                  height: 1,
-                                  fontSize: font14,
-                                ),
-                                controller: _icController,
-                                keyboardType: TextInputType.text,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  contentPadding: EdgeInsets.only(
-                                      left: ScreenUtil().setHeight(10),
-                                      bottom: ScreenUtil().setHeight(20),
-                                      top: ScreenUtil().setHeight(-15),
-                                      right: ScreenUtil().setHeight(20)),
-                                ),
-                              ),
+                        color: Colors.white,
+                        child: TextField(
+                          style: TextStyle(
+                            height: 1,
+                            fontSize: font14,
+                          ),
+                          controller: _icController,
+                          keyboardType: TextInputType.text,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
                             ),
-                          ],
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -1142,7 +1117,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
                                   border: Border.all(
-                                      color: Colors.grey.shade400,
+                                      color: Colors.grey,
                                       style: BorderStyle.solid),
                                 ),
                                 child: Row(
@@ -1214,7 +1189,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
                                   border: Border.all(
-                                      color: Colors.grey.shade400,
+                                      color: Colors.grey,
                                       style: BorderStyle.solid),
                                 ),
                                 child: Row(
@@ -1272,7 +1247,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               style: BorderStyle.solid),
                         ),
                         child: Row(
@@ -1352,7 +1327,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
                                   border: Border.all(
-                                      color: Colors.grey.shade400,
+                                      color: Colors.grey,
                                       style: BorderStyle.solid),
                                 ),
                                 child: Row(
@@ -1410,7 +1385,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               style: BorderStyle.solid),
                         ),
                         child: Row(
@@ -1490,7 +1465,7 @@ class _EditVProfileState extends State<EditVProfile> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
                                   border: Border.all(
-                                      color: Colors.grey.shade400,
+                                      color: Colors.grey,
                                       style: BorderStyle.solid),
                                 ),
                                 child: Row(
@@ -1633,7 +1608,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               style: BorderStyle.solid),
                         ),
                         child: Row(
@@ -1701,7 +1676,7 @@ class _EditVProfileState extends State<EditVProfile> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                              color: Colors.grey.shade400,
+                              color: Colors.grey,
                               style: BorderStyle.solid),
                         ),
                         child: Row(

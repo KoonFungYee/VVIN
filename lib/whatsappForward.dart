@@ -985,7 +985,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
         padding: EdgeInsets.only(
           left: ScreenUtil().setHeight(12),
         ),
-        text: contact.name + ' (' + contact.phone + ')',
+        text: contact.name ?? '' + ' (' + contact.phone ?? '' + ')',
         color: Colors.black,
         fontSize: font14,
       );
@@ -1238,7 +1238,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
       context: context,
       barrierDismissible: false,
       builder: (_) => WillPopScope(
-        onWillPop: () {},
+        onWillPop: null,
         child: Dialog(
           elevation: 0.0,
           backgroundColor: Colors.transparent,
@@ -1829,7 +1829,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
               break;
             }
           }
-          if (add == true && phoneNo.substring(0, 3) == '601') {
+          if (add == true) {
             ContactInfo info = ContactInfo(
               name: contact.displayName,
               phone: phoneNo,
@@ -1910,7 +1910,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
             }
           }
           if (temPhone.length > 9 && number == 'string') {
-            if (temPhone.substring(0, 1).toString() != "6") {
+            if (temPhone.substring(0, 1).toString() == "0") {
               phoneList.add("6" + temPhone);
             } else {
               phoneList.add(temPhone);

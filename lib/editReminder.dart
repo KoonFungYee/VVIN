@@ -57,7 +57,15 @@ class _EditReminderState extends State<EditReminder> {
   UniLinksType _type = UniLinksType.string;
   final TextEditingController _remarkcontroller = TextEditingController();
   SharedPreferences prefs;
-  String date, remark, now, active, companyID, userID, branchID, userType, level;
+  String date,
+      remark,
+      now,
+      active,
+      companyID,
+      userID,
+      branchID,
+      userType,
+      level;
   double _scaleFactor = 1.0;
   DateTime dateTime;
   bool invalid, nameInvalid, phoneInvalid, remarkInvalid;
@@ -227,9 +235,13 @@ class _EditReminderState extends State<EditReminder> {
           data.add(description);
           String date = list[3];
           data.add(date);
-          String startTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[0];
+          String startTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[0];
           data.add(startTime);
-          String endTime = (list[4] == 'Full Day') ? 'allDay' : list[4].toString().split(' - ')[1];
+          String endTime = (list[4] == 'Full Day')
+              ? 'allDay'
+              : list[4].toString().split(' - ')[1];
           data.add(endTime);
           String person = list[6];
           data.add(person);
@@ -358,8 +370,7 @@ class _EditReminderState extends State<EditReminder> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5),
                             border: Border.all(
-                                color: Colors.grey.shade400,
-                                style: BorderStyle.solid),
+                                color: Colors.grey, style: BorderStyle.solid),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -431,7 +442,7 @@ class _EditReminderState extends State<EditReminder> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
-                        color: Colors.grey.shade400, style: BorderStyle.solid),
+                        color: Colors.grey, style: BorderStyle.solid),
                   ),
                   child: Row(
                     children: <Widget>[
@@ -480,7 +491,7 @@ class _EditReminderState extends State<EditReminder> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
-                        color: Colors.grey.shade400, style: BorderStyle.solid),
+                        color: Colors.grey, style: BorderStyle.solid),
                   ),
                   child: Row(
                     children: <Widget>[
@@ -525,32 +536,19 @@ class _EditReminderState extends State<EditReminder> {
                 ),
                 Container(
                   height: ScreenUtil().setHeight(60),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(
-                        color: Colors.grey.shade400, style: BorderStyle.solid),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: TextField(
-                          style: TextStyle(
-                            fontSize: font14,
-                          ),
-                          controller: _remarkcontroller,
-                          keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.only(
-                                left: ScreenUtil().setHeight(10),
-                                bottom: ScreenUtil().setHeight(20),
-                                top: ScreenUtil().setHeight(-15),
-                                right: ScreenUtil().setHeight(20)),
-                          ),
-                        ),
+                  color: Colors.white,
+                  child: TextField(
+                    style: TextStyle(
+                      height: 1,
+                      fontSize: font14,
+                    ),
+                    controller: _remarkcontroller,
+                    keyboardType: TextInputType.text,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 (remarkInvalid == true)
