@@ -11,7 +11,7 @@ description: VVIN CRM Platform.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.15+39
+version: 1.0.15+40
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -82,6 +82,8 @@ dependencies:
   easy_dialog: ^1.0.5
   amazingneoicons: ^0.0.3
   google_api_availability: ^2.0.4
+  # hua_wei_push_plugin: ^1.0.0
+  # huawei_push: ^4.0.4+300
   flutter:
     sdk: flutter
 

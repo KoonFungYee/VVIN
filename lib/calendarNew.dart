@@ -1076,8 +1076,18 @@ class _CalendarNewEventState extends State<CalendarNewEvent> {
                             controller: _timeController,
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
+                              suffix: IconButton(
+                                iconSize: ScreenUtil().setHeight(35),
+                                icon: Icon(Icons.keyboard_hide),
+                                onPressed: () {
+                                  FocusScope.of(context)
+                                      .requestFocus(new FocusNode());
+                                },
+                              ),
                               contentPadding: EdgeInsets.only(
-                                  left: ScreenUtil().setHeight(10)),
+                                left: ScreenUtil().setHeight(10),
+                                bottom: ScreenUtil().setHeight(5),
+                              ),
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(color: Colors.grey),
                               ),

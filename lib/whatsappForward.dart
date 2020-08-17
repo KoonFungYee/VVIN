@@ -69,6 +69,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   final TextEditingController _companycontroller = TextEditingController();
   final TextEditingController _remarkcontroller = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchVTagController = TextEditingController();
   final ScrollController whatsappController = ScrollController();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
@@ -83,10 +84,12 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   List<String> phoneList = [];
   List<String> otherList = [];
   List seletedVTag = [];
+  List vTagList = [];
   List<ContactInfo> contactList = [];
   List<ContactInfo> contactList1 = [];
   List<Item1> list = List<Item1>();
   List<RadioItem> radioItems = [];
+  List<RadioItem> vTagItems = [];
   String pathName,
       base64Image,
       tempText,
@@ -94,6 +97,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
       platform,
       selectedName,
       selectedPhone,
+      selectedVTag,
       companyID,
       userID,
       branchID,
@@ -108,11 +112,16 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
       _namecontroller.text = widget.whatsappForward.name ?? '';
       _phonecontroller.text = widget.whatsappForward.phone ?? '';
       seletedVTag = widget.whatsappForward.vtag ?? [];
+      vTagList = widget.whatsappForward.vtagList ?? [];
+      if (vTagList[0] == '-') {
+        vTagList.removeAt(0);
+      }
     } catch (e) {}
     list.clear();
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
     isSend = isImageLoaded = false;
-    selectedName = selectedPhone = tempText = base64Image = number = "";
+    selectedVTag =
+        selectedName = selectedPhone = tempText = base64Image = number = "";
     initialise();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
@@ -832,7 +841,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                       onTap: () {
                                         FocusScope.of(context)
                                             .requestFocus(new FocusNode());
-                                        _selectVTag();
+                                        vTagListWidget();
                                       },
                                       child: Container(
                                         height: ScreenUtil().setHeight(60),
@@ -1094,6 +1103,147 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
       ..show();
   }
 
+  void vTagListWidget() {
+    RadioItem widget;
+    vTagItems.clear();
+    for (var vtag in vTagList) {
+      widget = RadioItem(
+        padding: EdgeInsets.only(
+          left: ScreenUtil().setHeight(12),
+        ),
+        text: vtag,
+        color: Colors.black,
+        fontSize: font14,
+      );
+      vTagItems.add(widget);
+    }
+    try {
+      selectedVTag = vTagList[0];
+    } catch (e) {}
+    YYListViewDialogListRadio1();
+  }
+
+  YYDialog YYListViewDialogListRadio1() {
+    return YYDialog().build()
+      ..width = MediaQuery.of(context).size.width * 0.85
+      ..borderRadius = ScreenUtil().setHeight(8)
+      ..text(
+        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+        alignment: Alignment.center,
+        text: "Select VTag",
+        color: Colors.black,
+        fontSize: font18,
+        fontWeight: FontWeight.w500,
+      )
+      ..divider()
+      ..widget(
+        Container(
+          child: Card(
+            child: Container(
+              margin: EdgeInsets.only(
+                right: ScreenUtil().setHeight(20),
+                left: ScreenUtil().setHeight(30),
+              ),
+              height: ScreenUtil().setHeight(75),
+              child: TextField(
+                controller: _searchVTagController,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.go,
+                onSubmitted: (value) => _searchVTag(value),
+                style: TextStyle(
+                  fontSize: font14,
+                ),
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.fromLTRB(10, 3, 0, 3),
+                  hintText: "Search",
+                  suffix: IconButton(
+                    iconSize: ScreenUtil().setHeight(40),
+                    icon: Icon(Icons.keyboard_hide),
+                    onPressed: () {
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                    },
+                  ),
+                  suffixIcon: BouncingWidget(
+                    scaleFactor: _scaleFactor,
+                    onPressed: () {
+                      _searchVTag(_searchVTagController.text);
+                    },
+                    child: Icon(
+                      Icons.search,
+                      size: ScreenUtil().setHeight(50),
+                    ),
+                  ),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+      ..listViewOfRadioButton(
+          height: ScreenUtil().setHeight(1000),
+          items: vTagItems,
+          intialValue: 0,
+          color: Colors.white,
+          activeColor: Colors.blue,
+          onClickItemListener: (index) {
+            selectedVTag = vTagList[index];
+          })
+      ..divider()
+      ..doubleButton(
+          padding: EdgeInsets.only(
+              top: ScreenUtil().setHeight(16),
+              bottom: ScreenUtil().setHeight(16)),
+          gravity: Gravity.right,
+          text1: "CANCEL",
+          color1: Colors.blue,
+          fontSize1: font14,
+          fontWeight1: FontWeight.bold,
+          onTap1: () {
+            _searchVTagController.text = '';
+          },
+          text2: "OK",
+          color2: Colors.blue,
+          fontSize2: font14,
+          fontWeight2: FontWeight.bold,
+          onTap2: () {
+            bool add = true;
+            for (var item in seletedVTag) {
+              if (item == selectedVTag) {
+                add = false;
+              }
+            }
+            if (add == true && this.mounted) {
+              setState(() {
+                seletedVTag.add(selectedVTag);
+                vTagList = widget.whatsappForward.vtagList;
+              });
+            }
+            _searchVTagController.text = '';
+          })
+      ..show();
+  }
+
+  void _searchVTag(String value) {
+    FocusScope.of(context).requestFocus(new FocusNode());
+    Navigator.pop(context);
+    List list = [];
+    if (value != '') {
+      for (var tag in vTagList) {
+        if (tag.toLowerCase().contains(value.toLowerCase())) {
+          list.add(tag);
+        }
+      }
+      vTagList = list;
+    } else {
+      vTagList = widget.whatsappForward.vtagList;
+      if (vTagList[0] == '-') {
+        vTagList.removeAt(0);
+      }
+    }
+    vTagListWidget();
+  }
+
   Future<void> _search(String value) async {
     FocusScope.of(context).requestFocus(new FocusNode());
     Navigator.pop(context);
@@ -1335,142 +1485,6 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     } else {
       _toast("No Internet Connection");
     }
-  }
-
-  void _selectVTag() {
-    String selectedTag = "";
-    if (widget.whatsappForward.vtagList.length != 0) {
-      showModalBottomSheet(
-        isDismissible: false,
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setModalState) {
-              return Container(
-                height: MediaQuery.of(context).size.height * 0.3,
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom:
-                              BorderSide(width: 1, color: Colors.grey.shade300),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Container(
-                            padding: EdgeInsets.all(
-                              ScreenUtil().setHeight(20),
-                            ),
-                            child: Text(
-                              "Select",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: font14,
-                              ),
-                            ),
-                          ),
-                          InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              padding: EdgeInsets.all(
-                                ScreenUtil().setHeight(20),
-                              ),
-                              child: Text(
-                                "Done",
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: font14,
-                                ),
-                              ),
-                            ),
-                            onTap: () {
-                              if (selectedTag != "") {
-                                if (seletedVTag.length != 0) {
-                                  bool cancelAdd = false;
-                                  for (int i = 0; i < seletedVTag.length; i++) {
-                                    if (selectedTag == seletedVTag[i]) {
-                                      cancelAdd = true;
-                                    }
-                                  }
-                                  if (cancelAdd == false) {
-                                    if (this.mounted) {
-                                      setState(() {
-                                        seletedVTag.add(selectedTag);
-                                      });
-                                    }
-                                  }
-                                } else {
-                                  if (this.mounted) {
-                                    setState(() {
-                                      seletedVTag.add(selectedTag);
-                                    });
-                                  }
-                                }
-                              }
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    Flexible(
-                      child: Container(
-                        color: Colors.white,
-                        child: CupertinoPicker(
-                          backgroundColor: Colors.white,
-                          itemExtent: 28,
-                          scrollController:
-                              FixedExtentScrollController(initialItem: 0),
-                          onSelectedItemChanged: (int index) {
-                            if (index != 0) {
-                              if (this.mounted) {
-                                setState(() {
-                                  selectedTag =
-                                      widget.whatsappForward.vtagList[index];
-                                });
-                              }
-                            } else {
-                              if (this.mounted) {
-                                setState(() {
-                                  selectedTag = '';
-                                });
-                              }
-                            }
-                          },
-                          children: _vTagList(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-      );
-    } else {
-      _toast("VTag list is empty");
-    }
-  }
-
-  List<Widget> _vTagList() {
-    List widgetList = <Widget>[];
-    for (var each in widget.whatsappForward.vtagList) {
-      Widget widget1 = Text(
-        each,
-        style: TextStyle(
-          fontSize: font14,
-        ),
-      );
-      widgetList.add(widget1);
-    }
-    return widgetList;
   }
 
   void _showBottomSheet(String type) {

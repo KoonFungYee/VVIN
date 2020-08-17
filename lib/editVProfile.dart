@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_custom_dialog/flutter_custom_dialog.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_page_transition/flutter_page_transition.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -35,6 +36,7 @@ final TextEditingController _icController = TextEditingController();
 final TextEditingController _positionController = TextEditingController();
 final TextEditingController _occupationController = TextEditingController();
 final TextEditingController _areaController = TextEditingController();
+final TextEditingController _searchVTagController = TextEditingController();
 
 class EditVProfile extends StatefulWidget {
   final VProfileData vprofileData;
@@ -93,7 +95,9 @@ class _EditVProfileState extends State<EditVProfile> {
   List<Industry> industryList = [];
   List<Country> countryList = [];
   List<States> statesList = [];
+  List<RadioItem> vTagItems = [];
   List vtagList = [];
+  List vtagList1 = [];
   List<String> otherList = [];
   List tags = <Widget>[];
   List texts = <Widget>[];
@@ -1701,13 +1705,13 @@ class _EditVProfileState extends State<EditVProfile> {
                                     : Wrap(
                                         direction: Axis.horizontal,
                                         alignment: WrapAlignment.start,
-                                        children: _tags(widget.vtag.length),
+                                        children: _tags(),
                                       ),
                               ),
                             ),
                             InkWell(
                               onTap: () {
-                                _selectHandler();
+                                vTagListWidget();
                               },
                               child: Container(
                                 height: ScreenUtil().setHeight(60),
@@ -1758,9 +1762,9 @@ class _EditVProfileState extends State<EditVProfile> {
     );
   }
 
-  List<Widget> _tags(int length) {
+  List<Widget> _tags() {
     tags.clear();
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < widget.vtag.length; i++) {
       Widget widget1 = InkWell(
         onTap: () {
           _deleteTag(i);
@@ -1812,119 +1816,9 @@ class _EditVProfileState extends State<EditVProfile> {
     }
   }
 
-  void _selectHandler() {
-    FocusScope.of(context).requestFocus(new FocusNode());
-    showModalBottomSheet(
-      isDismissible: false,
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setModalState) {
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.3,
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom:
-                            BorderSide(width: 1, color: Colors.grey.shade300),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(
-                            ScreenUtil().setHeight(20),
-                          ),
-                          child: Text(
-                            "Select",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: font14,
-                            ),
-                          ),
-                        ),
-                        InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                            padding: EdgeInsets.all(
-                              ScreenUtil().setHeight(20),
-                            ),
-                            child: Text(
-                              "Done",
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontSize: font14,
-                              ),
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            if (selectedTag != "") {
-                              for (int j = 0; j < vtagList.length; j++) {
-                                if (vtagList[j] == selectedTag) {
-                                  vtagList.removeAt(j);
-                                }
-                              }
-                              if (this.mounted) {
-                                setState(() {
-                                  widget.vtag.add(selectedTag);
-                                  selectedTag = "";
-                                });
-                              }
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                      child: Container(
-                    color: Colors.white,
-                    child: CupertinoPicker(
-                      backgroundColor: Colors.white,
-                      itemExtent: 28,
-                      scrollController:
-                          FixedExtentScrollController(initialItem: 0),
-                      onSelectedItemChanged: (int index) {
-                        if (index != 0) {
-                          selectedTag = vtagList[index];
-                        } else {
-                          selectedTag = '';
-                        }
-                      },
-                      children: _text('vtagList'),
-                    ),
-                  ))
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   List<Widget> _text(String type) {
     List widgetList = <Widget>[];
     switch (type) {
-      case 'vtagList':
-        List list = vtagList;
-        for (var each in list) {
-          Widget widget1 = Text(
-            each,
-            style: TextStyle(
-              fontSize: font14,
-            ),
-          );
-          widgetList.add(widget1);
-        }
-        break;
       case 'genderList':
         List<Gender> list = genderList;
         for (var each in list) {
@@ -3314,16 +3208,7 @@ class _EditVProfileState extends State<EditVProfile> {
       if (res.body != "nodata") {
         var jsonData = json.decode(res.body);
         vtagList = jsonData;
-        vtagList.insert(0, "-");
-      } else {
-        vtagList.add("-");
-      }
-      for (int i = 0; i < widget.vtag.length; i++) {
-        for (int j = 0; j < vtagList.length; j++) {
-          if (vtagList[j] == widget.vtag[i]) {
-            vtagList.removeAt(j);
-          }
-        }
+        vtagList1 = jsonData;
       }
       if (this.mounted) {
         setState(() {
@@ -3563,6 +3448,147 @@ class _EditVProfileState extends State<EditVProfile> {
         }
       }
     }
+  }
+
+  void vTagListWidget() {
+    RadioItem widget;
+    vTagItems.clear();
+    for (var vtag in vtagList) {
+      widget = RadioItem(
+        padding: EdgeInsets.only(
+          left: ScreenUtil().setHeight(12),
+        ),
+        text: vtag,
+        color: Colors.black,
+        fontSize: font14,
+      );
+      vTagItems.add(widget);
+    }
+    try {
+      selectedTag = vtagList[0];
+    } catch (e) {}
+    YYListViewDialogListRadio1();
+  }
+
+  YYDialog YYListViewDialogListRadio1() {
+    return YYDialog().build()
+      ..width = MediaQuery.of(context).size.width * 0.85
+      ..borderRadius = ScreenUtil().setHeight(8)
+      ..text(
+        padding: EdgeInsets.all(ScreenUtil().setHeight(20)),
+        alignment: Alignment.center,
+        text: "Select VTag",
+        color: Colors.black,
+        fontSize: font18,
+        fontWeight: FontWeight.w500,
+      )
+      ..divider()
+      ..widget(
+        Container(
+          child: Card(
+            child: Container(
+              margin: EdgeInsets.only(
+                right: ScreenUtil().setHeight(20),
+                left: ScreenUtil().setHeight(30),
+              ),
+              height: ScreenUtil().setHeight(75),
+              child: TextField(
+                controller: _searchVTagController,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.go,
+                onSubmitted: (value) => _searchVTag(value),
+                style: TextStyle(
+                  fontSize: font14,
+                ),
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.fromLTRB(10, 3, 0, 3),
+                  hintText: "Search",
+                  suffix: IconButton(
+                    iconSize: ScreenUtil().setHeight(40),
+                    icon: Icon(Icons.keyboard_hide),
+                    onPressed: () {
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                    },
+                  ),
+                  suffixIcon: BouncingWidget(
+                    scaleFactor: _scaleFactor,
+                    onPressed: () {
+                      _searchVTag(_searchVTagController.text);
+                    },
+                    child: Icon(
+                      Icons.search,
+                      size: ScreenUtil().setHeight(50),
+                    ),
+                  ),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+      ..listViewOfRadioButton(
+          height: ScreenUtil().setHeight(1000),
+          items: vTagItems,
+          intialValue: 0,
+          color: Colors.white,
+          activeColor: Colors.blue,
+          onClickItemListener: (index) {
+            selectedTag = vtagList[index];
+          })
+      ..divider()
+      ..doubleButton(
+          padding: EdgeInsets.only(
+              top: ScreenUtil().setHeight(16),
+              bottom: ScreenUtil().setHeight(16)),
+          gravity: Gravity.right,
+          text1: "CANCEL",
+          color1: Colors.blue,
+          fontSize1: font14,
+          fontWeight1: FontWeight.bold,
+          onTap1: () {
+            _searchVTagController.text = '';
+          },
+          text2: "OK",
+          color2: Colors.blue,
+          fontSize2: font14,
+          fontWeight2: FontWeight.bold,
+          onTap2: () {
+            bool add = true;
+            for (var item in widget.vtag) {
+              if (item == selectedTag) {
+                add = false;
+              }
+            }
+            if (add == true && this.mounted) {
+              setState(() {
+                widget.vtag.add(selectedTag);
+                vtagList = vtagList1;
+              });
+            }
+            _searchVTagController.text = '';
+          })
+      ..show();
+  }
+
+  void _searchVTag(String value) {
+    FocusScope.of(context).requestFocus(new FocusNode());
+    Navigator.pop(context);
+    List list = [];
+    if (value != '') {
+      for (var tag in vtagList1) {
+        if (tag.toLowerCase().contains(value.toLowerCase())) {
+          list.add(tag);
+        }
+      }
+      vtagList = list;
+    } else {
+      vtagList = vtagList1;
+      if (vtagList[0] == '-') {
+        vtagList.removeAt(0);
+      }
+    }
+    vTagListWidget();
   }
 
   void _toast(String message) {

@@ -33,3 +33,21 @@
 
 ## flutter_local_notification plugin rules
 -keep class com.dexterous.** { *; }
+
+# Uncomment this to preserve the line number information for
+# debugging stack traces.
+#-keepattributes SourceFile,LineNumberTable
+
+# If you keep the line number information, uncomment this to
+# hide the original source file name.
+#-renamesourcefileattribute SourceFile
+
+#-ignorewarnings
+#-keepattributes *Annotation*
+#-keepattributes Exceptions
+#-keepattributes InnerClasses
+#-keepattributes Signature
+#-keepattributes SourceFile,LineNumberTable
+#-keep class com.hianalytics.android.**{*;}
+#-keep class com.huawei.updatesdk.**{*;}
+#-keep class com.huawei.hms.**{*;}
