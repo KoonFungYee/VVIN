@@ -34,6 +34,7 @@ import 'package:vvin/notifications.dart';
 import 'package:vvin/reminderDB.dart';
 import 'package:vvin/vdata.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
+import 'package:google_api_availability/google_api_availability.dart';
 
 _WhatsAppForwardState pageState;
 
@@ -80,7 +81,7 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
   double _scaleFactor = 1.0;
   String urlWhatsApp = ip + "whatsappForward.php";
   File pickedImage;
-  bool _phoneEmpty, _nameEmpty, _phoneInvalid, isImageLoaded, isSend;
+  bool _phoneEmpty, _nameEmpty, _phoneInvalid, isImageLoaded, isSend, gotGoogle;
   List<String> phoneList = [];
   List<String> otherList = [];
   List seletedVTag = [];
@@ -119,16 +120,33 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
     } catch (e) {}
     list.clear();
     list.add(Item1(PermissionGroup.values[2], PermissionStatus.denied));
-    isSend = isImageLoaded = false;
+    gotGoogle = isSend = isImageLoaded = false;
     selectedVTag =
         selectedName = selectedPhone = tempText = base64Image = number = "";
     initialise();
+    checkGoogle();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         _showNotification();
       },
     );
     super.initState();
+  }
+
+  Future<void> checkGoogle([bool showDialog = false]) async {
+    GooglePlayServicesAvailability playStoreAvailability;
+    try {
+      playStoreAvailability = await GoogleApiAvailability.instance
+          .checkGooglePlayServicesAvailability(showDialog);
+    } catch (e) {
+      playStoreAvailability = GooglePlayServicesAvailability.unknown;
+    }
+    if (Platform.isAndroid) {
+      if (playStoreAvailability.toString() ==
+          'GooglePlayServicesAvailability.success') {
+        gotGoogle = true;
+      }
+    }
   }
 
   Future<void> initialise() async {
@@ -516,7 +534,9 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                                                         _scanner();
                                                       },
                                                       child: Text(
-                                                        "Take Photo / Choose from contact book",
+                                                        (gotGoogle == false)
+                                                            ? 'Choose from contact book'
+                                                            : "Take Photo / Choose from contact book",
                                                         style: TextStyle(
                                                             color: Colors.blue,
                                                             fontSize: font14),
@@ -1756,50 +1776,54 @@ class _WhatsAppForwardState extends State<WhatsAppForward> {
                   ),
                 ),
               ),
-              CupertinoActionSheetAction(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  var tempStore =
-                      await ImagePicker.pickImage(source: ImageSource.gallery);
-                  if (tempStore != null) {
-                    if (this.mounted) {
-                      setState(() {
-                        pickedImage = tempStore;
-                        isImageLoaded = true;
-                      });
-                    }
-                    readText();
-                  }
-                },
-                child: Text(
-                  "Browse Gallery",
-                  style: TextStyle(
-                    fontSize: font18,
-                  ),
-                ),
-              ),
-              CupertinoActionSheetAction(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  var tempStore =
-                      await ImagePicker.pickImage(source: ImageSource.camera);
-                  if (tempStore != null) {
-                    if (this.mounted) {
-                      setState(() {
-                        pickedImage = tempStore;
-                        isImageLoaded = true;
-                      });
-                    }
-                    readText();
-                  }
-                },
-                child: Text(
-                  "Take Photo",
-                  style: TextStyle(
-                    fontSize: font18,
-                  ),
-                ),
-              ),
+              (gotGoogle == false)
+                  ? null
+                  : CupertinoActionSheetAction(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        var tempStore = await ImagePicker.pickImage(
+                            source: ImageSource.gallery);
+                        if (tempStore != null) {
+                          if (this.mounted) {
+                            setState(() {
+                              pickedImage = tempStore;
+                              isImageLoaded = true;
+                            });
+                          }
+                          readText();
+                        }
+                      },
+                      child: Text(
+                        "Browse Gallery",
+                        style: TextStyle(
+                          fontSize: font18,
+                        ),
+                      ),
+                    ),
+              (gotGoogle == false)
+                  ? null
+                  : CupertinoActionSheetAction(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        var tempStore = await ImagePicker.pickImage(
+                            source: ImageSource.camera);
+                        if (tempStore != null) {
+                          if (this.mounted) {
+                            setState(() {
+                              pickedImage = tempStore;
+                              isImageLoaded = true;
+                            });
+                          }
+                          readText();
+                        }
+                      },
+                      child: Text(
+                        "Take Photo",
+                        style: TextStyle(
+                          fontSize: font18,
+                        ),
+                      ),
+                    ),
             ],
           );
         });

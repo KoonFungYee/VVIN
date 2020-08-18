@@ -66,17 +66,19 @@ class _LoginPageState extends State<Login> {
       statusBarColor: Colors.white,
     ));
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    _firebaseMessaging.requestNotificationPermissions(
-        const IosNotificationSettings(sound: true, badge: true, alert: true));
-    _firebaseMessaging.onIosSettingsRegistered
-        .listen((IosNotificationSettings settings) {});
-    _firebaseMessaging.getToken().then((fbtoken) {
-      token = fbtoken;
-      // print(fbtoken);
-    });
     deviceUnlock = DeviceUnlock();
     token = _email = _password = _passcontroller.text = '';
     login = visible = gotbranch = gotcompany = false;
+    try {
+      _firebaseMessaging.requestNotificationPermissions(
+          const IosNotificationSettings(sound: true, badge: true, alert: true));
+      _firebaseMessaging.onIosSettingsRegistered
+          .listen((IosNotificationSettings settings) {});
+      _firebaseMessaging.getToken().then((fbtoken) {
+        token = fbtoken ?? '';
+        // print(fbtoken);
+      });
+    } catch (e) {}
     setup();
     checkPlatform();
   }
