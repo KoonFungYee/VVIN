@@ -222,6 +222,7 @@ class VProfileData {
       lastActive,
       img,
       vformID;
+  var branch;
   VProfileData(
       {this.name,
       this.email,
@@ -240,7 +241,8 @@ class VProfileData {
       this.created,
       this.lastActive,
       this.img,
-      this.vformID});
+      this.vformID,
+      this.branch});
 }
 
 class Branch {

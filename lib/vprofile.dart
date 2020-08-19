@@ -99,7 +99,7 @@ class _VProfileState extends State<VProfile>
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TabController controller;
   Whatsapp _whatsapp = Whatsapp();
-  String urlVProfile = ip + "vprofile.php";
+  String urlVProfile = ip + "vprofile2.php";
   String urlHandler = ip + "handler.php";
   String urlVTag = ip + "vtag.php";
   String urlViews = ip + "views.php";
@@ -131,6 +131,7 @@ class _VProfileState extends State<VProfile>
       userID,
       level,
       userType,
+      selectedBranch,
       resultText,
       now,
       base64Image,
@@ -145,6 +146,8 @@ class _VProfileState extends State<VProfile>
       isFirst,
       click,
       hListStatus,
+      vprofileStatus,
+      needAssign,
       assignDone,
       noHandler,
       response,
@@ -201,11 +204,12 @@ class _VProfileState extends State<VProfile>
     level = widget.vdata.level;
     userType = widget.vdata.userType;
     totalLink = 0;
-    myworksReady = assignDoneClick = noResponse = response = noHandler =
-        assignDone = handlerData = hListStatus = click = isFirst = isSend =
-            start = hasSpeech = vTagData =
+    needAssign = vprofileStatus = myworksReady = assignDoneClick = noResponse =
+        response = noHandler = assignDone = handlerData = hListStatus = click =
+            isFirst = isSend = start = hasSpeech = vTagData =
                 remarksData = viewsData = isScan = vProfileData = false;
-    base64Image = _addRemark.text = resultText = speechText = "";
+    selectedBranch =
+        base64Image = _addRemark.text = resultText = speechText = "";
     // WidgetsBinding.instance.addObserver(this);
     // PermissionHandler().checkPermissionStatus(PermissionGroup.microphone);
     // askPermission();
@@ -760,7 +764,9 @@ class _VProfileState extends State<VProfile>
                   SizedBox(
                     height: ScreenUtil().setHeight(20),
                   ),
-                  (handlerData == true && noHandler == true && level == '4')
+                  (handlerData == true &&
+                          noHandler == true &&
+                          (level == '4' || needAssign == true))
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
@@ -1656,7 +1662,9 @@ class _VProfileState extends State<VProfile>
   }
 
   void _assign() async {
-    if (handlerData == false || hListStatus == false) {
+    if (handlerData == false ||
+        hListStatus == false ||
+        vprofileStatus == false) {
       if (click == false) {
         if (this.mounted) {
           setState(() {
@@ -1671,7 +1679,9 @@ class _VProfileState extends State<VProfile>
   }
 
   void _assignCheck() {
-    if (handlerData == false || hListStatus == false) {
+    if (handlerData == false ||
+        hListStatus == false ||
+        vprofileStatus == false) {
       Future.delayed(const Duration(milliseconds: 100), () {
         _assignCheck();
       });
@@ -1748,7 +1758,7 @@ class _VProfileState extends State<VProfile>
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
                               Flexible(
-                                child: Text("Assign handler for this lead",
+                                child: Text("Assign handler for the lead",
                                     style: TextStyle(
                                         color: Colors.grey.shade600,
                                         fontSize: font13)),
@@ -2406,7 +2416,7 @@ class _VProfileState extends State<VProfile>
                 category: jsonData[i]['category'],
                 qr: jsonData[i]['qr'],
                 id: jsonData[i]['id'],
-                handlers: jsonData[i]['handlers'],
+                handlers: jsonData[i]['handler'],
                 branchID: jsonData[i]['branchID'] ?? '',
                 branchName: jsonData[i]['branchName'] ?? '',
                 offLine: false);
@@ -2522,6 +2532,7 @@ class _VProfileState extends State<VProfile>
           lastActive: "",
           img: "",
           vformID: "",
+          branch: '',
         );
         vProfileDetails.add(vprofile);
       } else {
@@ -2547,13 +2558,22 @@ class _VProfileState extends State<VProfile>
             lastActive: data['lastActive'] ?? "",
             img: data['img'] ?? "",
             vformID: data['vform_id'] ?? "",
+            branch: data['branch'],
           );
           vProfileDetails.add(vprofile);
+          if (data['branch'].length > 0) {
+            for (var branch in data['branch']) {
+              if (branch['name'] == '-') {
+                needAssign = true;
+              }
+            }
+          }
           if (vProfileDetails[0].app == 'VForm') {
             getResponse();
           }
           if (this.mounted) {
             setState(() {
+              vprofileStatus = true;
               status = data['status'];
             });
           }
